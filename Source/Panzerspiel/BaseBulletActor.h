@@ -22,17 +22,21 @@ public:
 	UPROPERTY(VisibleDefaultsOnly)
 		class UProjectileMovementComponent* ProjectileComp;
 
+	UPROPERTY(EditAnywhere)
+		class USoundBase* WallHitSound;
 	// Methods
 public:	
 	// Sets default values for this actor's properties
 	ABaseBulletActor();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+private:
+	UFUNCTION()
+		void HitEvent(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
 };

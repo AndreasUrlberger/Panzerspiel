@@ -61,10 +61,7 @@ void ATankPawn::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	FVector DeltaLocation = GetActorForwardVector() * MoveForwardAxisValue * MovementSpeed;
-	UE_LOG(LogTemp, Warning, TEXT("DeltaLocation: %s"), *DeltaLocation.ToCompactString());
 	SetActorLocation(GetActorLocation() + DeltaLocation, false);
-	//SetActorLocationAndRotation(GetActorLocation() + DeltaLocation, GetActorRotation(), false);
-	UE_LOG(LogTemp, Warning, TEXT("ActorLocation: %s"), *GetActorLocation().ToString());
 
 	FQuat DeltaRotation = FQuat(FVector(0, 0, 1), MoveRightAxisValue * RotationSpeed);
 	AddActorLocalRotation(DeltaRotation, true);
