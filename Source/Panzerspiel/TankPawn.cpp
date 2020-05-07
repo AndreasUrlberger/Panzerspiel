@@ -25,12 +25,11 @@ void ATankPawn::Shoot()
 			params.Owner = this;
 
 			FRotator Rotation = GetActorRotation();
-			FVector Location = GetActorLocation() + GetBulletStartOffset() * Rotation.Vector();
-			World->SpawnActor<ABaseBulletActor>(ToSpawnBullet, Location, Rotation, params);
+			FVector Location = GetBulletSpawnPoint();
+			ABaseBulletActor* Bullet = World->SpawnActor<ABaseBulletActor>(ToSpawnBullet, Location, Rotation, params);
+			Bullet->Init(this);
+			++ActiveShots;
 		}
-		// Fire Bullet
-		
-		++ActiveShots;
 	}
 }
 
@@ -44,9 +43,14 @@ void ATankPawn::MoveRight(float AxisValue)
 	MoveRightAxisValue = AxisValue;
 }
 
-FVector ATankPawn::GetBulletStartOffset()
+FVector ATankPawn::GetBulletSpawnPoint()
 {
-	return BulletStartOffset;
+	return GetActorLocation() + GetActorRotation().Vector() * BarrelLength;
+}
+
+void ATankPawn::Die()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Would normaly die now"));
 }
 
 // Called when the game starts or when spawned
@@ -75,5 +79,11 @@ void ATankPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATankPawn::MoveRight);
 
 	PlayerInputComponent->BindAction("Shoot", EInputEvent::IE_Pressed, this, &ATankPawn::Shoot);
+}
+
+void ATankPawn::HitByBullet(ATankPawn* Enemy)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Got hit by bullet"));
+	Die();
 }
 

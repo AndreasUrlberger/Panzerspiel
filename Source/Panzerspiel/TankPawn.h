@@ -21,7 +21,7 @@ private:
 		TSubclassOf<class ABaseBulletActor> ToSpawnBullet;
 
 	UPROPERTY(EditAnywhere)
-		FVector BulletStartOffset;
+		float BarrelLength;
 
 	UPROPERTY(EditAnywhere)
 		float MovementSpeed;
@@ -52,6 +52,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION()
+		void HitByBullet(ATankPawn* Enemy);
 
 private:
 	UFUNCTION()
@@ -62,7 +64,9 @@ private:
 	UFUNCTION()
 	void MoveRight(float AxisValue);
 	UFUNCTION()
-		FVector GetBulletStartOffset();
+		FVector GetBulletSpawnPoint();
+	UFUNCTION()
+		void Die();
 
 protected:
 	// Called when the game starts or when spawned
