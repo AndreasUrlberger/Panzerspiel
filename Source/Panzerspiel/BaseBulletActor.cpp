@@ -35,11 +35,12 @@ void ABaseBulletActor::BeginPlay()
 void ABaseBulletActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	UE_LOG(LogTemp, Warning, TEXT("Source: %d"), Source);
 }
 
 void ABaseBulletActor::Init(ATankPawn* Spawner)
 {
-	this->Source = Source;
+	Source = Spawner;
 }
 
 void ABaseBulletActor::HitEvent(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) {
@@ -69,5 +70,7 @@ void ABaseBulletActor::Die() {
 	if (BulletDestroySound) {
 		UGameplayStatics::PlaySoundAtLocation(this, BulletDestroySound, GetActorLocation());
 	}
+	if(Source)
+		Source->BulletDestroyed();
 	Destroy();
 }

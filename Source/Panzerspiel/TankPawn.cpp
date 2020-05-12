@@ -6,6 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BaseBulletActor.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ATankPawn::ATankPawn()
@@ -29,6 +30,9 @@ void ATankPawn::Shoot()
 			ABaseBulletActor* Bullet = World->SpawnActor<ABaseBulletActor>(ToSpawnBullet, Location, Rotation, params);
 			Bullet->Init(this);
 			++ActiveShots;
+
+			if (FireSound)
+				UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
 		}
 	}
 }
@@ -51,6 +55,12 @@ FVector ATankPawn::GetBulletSpawnPoint()
 void ATankPawn::Die()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Would normaly die now"));
+}
+
+void ATankPawn::BulletDestroyed()
+{
+	check(ActiveShots > 0);
+	--ActiveShots;
 }
 
 // Called when the game starts or when spawned
@@ -86,4 +96,3 @@ void ATankPawn::HitByBullet(ATankPawn* Enemy)
 	UE_LOG(LogTemp, Warning, TEXT("Got hit by bullet"));
 	Die();
 }
-

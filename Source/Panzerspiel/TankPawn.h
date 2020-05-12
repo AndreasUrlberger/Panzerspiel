@@ -41,6 +41,9 @@ private:
 	UPROPERTY(VisibleAnywhere)
 		float MoveRightAxisValue;
 
+	UPROPERTY(EditAnywhere)
+		class USoundBase* FireSound;
+
 // Methods
 public:
 	// Sets default values for this pawn's properties
@@ -54,6 +57,8 @@ public:
 
 	UFUNCTION()
 		void HitByBullet(ATankPawn* Enemy);
+	UFUNCTION()
+		void BulletDestroyed();
 
 private:
 	UFUNCTION()
@@ -67,6 +72,7 @@ private:
 		FVector GetBulletSpawnPoint();
 	UFUNCTION()
 		void Die();
+	
 
 protected:
 	// Called when the game starts or when spawned
