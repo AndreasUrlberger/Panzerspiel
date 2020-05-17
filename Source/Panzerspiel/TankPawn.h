@@ -60,6 +60,9 @@ public:
 	UFUNCTION()
 		void BulletDestroyed();
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "FX")
+		void PlayNiagaraExplosion();
+
 private:
 	UFUNCTION()
 	void Shoot();
