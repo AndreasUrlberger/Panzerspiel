@@ -7,6 +7,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BaseBulletActor.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 ATankPawn::ATankPawn()
@@ -54,7 +56,8 @@ FVector ATankPawn::GetBulletSpawnPoint()
 
 void ATankPawn::Die()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Would normaly die now"));
+	UE_LOG(LogTemp, Warning, TEXT("Player dies."));
+	//UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), SpawnEffect, MeshComp->GetComponentLocation(), MeshComp->GetComponentRotation());
 }
 
 void ATankPawn::BulletDestroyed()
