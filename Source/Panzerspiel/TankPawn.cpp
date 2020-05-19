@@ -57,8 +57,7 @@ FVector ATankPawn::GetBulletSpawnPoint()
 void ATankPawn::Die()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Player dies."));
-	//UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), SpawnEffect, MeshComp->GetComponentLocation(), MeshComp->GetComponentRotation());
-	PlayNiagaraExplosion();
+	PlayNiagaraExplosion(GetActorLocation());
 }
 
 void ATankPawn::BulletDestroyed()

@@ -61,7 +61,7 @@ public:
 		void BulletDestroyed();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "FX")
-		void PlayNiagaraExplosion();
+		void PlayNiagaraExplosion(FVector SpawnLocation);
 
 private:
 	UFUNCTION()
