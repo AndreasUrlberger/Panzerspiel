@@ -7,8 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BaseBulletActor.h"
 #include "Kismet/GameplayStatics.h"
-//#include "NiagaraFunctionLibrary.h"
-//#include "NiagaraComponent.h"
+#include "Engine/EngineTypes.h"
 
 // Sets default values
 ATankPawn::ATankPawn()
@@ -26,15 +25,22 @@ void ATankPawn::Shoot()
 		if (UWorld* World = GetWorld()) {
 			FActorSpawnParameters params;
 			params.Owner = this;
+			params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
 
 			FRotator Rotation = GetActorRotation();
 			FVector Location = GetBulletSpawnPoint();
+			UE_LOG(LogTemp, Warning, TEXT("Spawn bullet, this is : %d"), this);
 			ABaseBulletActor* Bullet = World->SpawnActor<ABaseBulletActor>(ToSpawnBullet, Location, Rotation, params);
-			Bullet->Init(this);
-			++ActiveShots;
+			
 
-			if (FireSound)
-				UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
+			// Check if the spawn was successfull.
+			if (Bullet) {
+				UE_LOG(LogTemp, Warning, TEXT("Spawn successfull"));
+				Bullet->Init(this);
+				++ActiveShots;
+				if (FireSound)
+					UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
+			}
 		}
 	}
 }
@@ -58,6 +64,7 @@ void ATankPawn::Die()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Player dies."));
 	PlayNiagaraExplosion(GetActorLocation());
+	Destroy();
 }
 
 void ATankPawn::BulletDestroyed()

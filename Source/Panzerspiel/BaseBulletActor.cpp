@@ -35,21 +35,28 @@ void ABaseBulletActor::BeginPlay()
 void ABaseBulletActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	UE_LOG(LogTemp, Warning, TEXT("Source: %d"), Source);
 }
 
 void ABaseBulletActor::Init(ATankPawn* Spawner)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Call of init"));
 	Source = Spawner;
 }
 
 void ABaseBulletActor::HitEvent(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) {
-	if (HitsBeforeDeath > 0) {
+	if (ATankPawn* Tank = Cast<ATankPawn>(OtherActor)) {
+		// Hit tank -> explode.
+		UE_LOG(LogTemp, Warning, TEXT("Bullet hit tank"));
+		Die();
+	}
+	else if (HitsBeforeDeath > 0) {
+		UE_LOG(LogTemp, Warning, TEXT("Bullet hit wall"));
 		--HitsBeforeDeath;
 		if (WallHitSound)
 			UGameplayStatics::PlaySoundAtLocation(this, WallHitSound, GetActorLocation());
 	}
 	else {
+		UE_LOG(LogTemp, Warning, TEXT("Bullet hit wall the last time"));
 		Die();
 	}
 	
@@ -58,18 +65,20 @@ void ABaseBulletActor::HitEvent(UPrimitiveComponent* HitComponent, AActor* Other
 void ABaseBulletActor::OverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (Cast<ABaseBulletActor>(OtherActor)) {
+		UE_LOG(LogTemp, Warning, TEXT("Bullet overlap another bullet"));
 		Die();
 	}
 	else if (ATankPawn* HitTank = Cast<ATankPawn>(OtherActor)) {
+		UE_LOG(LogTemp, Warning, TEXT("Bullet overlap tank"));
 		HitTank->HitByBullet(Source);
 		Die();
 	}
 }
 
 void ABaseBulletActor::Die() {
-	if (BulletDestroySound) {
+	UE_LOG(LogTemp, Warning, TEXT("Die of bullet, source: %d"), Source);
+	if (BulletDestroySound)
 		UGameplayStatics::PlaySoundAtLocation(this, BulletDestroySound, GetActorLocation());
-	}
 	if(Source)
 		Source->BulletDestroyed();
 	Destroy();
