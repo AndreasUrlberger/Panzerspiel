@@ -23,17 +23,17 @@ void ATankPawn::Shoot()
 {
 	if (ActiveShots < MaxShots) {
 		if (UWorld* World = GetWorld()) {
-			FActorSpawnParameters params;
-			params.Owner = this;
-			params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
+			FActorSpawnParameters Params;
+			Params.Owner = this;
+			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
 
 			FRotator Rotation = GetActorRotation();
 			FVector Location = GetBulletSpawnPoint();
 			UE_LOG(LogTemp, Warning, TEXT("Spawn bullet, this is : %d"), this);
-			ABaseBulletActor* Bullet = World->SpawnActor<ABaseBulletActor>(ToSpawnBullet, Location, Rotation, params);
+			ABaseBulletActor* Bullet = World->SpawnActor<ABaseBulletActor>(ToSpawnBullet, Location, Rotation, Params);
 			
 
-			// Check if the spawn was successfull.
+			// Check if the spawn was successful.
 			if (Bullet) {
 				UE_LOG(LogTemp, Warning, TEXT("Spawn successfull"));
 				Bullet->Init(this);
@@ -57,7 +57,7 @@ void ATankPawn::MoveRight(float AxisValue)
 
 FVector ATankPawn::GetBulletSpawnPoint()
 {
-	return GetActorLocation() + GetActorRotation().Vector() * BarrelLength;
+	return GetActorLocation() + FVector(0, 0, BarrelHeight) + GetActorRotation().Vector() * BarrelLength;
 }
 
 void ATankPawn::Die()
