@@ -15,7 +15,10 @@ class PANZERSPIEL_API ATankPawn : public APawn
 private:
     // UPROPERTY(EditDefaultsOnly)
     UPROPERTY(VisibleAnywhere)
-    class UStaticMeshComponent* PlayerMesh;
+    class UStaticMeshComponent* BaseMesh;
+
+    UPROPERTY(VisibleAnywhere)
+    class UStaticMeshComponent* TurretMesh;
 
     UPROPERTY(EditAnywhere)
     TSubclassOf<class ABaseBulletActor> ToSpawnBullet;
