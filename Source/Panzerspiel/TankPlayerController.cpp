@@ -2,31 +2,30 @@
 
 
 #include "TankPlayerController.h"
+#include "TankPawn.h"
 
-ATankPlayerController::ATankPlayerController()
-{
-    
+ATankPlayerController::ATankPlayerController() {
 }
 
-void ATankPlayerController::Tick(float DeltaSeconds)
-{
-    if (Crosshair)
-    {
+void ATankPlayerController::Tick(float DeltaSeconds) {
+    // Move Crosshair to cursor location if Crosshair was created.
+    if (Crosshair) {
         FHitResult Result = FHitResult(20);
         GetHitResultUnderCursor(ECollisionChannel::ECC_EngineTraceChannel2, false, Result);
 
         Crosshair->SetActorLocation(Result.Location + FVector(0, 0, CrosshairHeight));
 
-        UE_LOG(LogTemp, Warning, TEXT("Rsult location: %s: "), *Result.Location.ToCompactString());
+        // If controlled Pawn is a TankPawn we align its tower to point towards the crosshair.
+        if (ATankPawn* TankPawn = Cast<ATankPawn>(GetPawn())) {
+            TankPawn->AlignTower(Result.Location);
+        }
     }
 }
 
-void ATankPlayerController::BeginPlay()
-{
-    if (CrosshairToSpawn)
-    {
-        if (UWorld* World = GetWorld())
-        {
+void ATankPlayerController::BeginPlay() {
+    // Spawn Crosshair if blueprint is given.
+    if (CrosshairToSpawn) {
+        if (UWorld* World = GetWorld()) {
             FActorSpawnParameters Params;
             Params.Owner = this;
             Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;

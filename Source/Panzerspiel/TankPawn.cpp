@@ -22,16 +22,15 @@ ATankPawn::ATankPawn()
     RootComponent = BaseMesh;
 }
 
+void ATankPawn::AlignTower(const FVector Target) {
+    FVector Rotation = Target - GetActorLocation();
+    Rotation.Z = 0;
+    
+    TurretMesh->SetWorldRotation(Rotation.ToOrientationRotator(), true);
+}
+
 void ATankPawn::Shoot()
 {
-    if(APlayerController* PlayerController = Cast<APlayerController>(Controller))
-    {       
-        FHitResult Result = FHitResult(20);
-        PlayerController->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery_MAX, false, Result);
-
-        UE_LOG(LogTemp, Warning, TEXT("Rsult location: %s: "), *Result.Location.ToCompactString());
-    }
-    
     if (ActiveShots < MaxShots)
     {
         if (UWorld* World = GetWorld())
@@ -40,18 +39,17 @@ void ATankPawn::Shoot()
             Params.Owner = this;
             Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
 
-            FRotator Rotation = GetActorRotation();
+            FRotator Rotation = TurretMesh->GetComponentRotation();
             FVector Location = GetBulletSpawnPoint();
-            //UE_LOG(LogTemp, Warning, TEXT("Spawn bullet, this is : %d"), this);
+
             ABaseBulletActor* Bullet = World->SpawnActor<ABaseBulletActor>(ToSpawnBullet, Location, Rotation, Params);
 
 
             // Check if the spawn was successful.
             if (Bullet)
             {
-                //UE_LOG(LogTemp, Warning, TEXT("Spawn successfull"));
-                Bullet->Init(this);
                 ++ActiveShots;
+                Bullet->Init(this);
                 if (FireSound)
                     UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
             }
@@ -71,7 +69,7 @@ void ATankPawn::MoveRight(float AxisValue)
 
 FVector ATankPawn::GetBulletSpawnPoint()
 {
-    return GetActorLocation() + FVector(0, 0, BarrelHeight) + GetActorRotation().Vector() * BarrelLength;
+    return TurretMesh->GetComponentLocation() + FVector(0, 0, BarrelHeight) + TurretMesh->GetComponentRotation().Vector() * BarrelLength;
 }
 
 void ATankPawn::Die()

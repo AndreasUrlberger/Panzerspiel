@@ -20,6 +20,7 @@ private:
     UPROPERTY(VisibleAnywhere)
     class UStaticMeshComponent* TurretMesh;
 
+    // The bullet that will be spawned when the tank shoots.
     UPROPERTY(EditAnywhere)
     TSubclassOf<class ABaseBulletActor> ToSpawnBullet;
 
@@ -32,6 +33,7 @@ private:
     UPROPERTY(EditAnywhere)
     float MovementSpeed;
 
+    // Rotation speed of the base not the tower.
     UPROPERTY(EditAnywhere)
     float RotationSpeed;
 
@@ -41,9 +43,11 @@ private:
     UPROPERTY(VisibleAnywhere)
     int8 ActiveShots;
 
+    // Stores the axis value that the tank should move forward.
     UPROPERTY(VisibleAnywhere)
     float MoveForwardAxisValue;
 
+    // Stores the axis value that the tank should turn right.
     UPROPERTY(VisibleAnywhere)
     float MoveRightAxisValue;
 
@@ -52,22 +56,28 @@ private:
 
     // Methods
 public:
-    // Sets default values for this pawn's properties
+    // Sets default values for this pawn's properties.
     ATankPawn();
 
-    // Called every frame
+    // Called every frame.
     virtual void Tick(float DeltaTime) override;
 
-    // Called to bind functionality to input
+    // Called to bind functionality to input.
     virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+    // Will be called by a Bullet when it hits this Tank.
     UFUNCTION()
     void HitByBullet(ATankPawn* Enemy);
+    // Will be called by a Bullet before it dies to inform this tank that it regains one shot.
     UFUNCTION()
     void BulletDestroyed();
 
     UFUNCTION(BlueprintImplementableEvent, Category = "FX")
     void PlayNiagaraExplosion(FVector SpawnLocation);
+
+    // Points the tanks tower towards the Target.
+    UFUNCTION()
+    void AlignTower(const FVector Target);
 
 private:
     UFUNCTION()
