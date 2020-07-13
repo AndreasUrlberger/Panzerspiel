@@ -43396,6 +43396,8 @@
         <e p="Panzerspiel" t="Include">
           <e p="BaseBulletActor.cpp" t="Include" />
           <e p="BaseBulletActor.h" t="Include" />
+          <e p="BaseMine.cpp" t="Include" />
+          <e p="BaseMine.h" t="Include" />
           <e p="Panzerspiel.Build.cs" t="Include" />
           <e p="Panzerspiel.cpp" t="Include" />
           <e p="Panzerspiel.h" t="Include" />

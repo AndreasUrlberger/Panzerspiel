@@ -26,7 +26,11 @@ private:
 	UPROPERTY(EditAnywhere)
 	float CrosshairHeight = 10;
 
+	UPROPERTY(EditAnywhere)
+	int32 CollisionChannelIndex;
+
 public:
+
 	void Tick(float DeltaSeconds) override;
 
 	void BeginPlay() override;

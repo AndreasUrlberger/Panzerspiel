@@ -36,6 +36,7 @@ void ABaseBulletActor::BeginPlay() {
 // Called every frame
 void ABaseBulletActor::Tick(float DeltaTime) {
     Super::Tick(DeltaTime);
+    // We check for overlaps every frame as long as we currently are overlapping something.
     if(FirstOverlapEventActor)
         BeginOverlapEvent(nullptr, FirstOverlapEventActor, nullptr, 0, false, FHitResult());
 }
@@ -46,13 +47,11 @@ void ABaseBulletActor::Init(ATankPawn* Spawner) {
     // Collisions had to be disabled up to this point.
     SetActorEnableCollision(true);
     // Need to call OverlapEvent since it might wrongly interpreted the first overlap event because Source was null.
-    UE_LOG(LogTemp, Warning, TEXT("Calls OverlapEvent manuelly"));
     BeginOverlapEvent(nullptr, FirstOverlapEventActor, nullptr, 0, false, FHitResult());
 }
 
 void ABaseBulletActor::HitEvent(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                                 FVector NormalImpulse, const FHitResult& Hit) {
-    UE_LOG(LogTemp, Warning, TEXT("HitEvent"))
     SourceVulnerable = true;
     if (HitsBeforeDeath > 0) {
         // Bullet hit wall.
@@ -60,7 +59,6 @@ void ABaseBulletActor::HitEvent(UPrimitiveComponent* HitComponent, AActor* Other
         if (WallHitSound)
             UGameplayStatics::PlaySoundAtLocation(this, WallHitSound, GetActorLocation());
     } else {
-        UE_LOG(LogTemp, Warning, TEXT("Bullet hit wall the last time"));
         Die();
     }
 
@@ -70,11 +68,9 @@ void ABaseBulletActor::BeginOverlapEvent(UPrimitiveComponent* OverlappedComponen
     FirstOverlapEventActor = OtherActor;
 
     if (Cast<ABaseBulletActor>(OtherActor)) {
-        UE_LOG(LogTemp, Warning, TEXT("Bullet overlap another bullet"));
         Die();
     } else if (ATankPawn* HitTank = Cast<ATankPawn>(OtherActor)) {
         if (HitTank != Source || SourceVulnerable) {
-            UE_LOG(LogTemp, Warning, TEXT("Bullet overlap tank"));
             HitTank->HitByBullet(Source);
             Die();
         }
@@ -88,7 +84,6 @@ void ABaseBulletActor::EndOverlapEvent(UPrimitiveComponent* OverlappedComponent,
 
 
 void ABaseBulletActor::Die() {
-    UE_LOG(LogTemp, Warning, TEXT("Die of bullet, source: %d"), Source);
     if (BulletDestroySound)
         UGameplayStatics::PlaySoundAtLocation(this, BulletDestroySound, GetActorLocation());
     if (Source)

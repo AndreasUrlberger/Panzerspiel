@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BaseBulletActor.h"
 #include "Kismet/GameplayStatics.h"
+#include "BaseMine.h"
 #include "Engine/EngineTypes.h"
 #include "GameFramework/Controller.h"
 
@@ -30,14 +31,13 @@ void ATankPawn::AlignTower(const FVector Target) {
 }
 
 void ATankPawn::Shoot()
-{
+{    
     if (ActiveShots < MaxShots)
     {
         if (UWorld* World = GetWorld())
         {
             FActorSpawnParameters Params;
             Params.Owner = this;
-            Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
 
             FRotator Rotation = TurretMesh->GetComponentRotation();
             FVector Location = GetBulletSpawnPoint();
@@ -52,6 +52,32 @@ void ATankPawn::Shoot()
                 Bullet->Init(this);
                 if (FireSound)
                     UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
+            }
+        }
+    }
+}
+
+void ATankPawn::PlaceMine() {
+    if (ActiveMines < MaxMines)
+    {
+        if (UWorld* World = GetWorld())
+        {
+            FActorSpawnParameters Params;
+            Params.Owner = this;
+   
+            // Some kind of random rotation seems to be a good idea.
+            FRotator Rotation = TurretMesh->GetComponentRotation();
+            FVector Location = GetActorLocation();
+
+            ABaseMine* Mine = World->SpawnActor<ABaseMine>(ToSpawnMine, Location, Rotation, Params);
+
+
+            // Check if the spawn was successful.
+            if (Mine)
+            {
+                ++ActiveMines;
+                if (MinePlantSound)
+                    UGameplayStatics::PlaySoundAtLocation(this, MinePlantSound, Location);
             }
         }
     }
@@ -74,7 +100,6 @@ FVector ATankPawn::GetBulletSpawnPoint()
 
 void ATankPawn::Die()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Player dies."));
     PlayNiagaraExplosion(GetActorLocation());
     Destroy();
 }
@@ -111,10 +136,10 @@ void ATankPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
     PlayerInputComponent->BindAxis("MoveRight", this, &ATankPawn::MoveRight);
 
     PlayerInputComponent->BindAction("Shoot", EInputEvent::IE_Pressed, this, &ATankPawn::Shoot);
+    PlayerInputComponent->BindAction("PlaceMine", EInputEvent::IE_Pressed, this, &ATankPawn::PlaceMine);
 }
 
 void ATankPawn::HitByBullet(ATankPawn* Enemy)
 {
-    UE_LOG(LogTemp, Warning, TEXT("Got hit by bullet"));
     Die();
 }

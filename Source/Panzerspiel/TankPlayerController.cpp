@@ -1,17 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+#define CrosshairPlaneTraceChannel ETraceTypeQuery::TraceTypeQuery3
 
 
 #include "TankPlayerController.h"
 #include "TankPawn.h"
 
+
 ATankPlayerController::ATankPlayerController() {
 }
 
-void ATankPlayerController::Tick(float DeltaSeconds) {
+void ATankPlayerController::Tick(float DeltaSeconds) {    
     // Move Crosshair to cursor location if Crosshair was created.
     if (Crosshair) {
         FHitResult Result = FHitResult(20);
-        GetHitResultUnderCursor(ECollisionChannel::ECC_EngineTraceChannel2, false, Result);
+        GetHitResultUnderCursorByChannel(CrosshairPlaneTraceChannel, false, Result);
 
         Crosshair->SetActorLocation(Result.Location + FVector(0, 0, CrosshairHeight));
 

@@ -21,27 +21,37 @@ private:
     class UStaticMeshComponent* TurretMesh;
 
     // The bullet that will be spawned when the tank shoots.
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, Category="Spawn")
     TSubclassOf<class ABaseBulletActor> ToSpawnBullet;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, Category="Spawn")
+    TSubclassOf<class ABaseMine> ToSpawnMine;
+
+    UPROPERTY(EditAnywhere, Category="Spawn")
     float BarrelLength;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, Category="Spawn")
     float BarrelHeight;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, Category="Movement")
     float MovementSpeed;
 
     // Rotation speed of the base not the tower.
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, Category="Movement")
     float RotationSpeed;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, Category="Weapons")
     int8 MaxShots;
-
-    UPROPERTY(VisibleAnywhere)
+    
+    UPROPERTY(VisibleAnywhere, Category="Weapons")
     int8 ActiveShots;
+
+    UPROPERTY(EditAnywhere, Category="Weapons")
+    int8 MaxMines;
+
+    UPROPERTY(VisibleAnywhere, Category="Weapons")
+    int8 ActiveMines;
+
 
     // Stores the axis value that the tank should move forward.
     UPROPERTY(VisibleAnywhere)
@@ -51,8 +61,11 @@ private:
     UPROPERTY(VisibleAnywhere)
     float MoveRightAxisValue;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, Category="Weapons")
     class USoundBase* FireSound;
+
+    UPROPERTY(EditAnywhere, Category="Weapons")
+    class USoundBase* MinePlantSound;
 
     // Methods
 public:
@@ -82,6 +95,8 @@ public:
 private:
     UFUNCTION()
     void Shoot();
+    UFUNCTION()
+    void PlaceMine();
 
     UFUNCTION()
     void MoveForward(float AxisValue);
