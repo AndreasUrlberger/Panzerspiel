@@ -7,6 +7,8 @@
 #include "Components/SphereComponent.h"
 #include "BaseBulletActor.h"
 #include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Materials/MaterialInterface.h"
 
 // Sets default values
 ABaseMine::ABaseMine() {
@@ -20,15 +22,19 @@ ABaseMine::ABaseMine() {
     ExplosionMesh->SetupAttachment(RootComponent);
     ExplosionMesh->Deactivate();
 
+    // We move all CollisionSpheres under the map before we activate them to make sure we receive every overlap event.
     TankTriggerSphere = CreateDefaultSubobject<USphereComponent>("TankTriggerSphere");
     TankTriggerSphere->SetupAttachment(RootComponent);
+    TankTriggerSphere->SetRelativeLocation(FVector(0, 0, -2*TankTriggerRadius));
 
     BulletTriggerSphere = CreateDefaultSubobject<USphereComponent>("BulletTriggerSphere");
     BulletTriggerSphere->SetupAttachment(RootComponent);
+    BulletTriggerSphere->SetRelativeLocation(FVector(0, 0, -2*BulletTriggerRadius));
 
     KillSphere = CreateDefaultSubobject<USphereComponent>("KillSphere");
     KillSphere->SetupAttachment(RootComponent);
     KillSphere->SetSphereRadius(0);
+    KillSphere->SetRelativeLocation(FVector(0, 0, -2*ExplosionRadius));
 }
 
 
@@ -43,6 +49,10 @@ void ABaseMine::BeginPlay() {
 
     TankTriggerSphere->SetSphereRadius(0);
     BulletTriggerSphere->SetSphereRadius(0);
+
+    UMaterialInterface* Material = MineMesh->GetMaterial(0);
+    DynamicMineMaterial = UMaterialInstanceDynamic::Create(Material, nullptr);
+    MineMesh->SetMaterial(0, DynamicMineMaterial);
 }
 
 // Called every frame
@@ -85,7 +95,6 @@ void ABaseMine::BeginTankOverlapEvent(UPrimitiveComponent* OverlappedComponent, 
     if (!ExplosionRunning && Cast<ATankPawn>(OtherActor)) {
         Explode();
     }
-
 }
 
 void ABaseMine::BeginBulletOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -124,6 +133,7 @@ void ABaseMine::Explode() {
     
     TankPawn->MineDestroyed();
     KillSphere->OnComponentBeginOverlap.AddDynamic(this, &ABaseMine::BeginKillOverlapEvent);
+    KillSphere->SetRelativeLocation(FVector(0, 0, 0), true);
     TankTriggerSphere->OnComponentBeginOverlap.RemoveAll(this);
     BulletTriggerSphere->OnComponentBeginOverlap.RemoveAll(this);
 }
@@ -134,6 +144,9 @@ void ABaseMine::Die() {
 
 void ABaseMine::Activate() {
     MineActive = true;
+    // Parameter 1 needs to be the defining the colorblend.
+    DynamicMineMaterial->SetScalarParameterValue("ActiveColorBlend", 1);
+    
     if (ActivationSound)
         UGameplayStatics::PlaySoundAtLocation(this, ActivationSound, GetActorLocation());
 
@@ -143,4 +156,6 @@ void ABaseMine::Activate() {
     // Its important to set the radius after the AddDynamic because otherwise we would not get the initial overlap.
     TankTriggerSphere->SetSphereRadius(TankTriggerRadius);
     BulletTriggerSphere->SetSphereRadius(BulletTriggerRadius);
+    TankTriggerSphere->SetRelativeLocation(FVector(0, 0, 0), true);
+    BulletTriggerSphere->SetRelativeLocation(FVector(0, 0, 0), true);
 }

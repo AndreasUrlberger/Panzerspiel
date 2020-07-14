@@ -73,6 +73,9 @@ class PANZERSPIEL_API ABaseMine : public AActor
 	UPROPERTY(EditAnywhere)
 	class USoundBase* ActivationSound;
 
+	UPROPERTY()
+	class UMaterialInstanceDynamic* DynamicMineMaterial;
+
 	UFUNCTION()
     void BeginTankOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                       int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
