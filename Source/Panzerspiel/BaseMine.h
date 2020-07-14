@@ -59,6 +59,11 @@ class PANZERSPIEL_API ABaseMine : public AActor
 	UPROPERTY(VisibleAnywhere)
 	bool ExplosionRunning;
 
+	// Is set true once Explode got called an wont be set to false at any time after that. With this bool we can make
+	// sure that Explode will never be called two times.
+	UPROPERTY(VisibleAnywhere)
+	bool Triggered;
+
 	UPROPERTY(VisibleAnywhere)
 	float RunningTime = 0;
 
@@ -68,16 +73,14 @@ class PANZERSPIEL_API ABaseMine : public AActor
 	UPROPERTY(EditAnywhere)
 	class USoundBase* ActivationSound;
 
-	UPROPERTY(VisibleAnywhere)
-	class AActor* OverlapActor;
-
 	UFUNCTION()
-    void BeginTriggerOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+    void BeginTankOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                       int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-	void EndTriggerOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-	
+    void BeginBulletOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+                      int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 	UFUNCTION()
 	void BeginKillOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                       int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -87,6 +90,9 @@ class PANZERSPIEL_API ABaseMine : public AActor
 
 	UFUNCTION()
 	void Die();
+
+	UFUNCTION()
+	void Activate();
 	
 	
 public:	
