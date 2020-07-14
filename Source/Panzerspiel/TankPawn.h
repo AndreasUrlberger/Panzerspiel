@@ -106,7 +106,7 @@ private:
     UFUNCTION()
     void MoveRight(float AxisValue);
     UFUNCTION()
-    FVector GetBulletSpawnPoint();
+    FVector GetBulletSpawnPoint() const;
     UFUNCTION()
     void Die();
 

@@ -73,6 +73,9 @@ class PANZERSPIEL_API ABaseMine : public AActor
 	UPROPERTY(EditAnywhere)
 	class USoundBase* ActivationSound;
 
+	UPROPERTY(EditAnywhere)
+	class USoundBase* ExplosionSound;
+
 	UPROPERTY()
 	class UMaterialInstanceDynamic* DynamicMineMaterial;
 

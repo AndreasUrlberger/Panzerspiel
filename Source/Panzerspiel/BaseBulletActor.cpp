@@ -18,7 +18,7 @@ ABaseBulletActor::ABaseBulletActor() {
     BulletMesh = CreateDefaultSubobject<UStaticMeshComponent>("Bullet Mesh");
     BulletMesh->SetupAttachment(RootComponent);
 
-    ProjectileComp = CreateDefaultSubobject<UProjectileMovementComponent>("Projectile Component");
+    ProjectileComp = CreateDefaultSubobject<UProjectileMovementComponent>("Projectile Movement Component");
     ProjectileComp->UpdatedComponent = CollisionComp;
 
     // Disable collisions so that init can be called before a collision gets triggered as we need Source to be initialized.

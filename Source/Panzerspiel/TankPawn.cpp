@@ -38,9 +38,10 @@ void ATankPawn::Shoot()
         {
             FActorSpawnParameters Params;
             Params.Owner = this;
+            Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
 
-            FRotator Rotation = TurretMesh->GetComponentRotation();
-            FVector Location = GetBulletSpawnPoint();
+            const FRotator Rotation = TurretMesh->GetComponentRotation();
+            const FVector Location = GetBulletSpawnPoint();
 
             ABaseBulletActor* Bullet = World->SpawnActor<ABaseBulletActor>(ToSpawnBullet, Location, Rotation, Params);
 
@@ -66,8 +67,8 @@ void ATankPawn::PlaceMine() {
             Params.Owner = this;
    
             // Some kind of random rotation seems to be a good idea.
-            FRotator Rotation = TurretMesh->GetComponentRotation();
-            FVector Location = GetActorLocation();
+            const FRotator Rotation = TurretMesh->GetComponentRotation();
+            const FVector Location = GetActorLocation();
 
             ABaseMine* Mine = World->SpawnActor<ABaseMine>(ToSpawnMine, Location, Rotation, Params);
 
@@ -94,8 +95,7 @@ void ATankPawn::MoveRight(float AxisValue)
     MoveRightAxisValue = AxisValue;
 }
 
-FVector ATankPawn::GetBulletSpawnPoint()
-{
+FVector ATankPawn::GetBulletSpawnPoint() const {
     return TurretMesh->GetComponentLocation() + FVector(0, 0, BarrelHeight) + TurretMesh->GetComponentRotation().Vector() * BarrelLength;
 }
 

@@ -22,7 +22,7 @@ ABaseMine::ABaseMine() {
     ExplosionMesh->SetupAttachment(RootComponent);
     ExplosionMesh->Deactivate();
 
-    // We move all CollisionSpheres under the map before we activate them to make sure we receive every overlap event.
+    // We move all collision spheres under the map before we activate them to make sure we receive every overlap event.
     TankTriggerSphere = CreateDefaultSubobject<USphereComponent>("TankTriggerSphere");
     TankTriggerSphere->SetupAttachment(RootComponent);
     TankTriggerSphere->SetRelativeLocation(FVector(0, 0, -2*TankTriggerRadius));
@@ -89,26 +89,19 @@ void ABaseMine::Tick(float DeltaTime) {
 }
 
 void ABaseMine::BeginTankOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                                      UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-                                      const FHitResult& SweepResult) {
-
-    if (!ExplosionRunning && Cast<ATankPawn>(OtherActor)) {
+    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+    if (!ExplosionRunning && Cast<ATankPawn>(OtherActor))
         Explode();
-    }
 }
 
 void ABaseMine::BeginBulletOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                                        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-                                        const FHitResult& SweepResult) {
-
-    if (!ExplosionRunning && Cast<ABaseBulletActor>(OtherActor)) {
+    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+    if (!ExplosionRunning && Cast<ABaseBulletActor>(OtherActor))
         Explode();
-    }
 }
 
 void ABaseMine::BeginKillOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                                      UPrimitiveComponent* OtherComp,
-                                      int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
     if (ATankPawn* OtherTank = Cast<ATankPawn>(OtherActor))
         OtherTank->Kill(TankPawn);
     else if (ABaseBulletActor* Bullet = Cast<ABaseBulletActor>(OtherActor))
@@ -123,6 +116,8 @@ void ABaseMine::Explode() {
     if(Triggered)
         return;
     Triggered = true;
+    if(ExplosionSound)
+        UGameplayStatics::PlaySoundAtLocation(this, ExplosionSound, GetActorLocation());
     ExplosionRunning = true;
     // If a mine explodes it is also active, we set this so that the TriggerCollisions do not get activated in tick().
     MineActive = true;

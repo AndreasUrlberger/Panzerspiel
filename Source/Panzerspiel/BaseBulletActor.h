@@ -11,8 +11,6 @@ class PANZERSPIEL_API ABaseBulletActor : public AActor {
     GENERATED_BODY()
 
     // Variables
-public:
-
 private:
 
     UPROPERTY(VisibleDefaultsOnly)
