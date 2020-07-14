@@ -50,6 +50,10 @@ void ABaseBulletActor::Init(ATankPawn* Spawner) {
     BeginOverlapEvent(nullptr, FirstOverlapEventActor, nullptr, 0, false, FHitResult());
 }
 
+void ABaseBulletActor::Kill(ATankPawn* Enemy) {
+    Die();
+}
+
 void ABaseBulletActor::HitEvent(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                                 FVector NormalImpulse, const FHitResult& Hit) {
     SourceVulnerable = true;
@@ -71,7 +75,7 @@ void ABaseBulletActor::BeginOverlapEvent(UPrimitiveComponent* OverlappedComponen
         Die();
     } else if (ATankPawn* HitTank = Cast<ATankPawn>(OtherActor)) {
         if (HitTank != Source || SourceVulnerable) {
-            HitTank->HitByBullet(Source);
+            HitTank->Kill(Source);
             Die();
         }
     }

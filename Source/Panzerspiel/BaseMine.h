@@ -34,6 +34,15 @@ class PANZERSPIEL_API ABaseMine : public AActor
 	UPROPERTY(EditAnywhere)
 	float ExplosionTime = 0.25;
 
+	UPROPERTY(EditAnywhere)
+	float TimeAtMax = 0.1;
+
+	UPROPERTY(VisibleAnywhere)
+	float CurrentTimeAtMax;
+
+	UPROPERTY(VisibleAnywhere)
+	bool ExplosionAtMax;
+	
 	UPROPERTY(VisibleAnywhere)
 	bool MineActive;
 
@@ -53,21 +62,39 @@ class PANZERSPIEL_API ABaseMine : public AActor
 	UPROPERTY(VisibleAnywhere)
 	float RunningTime = 0;
 
+	UPROPERTY(VisibleAnywhere)
+	class ATankPawn* TankPawn;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* ActivationSound;
+
+	UPROPERTY(VisibleAnywhere)
+	class AActor* OverlapActor;
+
 	UFUNCTION()
-    void BeginTankOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+    void BeginTriggerOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                       int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION()
+	void EndTriggerOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
 	UFUNCTION()
 	void BeginKillOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                       int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-	void Explode();	
+	void Explode();
+
+	UFUNCTION()
+	void Die();
 	
 	
 public:	
 	// Sets default values for this actor's properties
 	ABaseMine();
+
+	UFUNCTION()
+    void Init(ATankPawn* SourcePawn);
 
 protected:
 	// Called when the game starts or when spawned

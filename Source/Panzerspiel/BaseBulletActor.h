@@ -55,6 +55,9 @@ public:
     UFUNCTION()
     void Init(class ATankPawn* Spawner);
 
+    UFUNCTION()
+    void Kill(ATankPawn* Enemy);
+
 private:
     UFUNCTION()
     void HitEvent(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,

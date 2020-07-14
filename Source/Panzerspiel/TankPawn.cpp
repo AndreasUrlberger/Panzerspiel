@@ -76,6 +76,7 @@ void ATankPawn::PlaceMine() {
             if (Mine)
             {
                 ++ActiveMines;
+                Mine->Init(this);
                 if (MinePlantSound)
                     UGameplayStatics::PlaySoundAtLocation(this, MinePlantSound, Location);
             }
@@ -110,6 +111,12 @@ void ATankPawn::BulletDestroyed()
     --ActiveShots;
 }
 
+void ATankPawn::MineDestroyed()
+{
+    check(ActiveMines > 0);
+    --ActiveMines;
+}
+
 // Called when the game starts or when spawned
 void ATankPawn::BeginPlay()
 {
@@ -139,7 +146,7 @@ void ATankPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
     PlayerInputComponent->BindAction("PlaceMine", EInputEvent::IE_Pressed, this, &ATankPawn::PlaceMine);
 }
 
-void ATankPawn::HitByBullet(ATankPawn* Enemy)
+void ATankPawn::Kill(ATankPawn* Enemy)
 {
     Die();
 }

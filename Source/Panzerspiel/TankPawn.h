@@ -80,10 +80,13 @@ public:
 
     // Will be called by a Bullet when it hits this Tank.
     UFUNCTION()
-    void HitByBullet(ATankPawn* Enemy);
+    void Kill(ATankPawn* Enemy);
     // Will be called by a Bullet before it dies to inform this tank that it regains one shot.
     UFUNCTION()
     void BulletDestroyed();
+
+    UFUNCTION()
+    void MineDestroyed();
 
     UFUNCTION(BlueprintImplementableEvent, Category = "FX")
     void PlayNiagaraExplosion(FVector SpawnLocation);
