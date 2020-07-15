@@ -56,6 +56,12 @@ public:
     UFUNCTION()
     void Kill(ATankPawn* Enemy);
 
+    UFUNCTION(BlueprintImplementableEvent)
+    void StopSmoke();
+
+    UFUNCTION(BlueprintCallable)
+    void FinalDie();
+
 private:
     UFUNCTION()
     void HitEvent(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,

@@ -67,6 +67,9 @@ private:
     UPROPERTY(EditAnywhere, Category="Weapons")
     class USoundBase* MinePlantSound;
 
+    UPROPERTY(EditAnywhere)
+    class USoundBase* ExplosionSound;
+
     // Methods
 public:
     // Sets default values for this pawn's properties.

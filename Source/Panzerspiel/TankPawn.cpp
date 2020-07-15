@@ -53,6 +53,11 @@ void ATankPawn::Shoot()
                 Bullet->Init(this);
                 if (FireSound)
                     UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
+            }else {
+                // Player tried to shoot directly into a wall -> He dies.
+                if(FireSound)
+                    UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
+                Die();
             }
         }
     }
@@ -101,6 +106,8 @@ FVector ATankPawn::GetBulletSpawnPoint() const {
 
 void ATankPawn::Die()
 {
+    if(ExplosionSound)
+        UGameplayStatics::PlaySoundAtLocation(this, ExplosionSound, GetActorLocation());
     PlayNiagaraExplosion(GetActorLocation());
     Destroy();
 }

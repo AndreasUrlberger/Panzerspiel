@@ -7,6 +7,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "TankPawn.h"
+#include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
 ABaseBulletActor::ABaseBulletActor() {
@@ -18,11 +19,8 @@ ABaseBulletActor::ABaseBulletActor() {
     BulletMesh = CreateDefaultSubobject<UStaticMeshComponent>("Bullet Mesh");
     BulletMesh->SetupAttachment(RootComponent);
 
-    ProjectileComp = CreateDefaultSubobject<UProjectileMovementComponent>("Projectile Movement Component");
+    ProjectileComp = CreateDefaultSubobject<UProjectileMovementComponent>("Projectile Component");
     ProjectileComp->UpdatedComponent = CollisionComp;
-
-    // Disable collisions so that init can be called before a collision gets triggered as we need Source to be initialized.
-    SetActorEnableCollision(false);
 }
 
 // Called when the game starts or when spawned
@@ -69,7 +67,11 @@ void ABaseBulletActor::HitEvent(UPrimitiveComponent* HitComponent, AActor* Other
 }
 
 void ABaseBulletActor::BeginOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+    // Save the OtherActor from the first call since we need to handle it once Init got called.
     FirstOverlapEventActor = OtherActor;
+    // We can only handle overlaps properly if we know the owner of the bullet.
+    if(!Source)
+        return;
 
     if (Cast<ABaseBulletActor>(OtherActor)) {
         Die();
@@ -88,9 +90,32 @@ void ABaseBulletActor::EndOverlapEvent(UPrimitiveComponent* OverlappedComponent,
 
 
 void ABaseBulletActor::Die() {
+    // This bullet is already dead if ProjectileComp is null.
+    if(!ProjectileComp)
+        return;
+    
     if (BulletDestroySound)
         UGameplayStatics::PlaySoundAtLocation(this, BulletDestroySound, GetActorLocation());
+
+    /*Destroy();*/
+
+    // Stops the bullets movement.
+    ProjectileComp->DestroyComponent();
+    ProjectileComp = nullptr;
+    CollisionComp->DestroyComponent();
+    CollisionComp = nullptr;
+    BulletMesh->DestroyComponent();
+    BulletMesh = nullptr;
+
+    // Tell the blueprint to stop the smoke emitter.
+    StopSmoke();
+
+    // This bullet is "officially" destroyed but technically still lives.
     if (Source)
         Source->BulletDestroyed();
+}
+
+void ABaseBulletActor::FinalDie() {
+    UE_LOG(LogTemp, Warning, TEXT("Called FinalDie"));
     Destroy();
 }
