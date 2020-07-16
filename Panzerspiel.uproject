@@ -21,6 +21,10 @@
 		{
 			"Name": "RiderLink",
 			"Enabled": true
+		},
+		{
+			"Name": "FMODStudio",
+			"Enabled": true
 		}
 	]
 }

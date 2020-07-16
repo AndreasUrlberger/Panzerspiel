@@ -116,6 +116,5 @@ void ABaseBulletActor::Die() {
 }
 
 void ABaseBulletActor::FinalDie() {
-    UE_LOG(LogTemp, Warning, TEXT("Called FinalDie"));
     Destroy();
 }
