@@ -30,6 +30,18 @@ void ATankPawn::AlignTower(const FVector Target) {
     TurretMesh->SetWorldRotation(Rotation.ToOrientationRotator(), true);
 }
 
+void ATankPawn::MoveTo(FVector TargetLocation) {
+    const FVector CurrentLocation = GetActorLocation();
+    FVector Route = TargetLocation - CurrentLocation;
+    // For some reason the Path tells the object to move up.
+    Route.Z = 0;
+    FVector Direction;
+    float Length;
+    Route.ToDirectionAndLength(Direction, Length);
+    UE_LOG(LogTemp, Warning, TEXT("Move by: %s"), *(Direction * MovementSpeed).ToString());
+    SetActorLocation(CurrentLocation + Direction * MovementSpeed, false);
+}
+
 void ATankPawn::Shoot()
 {    
     if (ActiveShots < MaxShots)
@@ -136,7 +148,7 @@ void ATankPawn::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 
     FVector DeltaLocation = GetActorForwardVector() * MoveForwardAxisValue * MovementSpeed;
-    SetActorLocation(GetActorLocation() + DeltaLocation, false);
+    SetActorLocation(GetActorLocation() + DeltaLocation, true);
 
     FQuat DeltaRotation = FQuat(FVector(0, 0, 1), MoveRightAxisValue * RotationSpeed);
     AddActorLocalRotation(DeltaRotation, true);

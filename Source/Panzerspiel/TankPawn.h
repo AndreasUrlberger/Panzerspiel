@@ -98,6 +98,9 @@ public:
     UFUNCTION()
     void AlignTower(const FVector Target);
 
+    UFUNCTION()
+    void MoveTo(FVector TargetLocation);
+
 private:
     UFUNCTION()
     void Shoot();
