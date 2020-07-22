@@ -13,5 +13,10 @@ UCLASS()
 class PANZERSPIEL_API UBTT_TankMoveTo : public UBTTask_BlackboardBase
 {
 	GENERATED_BODY()
-	
+
+
+public:
+	virtual void OnGameplayTaskActivated(UGameplayTask& Task) override;
+
+	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, ::uint8* NodeMemory) override;
 };
