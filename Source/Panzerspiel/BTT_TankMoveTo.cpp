@@ -22,18 +22,22 @@ EBTNodeResult::Type UBTT_TankMoveTo::ExecuteTask(UBehaviorTreeComponent& OwnerCo
         // Enemy from the Blackboard.
         Enemy = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValue<UBlackboardKeyType_Object>("Enemy"));
         if(Enemy) {
-            FVector StartPos = AIController->GetNavAgentLocation();
-            FVector EndPos = Enemy->GetActorLocation();
-            UNavigationPath *NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AIController->GetPawn(), StartPos, EndPos);
+            const FVector StartPos = AIController->GetNavAgentLocation();
+            const FVector EndPos = Enemy->GetActorLocation();
+            TankPawn = Cast<ATankPawn>(AIController->GetPawn());
+
+            UNavigationPath *NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AIController->GetPawn(), StartPos, EndPos, TankPawn);
             PathPoints = NavPath->PathPoints;
+            // Cant move.
+            if(PathPoints.Num() <= 0)
+                Abort(OwnerComp);
             UE_LOG(LogTemp, Warning, TEXT("NavPath is %s"), NavPath->IsValid() ? TEXT("valid") : TEXT("not valid"));
             LogArray(PathPoints);
-            TankPawn = Cast<ATankPawn>(AIController->GetPawn());
         }else {
-            UE_LOG(LogTemp, Warning, TEXT("Something went wrong while trying to get the Enemy"));
+            Abort(OwnerComp);
         }
     }else {
-        UE_LOG(LogTemp, Warning, TEXT("Didnt get the AIController"));
+        Abort(OwnerComp);
     }
     return EBTNodeResult::InProgress;
 }
@@ -52,8 +56,8 @@ UBTT_TankMoveTo::UBTT_TankMoveTo() {
 }
 
 bool UBTT_TankMoveTo::FollowPath(float DeltaTime) {
-    if(TankPawn) {
-        if(TankPawn->MoveTo(PathPoints.Top(), DeltaTime)) {
+    if(IsValid(TankPawn)) {
+        if(TankPawn->MoveTo(PathPoints[0], DeltaTime)) {
             // Tank reached PathPoints.Top
             PathPoints.RemoveAt(0);
             if(PathPoints.Num() <= 0)
@@ -71,4 +75,9 @@ void UBTT_TankMoveTo::LogArray(TArray<FVector> Array) {
     {
         UE_LOG(LogTemp, Warning, TEXT("Point at %d: %s"), Index, *PathPoints[Index].ToString()); 
     }
+}
+
+void UBTT_TankMoveTo::Abort(UBehaviorTreeComponent& OwnerComp) {
+    TankPawn = nullptr;
+    FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 }
