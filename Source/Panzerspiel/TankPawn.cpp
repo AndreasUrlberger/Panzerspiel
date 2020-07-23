@@ -50,7 +50,7 @@ bool ATankPawn::MoveTo(FVector TargetLocation, float DeltaTime) {
         bReachedTarget = true;
     }
     UE_LOG(LogTemp, Warning, TEXT("Move by: %s"), *DeltaMove.ToString());
-    SetActorLocation(CurrentLocation + DeltaMove, true);
+    SetActorLocation(CurrentLocation + DeltaMove, false);
 
     // Tells whether we reached the TargetLocation.
     return bReachedTarget;
