@@ -30,7 +30,9 @@ void ATankPawn::AlignTower(const FVector Target) {
     TurretMesh->SetWorldRotation(Rotation.ToOrientationRotator(), true);
 }
 
-void ATankPawn::MoveTo(FVector TargetLocation) {
+bool ATankPawn::MoveTo(FVector TargetLocation, float DeltaTime) {
+    UE_LOG(LogTemp, Warning, TEXT("DeltaTime for Move: %f"), DeltaTime);
+    bool bReachedTarget = false;
     const FVector CurrentLocation = GetActorLocation();
     FVector Route = TargetLocation - CurrentLocation;
     // For some reason the Path tells the object to move up.
@@ -38,8 +40,20 @@ void ATankPawn::MoveTo(FVector TargetLocation) {
     FVector Direction;
     float Length;
     Route.ToDirectionAndLength(Direction, Length);
-    UE_LOG(LogTemp, Warning, TEXT("Move by: %s"), *(Direction * MovementSpeed).ToString());
-    SetActorLocation(CurrentLocation + Direction * MovementSpeed, false);
+    UE_LOG(LogTemp, Warning, TEXT("Direction for Move: %s"), *Direction.ToString());
+
+    FVector DeltaMove = Direction * MovementSpeed * DeltaTime;
+    if(DeltaMove.SizeSquared2D() - Route.SizeSquared2D() >= 0) {
+        // Tank would move too far -> we reached the TargetLocation.
+        DeltaMove = Route;
+        UE_LOG(LogTemp, Warning, TEXT("Reached Point"));
+        bReachedTarget = true;
+    }
+    UE_LOG(LogTemp, Warning, TEXT("Move by: %s"), *DeltaMove.ToString());
+    SetActorLocation(CurrentLocation + DeltaMove, true);
+
+    // Tells whether we reached the TargetLocation.
+    return bReachedTarget;
 }
 
 void ATankPawn::Shoot()
@@ -147,10 +161,11 @@ void ATankPawn::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    FVector DeltaLocation = GetActorForwardVector() * MoveForwardAxisValue * MovementSpeed;
-    SetActorLocation(GetActorLocation() + DeltaLocation, true);
+    FVector DeltaLocation = GetActorForwardVector() * MoveForwardAxisValue * MovementSpeed * DeltaTime;
+    UE_LOG(LogTemp, Warning, TEXT("Distance by normal Tank: %s"), *DeltaLocation.ToString());
+    SetActorLocation(GetActorLocation() + DeltaLocation, false);
 
-    FQuat DeltaRotation = FQuat(FVector(0, 0, 1), MoveRightAxisValue * RotationSpeed);
+    FQuat DeltaRotation = FQuat(FVector(0, 0, 1), MoveRightAxisValue * RotationSpeed * DeltaTime);
     AddActorLocalRotation(DeltaRotation, true);
 }
 

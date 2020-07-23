@@ -99,8 +99,8 @@ public:
     void AlignTower(const FVector Target);
 
     UFUNCTION()
-    void MoveTo(FVector TargetLocation);
-
+    bool MoveTo(FVector TargetLocation, float DeltaTime);
+    
 private:
     UFUNCTION()
     void Shoot();

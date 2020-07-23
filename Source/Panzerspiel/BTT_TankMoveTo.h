@@ -35,5 +35,11 @@ public:
 
 	UBTT_TankMoveTo();
 
+	// Return true if tank reached the end of the path.
+	bool FollowPath(float DeltaTime);
+	
+	void LogArray(TArray<FVector> Array);
+
+
 private:
 };
