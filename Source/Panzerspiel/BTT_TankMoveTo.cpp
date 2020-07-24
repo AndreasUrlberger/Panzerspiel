@@ -7,7 +7,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 #include "NavigationPath.h"
-#include "TankPawn.h"
+#include "TankCharacter.h"
 #include "Containers/Array.h"
 // Eventuell dem BuildFile "AIModule" und ggf. GameplayTasks" hinzufuegen.
 
@@ -24,9 +24,9 @@ EBTNodeResult::Type UBTT_TankMoveTo::ExecuteTask(UBehaviorTreeComponent& OwnerCo
         if(Enemy) {
             const FVector StartPos = AIController->GetNavAgentLocation();
             const FVector EndPos = Enemy->GetActorLocation();
-            TankPawn = Cast<ATankPawn>(AIController->GetPawn());
+            TankCharacter = Cast<ATankCharacter>(AIController->GetPawn());
 
-            UNavigationPath *NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AIController->GetPawn(), StartPos, EndPos, TankPawn);
+            UNavigationPath *NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AIController->GetPawn(), StartPos, EndPos, TankCharacter);
             PathPoints = NavPath->PathPoints;
             // Cant move.
             if(PathPoints.Num() <= 0)
@@ -56,8 +56,8 @@ UBTT_TankMoveTo::UBTT_TankMoveTo() {
 }
 
 bool UBTT_TankMoveTo::FollowPath(float DeltaTime) {
-    if(IsValid(TankPawn)) {
-        if(TankPawn->MoveTo(PathPoints[0], DeltaTime)) {
+    if(IsValid(TankCharacter)) {
+        if(TankCharacter->MoveTo(PathPoints[0], DeltaTime)) {
             // Tank reached PathPoints.Top
             PathPoints.RemoveAt(0);
             if(PathPoints.Num() <= 0)
@@ -78,6 +78,6 @@ void UBTT_TankMoveTo::LogArray(TArray<FVector> Array) {
 }
 
 void UBTT_TankMoveTo::Abort(UBehaviorTreeComponent& OwnerComp) {
-    TankPawn = nullptr;
+    TankCharacter = nullptr;
     FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 }

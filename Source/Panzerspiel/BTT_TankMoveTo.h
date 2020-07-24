@@ -15,7 +15,7 @@ class PANZERSPIEL_API UBTT_TankMoveTo : public UBTTask_BlackboardBase
 	GENERATED_BODY()
 private:
 	UPROPERTY(VisibleAnywhere)
-	class ATankPawn *TankPawn;
+	class ATankCharacter *TankCharacter;
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<FVector> PathPoints;
