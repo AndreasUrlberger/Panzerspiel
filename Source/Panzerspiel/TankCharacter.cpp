@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Mine.h"
 #include "Engine/EngineTypes.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 ATankCharacter::ATankCharacter()
@@ -17,9 +18,9 @@ ATankCharacter::ATankCharacter()
     PrimaryActorTick.bCanEverTick = true;
 
     BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
+    BaseMesh->SetupAttachment(GetCapsuleComponent());
     TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>("TurretMesh");
     TurretMesh->SetupAttachment(BaseMesh);
-    RootComponent = BaseMesh;
 }
 
 void ATankCharacter::AlignTower(const FVector Target) {
@@ -29,30 +30,7 @@ void ATankCharacter::AlignTower(const FVector Target) {
     TurretMesh->SetWorldRotation(Rotation.ToOrientationRotator(), true);
 }
 
-bool ATankCharacter::MoveTo(FVector TargetLocation, float DeltaTime) {
-    UE_LOG(LogTemp, Warning, TEXT("MoveTo: TargetLocation: %s"), *TargetLocation.ToString());
-    bool bReachedTarget = false;
-    const FVector CurrentLocation = GetActorLocation();
-    FVector Route = TargetLocation - CurrentLocation;
-    // For some reason the Path tells the object to move up.
-    Route.Z = 0;
-    FVector Direction;
-    float Length;
-    Route.ToDirectionAndLength(Direction, Length);
 
-    FVector DeltaMove = Direction * MovementSpeed * DeltaTime;
-    if(DeltaMove.SizeSquared2D() - Route.SizeSquared2D() >= 0) {
-        // Tank would move too far -> we reached the TargetLocation.
-        DeltaMove = Route;
-        UE_LOG(LogTemp, Warning, TEXT("Reached Point"));
-        bReachedTarget = true;
-    }
-    SetActorLocation(CurrentLocation + DeltaMove, false);
-    SetActorRotation(Direction.Rotation());
-
-    // Tells whether we reached the TargetLocation.
-    return bReachedTarget;
-}
 
 void ATankCharacter::Shoot()
 {    

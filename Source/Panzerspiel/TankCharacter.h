@@ -7,15 +7,31 @@
 #include "TankCharacter.generated.h"
 
 UCLASS()
-class PANZERSPIEL_API ATankCharacter : public ACharacter
-{
-	GENERATED_BODY()
+class PANZERSPIEL_API ATankCharacter : public ACharacter {
+    GENERATED_BODY()
 
-// Variables
-private:
-    // UPROPERTY(EditDefaultsOnly)
+    // Variables
+protected:
     UPROPERTY(VisibleAnywhere)
     class UStaticMeshComponent* BaseMesh;
+    
+    UPROPERTY(EditAnywhere, Category="Movement")
+    float MovementSpeed = 450;
+    
+    // Rotation speed of the base not the tower.
+    UPROPERTY(EditAnywhere, Category="Movement")
+    float RotationSpeed = 2.25;
+
+    // Stores the axis value that the tank should move forward.
+    UPROPERTY(VisibleAnywhere)
+    float MoveForwardAxisValue;
+
+    // Stores the axis value that the tank should turn right.
+    UPROPERTY(VisibleAnywhere)
+    float MoveRightAxisValue;
+
+private:
+    
 
     UPROPERTY(VisibleAnywhere)
     class UStaticMeshComponent* TurretMesh;
@@ -28,38 +44,22 @@ private:
     TSubclassOf<class AMine> ToSpawnMine;
 
     UPROPERTY(EditAnywhere, Category="Spawn")
-    float BarrelLength;
+    float BarrelLength = 100;
 
     UPROPERTY(EditAnywhere, Category="Spawn")
-    float BarrelHeight;
-
-    UPROPERTY(EditAnywhere, Category="Movement")
-    float MovementSpeed;
-
-    // Rotation speed of the base not the tower.
-    UPROPERTY(EditAnywhere, Category="Movement")
-    float RotationSpeed;
+    float BarrelHeight = 17;
 
     UPROPERTY(EditAnywhere, Category="Weapons")
-    int8 MaxShots;
-    
+    int8 MaxShots = 3;
+
     UPROPERTY(VisibleAnywhere, Category="Weapons")
     int8 ActiveShots;
 
     UPROPERTY(EditAnywhere, Category="Weapons")
-    int8 MaxMines;
+    int8 MaxMines = 3;
 
     UPROPERTY(VisibleAnywhere, Category="Weapons")
     int8 ActiveMines;
-
-
-    // Stores the axis value that the tank should move forward.
-    UPROPERTY(VisibleAnywhere)
-    float MoveForwardAxisValue;
-
-    // Stores the axis value that the tank should turn right.
-    UPROPERTY(VisibleAnywhere)
-    float MoveRightAxisValue;
 
     UPROPERTY(EditAnywhere, Category="Weapons")
     class USoundBase* FireSound;
@@ -98,9 +98,6 @@ public:
     UFUNCTION()
     void AlignTower(const FVector Target);
 
-    UFUNCTION()
-    bool MoveTo(FVector TargetLocation, float DeltaTime);
-    
 private:
     UFUNCTION()
     void Shoot();
@@ -110,7 +107,7 @@ private:
     UFUNCTION()
     void MoveForward(float AxisValue);
     UFUNCTION()
-    void MoveRight(float AxisValue);
+    virtual void MoveRight(float AxisValue);
     UFUNCTION()
     FVector GetBulletSpawnPoint() const;
     UFUNCTION()

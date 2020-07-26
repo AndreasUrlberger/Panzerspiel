@@ -43823,6 +43823,12 @@
       <e p="README.md" t="Include" />
       <e p="Source" t="Include">
         <e p="Panzerspiel" t="Include">
+          <e p="AITankCharacter.cpp" t="Include" />
+          <e p="AITankCharacter.h" t="Include" />
+          <e p="BaseBulletActor.cpp" t="Include" />
+          <e p="BaseBulletActor.h" t="Include" />
+          <e p="BaseMine.cpp" t="Include" />
+          <e p="BaseMine.h" t="Include" />
           <e p="BTT_TankMoveTo.cpp" t="Include" />
           <e p="BTT_TankMoveTo.h" t="Include" />
           <e p="Bullet.cpp" t="Include" />
@@ -43836,6 +43842,8 @@
           <e p="PanzerspielGameModeBase.h" t="Include" />
           <e p="TankCharacter.cpp" t="Include" />
           <e p="TankCharacter.h" t="Include" />
+          <e p="TankPawn.cpp" t="Include" />
+          <e p="TankPawn.h" t="Include" />
           <e p="TankPlayerController.cpp" t="Include" />
           <e p="TankPlayerController.h" t="Include" />
         </e>

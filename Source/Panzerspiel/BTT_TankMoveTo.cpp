@@ -7,9 +7,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 #include "NavigationPath.h"
-#include "TankCharacter.h"
+#include "AITankCharacter.h"
 #include "Containers/Array.h"
-// Eventuell dem BuildFile "AIModule" und ggf. GameplayTasks" hinzufuegen.
 
 void UBTT_TankMoveTo::OnGameplayTaskActivated(UGameplayTask& Task) {
     UE_LOG(LogTemp, Warning, TEXT("OnGameplayTaskActivated"));
@@ -24,7 +23,7 @@ EBTNodeResult::Type UBTT_TankMoveTo::ExecuteTask(UBehaviorTreeComponent& OwnerCo
         if(Enemy) {
             const FVector StartPos = AIController->GetNavAgentLocation();
             const FVector EndPos = Enemy->GetActorLocation();
-            TankCharacter = Cast<ATankCharacter>(AIController->GetPawn());
+            TankCharacter = Cast<AAITankCharacter>(AIController->GetPawn());
 
             UNavigationPath *NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AIController->GetPawn(), StartPos, EndPos, TankCharacter);
             PathPoints = NavPath->PathPoints;
