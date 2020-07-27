@@ -148,8 +148,8 @@ void ATankCharacter::Tick(float DeltaTime)
 void ATankCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
-    PlayerInputComponent->BindAxis("MoveForward", this, &ATankCharacter::MoveForward);
-    PlayerInputComponent->BindAxis("MoveRight", this, &ATankCharacter::MoveRight);
+    //PlayerInputComponent->BindAxis("MoveForward", this, &ATankCharacter::MoveForward);
+    //PlayerInputComponent->BindAxis("MoveRight", this, &ATankCharacter::MoveRight);
 
     PlayerInputComponent->BindAction("Shoot", EInputEvent::IE_Pressed, this, &ATankCharacter::Shoot);
     PlayerInputComponent->BindAction("PlaceMine", EInputEvent::IE_Pressed, this, &ATankCharacter::PlaceMine);
