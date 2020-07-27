@@ -30,7 +30,7 @@ class PANZERSPIEL_API ABullet : public AActor
 	class USoundBase* BulletDestroySound;
 
 	UPROPERTY(VisibleAnywhere)
-	class ATankCharacter* Source;
+	class ATankPawn* Source;
 
 	// Tells whether the source tank can be killed by its own bullet.
 	UPROPERTY(VisibleAnywhere)
@@ -52,10 +52,10 @@ class PANZERSPIEL_API ABullet : public AActor
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-    void Init(class ATankCharacter* Spawner);
+    void Init(class ATankPawn* Spawner);
 
 	UFUNCTION()
-    void Kill(ATankCharacter* Enemy);
+    void Kill(ATankPawn* Enemy);
 
 	UFUNCTION(BlueprintImplementableEvent)
     void StopSmoke();

@@ -2,7 +2,7 @@
 
 
 #include "Mine.h"
-#include "TankCharacter.h"
+#include "TankPawn.h"
 #include "Bullet.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -36,8 +36,8 @@ AMine::AMine() {
 }
 
 
-void AMine::Init(ATankCharacter* SourcePawn) {
-    this->TankCharacter = SourcePawn;
+void AMine::Init(ATankPawn* SourcePawn) {
+    this->TankPawn = SourcePawn;
 }
 
 
@@ -88,7 +88,7 @@ void AMine::Tick(float DeltaTime) {
 
 void AMine::BeginTankOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
-    if (!ExplosionRunning && Cast<ATankCharacter>(OtherActor))
+    if (!ExplosionRunning && Cast<ATankPawn>(OtherActor))
         Explode();
 }
 
@@ -100,10 +100,10 @@ void AMine::BeginBulletOverlapEvent(UPrimitiveComponent* OverlappedComponent, AA
 
 void AMine::BeginKillOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
-    if (ATankCharacter* OtherTank = Cast<ATankCharacter>(OtherActor))
-        OtherTank->Kill(TankCharacter);
+    if (ATankPawn* OtherTank = Cast<ATankPawn>(OtherActor))
+        OtherTank->Kill(TankPawn);
     else if (ABullet* Bullet = Cast<ABullet>(OtherActor))
-        Bullet->Kill(TankCharacter);
+        Bullet->Kill(TankPawn);
     else if (AMine* Mine = Cast<AMine>(OtherActor)) {
         Mine->Explode();
     }
@@ -124,7 +124,7 @@ void AMine::Explode() {
     TankTriggerSphere->Deactivate();
     BulletTriggerSphere->Deactivate();
     
-    TankCharacter->MineDestroyed();
+    TankPawn->MineDestroyed();
     KillSphere->OnComponentBeginOverlap.AddDynamic(this, &AMine::BeginKillOverlapEvent);
     KillSphere->SetRelativeLocation(FVector(0, 0, 0), true);
     TankTriggerSphere->OnComponentBeginOverlap.RemoveAll(this);

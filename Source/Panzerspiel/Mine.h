@@ -68,7 +68,7 @@ private:
 	float RunningTime = 0;
 
 	UPROPERTY(VisibleAnywhere)
-	class ATankCharacter* TankCharacter;
+	class ATankPawn* TankPawn;
 
 	UPROPERTY(EditAnywhere)
 	class USoundBase* ActivationSound;
@@ -106,7 +106,7 @@ public:
 	AMine();
 
 	UFUNCTION()
-    void Init(ATankCharacter* SourcePawn);
+    void Init(ATankPawn* SourcePawn);
 
 protected:
 	// Called when the game starts or when spawned

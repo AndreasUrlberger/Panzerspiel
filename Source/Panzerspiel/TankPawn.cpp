@@ -1,25 +1,25 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// All rights reserved @Apfelstrudel Games.
 
 
 #include "TankPawn.h"
+
 #include "Components/InputComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "BaseBulletActor.h"
+#include "Bullet.h"
 #include "Kismet/GameplayStatics.h"
-#include "BaseMine.h"
+#include "Mine.h"
 #include "Engine/EngineTypes.h"
 
-// Sets default values
 ATankPawn::ATankPawn()
 {
-    // Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
 
     BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
+    BaseMesh->SetupAttachment(RootComponent);
     TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>("TurretMesh");
     TurretMesh->SetupAttachment(BaseMesh);
-    RootComponent = BaseMesh;
 }
 
 void ATankPawn::AlignTower(const FVector Target) {
@@ -29,30 +29,7 @@ void ATankPawn::AlignTower(const FVector Target) {
     TurretMesh->SetWorldRotation(Rotation.ToOrientationRotator(), true);
 }
 
-bool ATankPawn::MoveTo(FVector TargetLocation, float DeltaTime) {
-    UE_LOG(LogTemp, Warning, TEXT("MoveTo: TargetLocation: %s"), *TargetLocation.ToString());
-    bool bReachedTarget = false;
-    const FVector CurrentLocation = GetActorLocation();
-    FVector Route = TargetLocation - CurrentLocation;
-    // For some reason the Path tells the object to move up.
-    Route.Z = 0;
-    FVector Direction;
-    float Length;
-    Route.ToDirectionAndLength(Direction, Length);
 
-    FVector DeltaMove = Direction * MovementSpeed * DeltaTime;
-    if(DeltaMove.SizeSquared2D() - Route.SizeSquared2D() >= 0) {
-        // Tank would move too far -> we reached the TargetLocation.
-        DeltaMove = Route;
-        UE_LOG(LogTemp, Warning, TEXT("Reached Point"));
-        bReachedTarget = true;
-    }
-    SetActorLocation(CurrentLocation + DeltaMove, false);
-    SetActorRotation(Direction.Rotation());
-
-    // Tells whether we reached the TargetLocation.
-    return bReachedTarget;
-}
 
 void ATankPawn::Shoot()
 {    
@@ -67,7 +44,7 @@ void ATankPawn::Shoot()
             const FRotator Rotation = TurretMesh->GetComponentRotation();
             const FVector Location = GetBulletSpawnPoint();
 
-            ABaseBulletActor* Bullet = World->SpawnActor<ABaseBulletActor>(ToSpawnBullet, Location, Rotation, Params);
+            ABullet* Bullet = World->SpawnActor<ABullet>(ToSpawnBullet, Location, Rotation, Params);
 
 
             // Check if the spawn was successful.
@@ -99,7 +76,7 @@ void ATankPawn::PlaceMine() {
             const FRotator Rotation = TurretMesh->GetComponentRotation();
             const FVector Location = GetActorLocation();
 
-            ABaseMine* Mine = World->SpawnActor<ABaseMine>(ToSpawnMine, Location, Rotation, Params);
+            AMine* Mine = World->SpawnActor<AMine>(ToSpawnMine, Location, Rotation, Params);
 
 
             // Check if the spawn was successful.

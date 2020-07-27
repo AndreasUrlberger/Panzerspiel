@@ -3,8 +3,7 @@
 
 
 #include "TankPlayerController.h"
-#include "TankCharacter.h"
-
+#include "TankPawn.h"
 
 ATankPlayerController::ATankPlayerController() {
 }
@@ -18,7 +17,7 @@ void ATankPlayerController::Tick(float DeltaSeconds) {
         Crosshair->SetActorLocation(Result.Location + FVector(0, 0, CrosshairHeight));
 
         // If controlled Pawn is a TankPawn we align its tower to point towards the crosshair.
-        if (ATankCharacter* TankPawn = Cast<ATankCharacter>(GetPawn())) {
+        if (ATankPawn* TankPawn = Cast<ATankPawn>(GetPawn())) {
             TankPawn->AlignTower(Result.Location);
         }
     }

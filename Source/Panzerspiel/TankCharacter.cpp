@@ -52,7 +52,7 @@ void ATankCharacter::Shoot()
             if (Bullet)
             {
                 ++ActiveShots;
-                Bullet->Init(this);
+                //Bullet->Init(this);
                 if (FireSound)
                     UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
             }else {
@@ -84,7 +84,7 @@ void ATankCharacter::PlaceMine() {
             if (Mine)
             {
                 ++ActiveMines;
-                Mine->Init(this);
+                //Mine->Init(this);
                 if (MinePlantSound)
                     UGameplayStatics::PlaySoundAtLocation(this, MinePlantSound, Location);
             }

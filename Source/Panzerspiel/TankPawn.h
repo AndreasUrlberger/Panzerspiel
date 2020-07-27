@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// All rights reserved @Apfelstrudel Games.
 
 #pragma once
 
@@ -9,49 +9,19 @@
 UCLASS()
 class PANZERSPIEL_API ATankPawn : public APawn
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
-    // Variables
-private:
-    // UPROPERTY(EditDefaultsOnly)
+// Variables
+protected:
     UPROPERTY(VisibleAnywhere)
     class UStaticMeshComponent* BaseMesh;
-
-    UPROPERTY(VisibleAnywhere)
-    class UStaticMeshComponent* TurretMesh;
-
-    // The bullet that will be spawned when the tank shoots.
-    UPROPERTY(EditAnywhere, Category="Spawn")
-    TSubclassOf<class ABaseBulletActor> ToSpawnBullet;
-
-    UPROPERTY(EditAnywhere, Category="Spawn")
-    TSubclassOf<class ABaseMine> ToSpawnMine;
-
-    UPROPERTY(EditAnywhere, Category="Spawn")
-    float BarrelLength;
-
-    UPROPERTY(EditAnywhere, Category="Spawn")
-    float BarrelHeight;
-
+    
     UPROPERTY(EditAnywhere, Category="Movement")
-    float MovementSpeed;
-
+    float MovementSpeed = 450;
+    
     // Rotation speed of the base not the tower.
     UPROPERTY(EditAnywhere, Category="Movement")
-    float RotationSpeed;
-
-    UPROPERTY(EditAnywhere, Category="Weapons")
-    int8 MaxShots;
-    
-    UPROPERTY(VisibleAnywhere, Category="Weapons")
-    int8 ActiveShots;
-
-    UPROPERTY(EditAnywhere, Category="Weapons")
-    int8 MaxMines;
-
-    UPROPERTY(VisibleAnywhere, Category="Weapons")
-    int8 ActiveMines;
-
+    float RotationSpeed = 2.25;
 
     // Stores the axis value that the tank should move forward.
     UPROPERTY(VisibleAnywhere)
@@ -60,6 +30,37 @@ private:
     // Stores the axis value that the tank should turn right.
     UPROPERTY(VisibleAnywhere)
     float MoveRightAxisValue;
+
+private:
+    
+
+    UPROPERTY(VisibleAnywhere)
+    class UStaticMeshComponent* TurretMesh;
+
+    // The bullet that will be spawned when the tank shoots.
+    UPROPERTY(EditAnywhere, Category="Spawn")
+    TSubclassOf<class ABullet> ToSpawnBullet;
+
+    UPROPERTY(EditAnywhere, Category="Spawn")
+    TSubclassOf<class AMine> ToSpawnMine;
+
+    UPROPERTY(EditAnywhere, Category="Spawn")
+    float BarrelLength = 100;
+
+    UPROPERTY(EditAnywhere, Category="Spawn")
+    float BarrelHeight = 17;
+
+    UPROPERTY(EditAnywhere, Category="Weapons")
+    int8 MaxShots = 3;
+
+    UPROPERTY(VisibleAnywhere, Category="Weapons")
+    int8 ActiveShots;
+
+    UPROPERTY(EditAnywhere, Category="Weapons")
+    int8 MaxMines = 3;
+
+    UPROPERTY(VisibleAnywhere, Category="Weapons")
+    int8 ActiveMines;
 
     UPROPERTY(EditAnywhere, Category="Weapons")
     class USoundBase* FireSound;
@@ -72,13 +73,13 @@ private:
 
     // Methods
 public:
-    // Sets default values for this pawn's properties.
+    // Sets default values for this character's properties
     ATankPawn();
 
-    // Called every frame.
+    // Called every frame
     virtual void Tick(float DeltaTime) override;
 
-    // Called to bind functionality to input.
+    // Called to bind functionality to input
     virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
     // Will be called by a Bullet when it hits this Tank.
@@ -98,9 +99,6 @@ public:
     UFUNCTION()
     void AlignTower(const FVector Target);
 
-    UFUNCTION()
-    bool MoveTo(FVector TargetLocation, float DeltaTime);
-    
 private:
     UFUNCTION()
     void Shoot();
@@ -109,10 +107,13 @@ private:
 
     UFUNCTION()
     void MoveForward(float AxisValue);
+    
     UFUNCTION()
-    void MoveRight(float AxisValue);
+    virtual void MoveRight(float AxisValue);
+    
     UFUNCTION()
     FVector GetBulletSpawnPoint() const;
+    
     UFUNCTION()
     void Die();
 

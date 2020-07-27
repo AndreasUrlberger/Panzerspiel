@@ -6,7 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "TankCharacter.h"
+#include "TankPawn.h"
 #include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
@@ -39,7 +39,7 @@ void ABullet::Tick(float DeltaTime) {
         BeginOverlapEvent(nullptr, FirstOverlapEventActor, nullptr, 0, false, FHitResult());
 }
 
-void ABullet::Init(ATankCharacter* Spawner) {
+void ABullet::Init(ATankPawn* Spawner) {
     Source = Spawner;
     SourceVulnerable = false;
     // Collisions had to be disabled up to this point.
@@ -48,7 +48,7 @@ void ABullet::Init(ATankCharacter* Spawner) {
     BeginOverlapEvent(nullptr, FirstOverlapEventActor, nullptr, 0, false, FHitResult());
 }
 
-void ABullet::Kill(ATankCharacter* Enemy) {
+void ABullet::Kill(ATankPawn* Enemy) {
     Die();
 }
 
@@ -75,7 +75,7 @@ void ABullet::BeginOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor
 
     if (Cast<ABullet>(OtherActor)) {
         Die();
-    } else if (ATankCharacter* HitTank = Cast<ATankCharacter>(OtherActor)) {
+    } else if (ATankPawn* HitTank = Cast<ATankPawn>(OtherActor)) {
         if (HitTank != Source || SourceVulnerable) {
             HitTank->Kill(Source);
             Die();
