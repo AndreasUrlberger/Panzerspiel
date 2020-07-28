@@ -34,7 +34,9 @@ AAITankPawn::AAITankPawn() {
 }
 
 bool AAITankPawn::MoveTo(FVector TargetLocation, float DeltaTime) {
-    UE_LOG(LogTemp, Warning, TEXT("MoveTo: TargetLocation: %s"), *TargetLocation.ToString());
+    // We already are at the target location.
+    if(GetActorLocation().Equals(TargetLocation))
+        return true;
     bool bReachedTarget = false;
     const FVector CurrentLocation = GetActorLocation();
     FVector Route = TargetLocation - CurrentLocation;
@@ -57,8 +59,8 @@ bool AAITankPawn::MoveTo(FVector TargetLocation, float DeltaTime) {
         UE_LOG(LogTemp, Warning, TEXT("Reached Point"));
         bReachedTarget = true;
     }
-    SetActorLocation(CurrentLocation + DeltaMove, false);
-    SetActorRotation(Direction.Rotation());
+    CalculateActualMovement(GetActorLocation() + DeltaMove, DeltaTime);
+    //MoveAndRotate(DeltaMove, Direction.Rotation() - GetActorRotation());
 
     // Tells whether we reached the TargetLocation.
     return bReachedTarget;

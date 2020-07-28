@@ -15,13 +15,16 @@ class PANZERSPIEL_API ATankPawn : public APawn
 protected:
     UPROPERTY(VisibleAnywhere)
     class UStaticMeshComponent* BaseMesh;
+
+    UPROPERTY(EditDefaultsOnly)
+    class UFloatingPawnMovement *MovementComp;
     
     UPROPERTY(EditAnywhere, Category="Movement")
     float MovementSpeed = 450;
     
     // Rotation speed of the base not the tower.
     UPROPERTY(EditAnywhere, Category="Movement")
-    float RotationSpeed = 2.25;
+    float RotationSpeed = 135;
 
     // Stores the axis value that the tank should move forward.
     UPROPERTY(VisibleAnywhere)
@@ -121,4 +124,12 @@ private:
 protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
+
+    // The Pawn is only moved via this function
+    UFUNCTION()
+    void MoveAndRotate(const FVector DeltaLocation, const FRotator DeltaRotation);
+
+    // Checks if the tank is facing the movement direction and rotates it if necessary, due to this the tank might not move.
+    UFUNCTION()
+    void CalculateActualMovement(FVector TargetLocation, float DeltaTime);
 };
