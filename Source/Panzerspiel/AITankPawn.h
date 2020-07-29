@@ -4,6 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "TankPawn.h"
+#include "BehaviorTree/BTTaskNode.h"
+#include "Components/SplineComponent.h"
+
+
 #include "AITankPawn.generated.h"
 
 /**
@@ -41,10 +45,22 @@ class PANZERSPIEL_API AAITankPawn : public ATankPawn
 	UPROPERTY(EditDefaultsOnly, Category="AI")
 	UArrowComponent *SensorRight;
 
+	UPROPERTY(VisibleAnywhere)
+	USplineComponent *Spline;
+
+	UPROPERTY(VisibleAnywhere)
+	float DistanceOnSpline;
+
+	UPROPERTY()
+	bool FollowingSpline;
+
+	UPROPERTY()
+	class UBTT_TankMoveTo *CallingTask;
+
 	// Functions
 	virtual void MoveRight(float AxisValue) override;
 
-	public:
+public:
 	AAITankPawn();
 	
 	UFUNCTION()
@@ -55,4 +71,6 @@ class PANZERSPIEL_API AAITankPawn : public ATankPawn
 
 	// Called every frame.
 	virtual void Tick(float DeltaTime) override;
+
+	bool FollowSpline(UBTT_TankMoveTo *Task, USplineComponent *SplineToFollow);
 };

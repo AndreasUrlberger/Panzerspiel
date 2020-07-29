@@ -5,6 +5,8 @@
 #include "DrawDebugHelpers.h"
 #include "Components/ArrowComponent.h"
 #include "Containers/Array.h"
+#include "BTT_TankMoveTo.h"
+#include "Components/SplineComponent.h"
 
 void AAITankPawn::MoveRight(float AxisValue) {
     // Do nothing.
@@ -86,5 +88,29 @@ void AAITankPawn::NavigationTrace() {
 
 void AAITankPawn::Tick(float DeltaTime) {
     Super::Tick(DeltaTime);
+    if(FollowingSpline) {
+        const float MoveDistance = MovementSpeed * DeltaTime;
+        DistanceOnSpline = FMath::Min(DistanceOnSpline + MoveDistance, Spline->GetSplineLength());
+        const FVector TargetLocation = Spline->GetWorldLocationAtDistanceAlongSpline(DistanceOnSpline);
+        //CalculateActualMovement(TargetLocation, DeltaTime);
+        SetActorLocation(TargetLocation, false);
+        
+
+        if(FMath::IsNearlyEqual(DistanceOnSpline, Spline->GetSplineLength())) {
+            // We reached the end of the spline so we finish the calling task.
+            FollowingSpline = false;
+            CallingTask->Finish();
+            Spline = nullptr;
+            CallingTask = nullptr;
+        }
+    }
     NavigationTrace();
+}
+
+bool AAITankPawn::FollowSpline(UBTT_TankMoveTo *Task, USplineComponent* SplineToFollow) {
+    CallingTask = Task;
+    Spline = SplineToFollow;
+    DistanceOnSpline = 0;
+    FollowingSpline = true;
+    return true;
 }

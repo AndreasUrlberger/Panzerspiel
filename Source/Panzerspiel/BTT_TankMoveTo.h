@@ -32,6 +32,10 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class USplineComponent *SplineComp;
 
+	UPROPERTY()
+	UBehaviorTreeComponent *OwnerBTC;
+
+
 public:
 	virtual void OnGameplayTaskActivated(UGameplayTask& Task) override;
 
@@ -41,13 +45,17 @@ public:
 
 	UBTT_TankMoveTo();
 
+	UFUNCTION()
+	void Abort();
+
+	UFUNCTION()
+	void Finish();
+
 private:
 	// Return true if tank reached the end of the path.
 	bool FollowPath(float DeltaTime);
 	
 	void LogArray(TArray<FVector> Array);
-
-	void Abort(UBehaviorTreeComponent& OwnerComp);
 
 	// Creates new path points which include some new points to populate the SplineComp.
 	void UpdatePathPoints();

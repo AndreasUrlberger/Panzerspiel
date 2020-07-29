@@ -16,13 +16,16 @@ void UBTT_TankMoveTo::OnGameplayTaskActivated(UGameplayTask& Task) {
 }
 
 EBTNodeResult::Type UBTT_TankMoveTo::ExecuteTask(UBehaviorTreeComponent& OwnerComp, ::uint8* NodeMemory) {
+	// Needed for the Abort function.
+	OwnerBTC = &OwnerComp;
+	SplineComp->ClearSplinePoints(true);
 	// Our TankAIController.
 	AIController = Cast<AAIController>(OwnerComp.GetAIOwner());
 	// Enemy from the Blackboard.
 	Enemy = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValue<UBlackboardKeyType_Object>("Enemy"));
 	if (AIController && Enemy) {
 		const FVector StartPos = AIController->GetNavAgentLocation();
-		const FVector EndPos = Enemy->GetActorLocation();
+		const FVector EndPos = OwnerComp.GetBlackboardComponent()->GetValueAsVector("NewMoveLocation");//Enemy->GetActorLocation();
 		TankPawn = Cast<AAITankPawn>(AIController->GetPawn());
 
 		UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(
@@ -30,13 +33,14 @@ EBTNodeResult::Type UBTT_TankMoveTo::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		PathPoints = NavPath->PathPoints;
 		// Cant move.
 		if (PathPoints.Num() <= 0)
-			Abort(OwnerComp);
+			Abort();
 		UE_LOG(LogTemp, Warning, TEXT("NavPath is %s"), NavPath->IsValid() ? TEXT("valid") : TEXT("not valid"));
 		LogArray(PathPoints);
 		UpdatePathPoints();
 		LogArray(PathPoints);
+		TankPawn->FollowSpline(this, SplineComp);
 	} else {
-		Abort(OwnerComp);
+		Abort();
 	}
 	return EBTNodeResult::InProgress;
 }
@@ -45,8 +49,8 @@ void UBTT_TankMoveTo::TickTask(UBehaviorTreeComponent& OwnerComp, ::uint8* NodeM
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
 	// Reached end of path thus this task has finished.
-	if (FollowPath(DeltaSeconds))
-		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	/*if (FollowPath(DeltaSeconds))
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);*/
 }
 
 UBTT_TankMoveTo::UBTT_TankMoveTo() {
@@ -74,17 +78,24 @@ bool UBTT_TankMoveTo::FollowPath(float DeltaTime) {
 void UBTT_TankMoveTo::LogArray(TArray<FVector> Array) {
 	UE_LOG(LogTemp, Warning, TEXT("PathPoints: "));
 	for (int32 Index = 0; Index < Array.Num(); ++Index) {
-		UE_LOG(LogTemp, Warning, TEXT("Point at %d: %s"), Index, *PathPoints[Index].ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Point at %d: %s"), Index, *Array[Index].ToString());
 	}
 }
 
-void UBTT_TankMoveTo::Abort(UBehaviorTreeComponent& OwnerComp) {
+void UBTT_TankMoveTo::Abort() {
 	TankPawn = nullptr;
-	FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+	FinishLatentTask(*OwnerBTC, EBTNodeResult::Failed);
+}
+
+void UBTT_TankMoveTo::Finish() {
+	FinishLatentTask(*OwnerBTC, EBTNodeResult::Succeeded);
 }
 
 void UBTT_TankMoveTo::UpdatePathPoints() {
 	TArray<FVector> NewPathPoints;
+	for (int32 Index = 0; Index < PathPoints.Num(); ++Index) {
+		PathPoints[Index].Z = 0;
+	}
 	// Add the first point (which is probably unnecessary unless we use the points for a spline).
 	NewPathPoints.Add(PathPoints[0]);
 	SplineComp->AddSplinePoint(PathPoints[0], ESplineCoordinateSpace::World, true);
@@ -98,7 +109,7 @@ void UBTT_TankMoveTo::UpdatePathPoints() {
 		// Calculate new points.
 		// First new point.
 		// Comparing squared distances for a performance increase.
-		if (Distance1.SizeSquared() >= FMath::Square(MinCurveRadius)) {
+		if (Distance1.SizeSquared() < FMath::Square(MinCurveRadius)) {
 			// We dont need to add another point since it would be on Point1 anyway.
 		} else {
 			// Add a point on the line from 2 to 1 in distance MinCurveRadius.
@@ -110,7 +121,7 @@ void UBTT_TankMoveTo::UpdatePathPoints() {
 		NewPathPoints.Add(Point2);
 		SplineComp->AddSplinePoint(Point2, ESplineCoordinateSpace::World, true);
 		// Second new point.
-		if (Distance2.SizeSquared() >= FMath::Square(MinCurveRadius)) {
+		if (Distance2.SizeSquared() < FMath::Square(MinCurveRadius)) {
 			// We dont need to add another point since it would be on Point3 anyway.
 		} else {
 			const FVector NewPoint = Point2 + Distance2.GetSafeNormal() * MinCurveRadius;
