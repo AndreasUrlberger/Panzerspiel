@@ -26,6 +26,12 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class AAIController *AIController;
 
+	UPROPERTY(EditAnywhere)
+	float MinCurveRadius;
+
+	UPROPERTY(VisibleAnywhere)
+	class USplineComponent *SplineComp;
+
 public:
 	virtual void OnGameplayTaskActivated(UGameplayTask& Task) override;
 
@@ -35,11 +41,14 @@ public:
 
 	UBTT_TankMoveTo();
 
-	private:
+private:
 	// Return true if tank reached the end of the path.
 	bool FollowPath(float DeltaTime);
 	
 	void LogArray(TArray<FVector> Array);
 
 	void Abort(UBehaviorTreeComponent& OwnerComp);
+
+	// Creates new path points which include some new points to populate the SplineComp.
+	void UpdatePathPoints();
 };

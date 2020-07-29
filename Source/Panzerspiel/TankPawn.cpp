@@ -136,10 +136,8 @@ void ATankPawn::BeginPlay()
 }
 
 void ATankPawn::MoveAndRotate(const FVector DeltaLocation, const FRotator DeltaRotation) {
-    //SetActorLocationAndRotation(GetActorLocation() + DeltaLocation, GetActorRotation() + DeltaRotation);
     SetActorRotation(GetActorRotation() + DeltaRotation);
     MovementComp->AddInputVector(DeltaLocation.GetSafeNormal());
-    
 }
 
 void ATankPawn::CalculateActualMovement(FVector TargetLocation, float DeltaTime) {
@@ -147,10 +145,10 @@ void ATankPawn::CalculateActualMovement(FVector TargetLocation, float DeltaTime)
     const FRotator TargetDirection = (TargetLocation - GetActorLocation()).Rotation();
     FRotator DeltaRotator = TargetDirection - CurrentRotation;
     DeltaRotator.Normalize();
-    float DeltaYaw = DeltaRotator.Yaw;
+    const float DeltaYaw = DeltaRotator.Yaw;
     UE_LOG(LogTemp, Warning, TEXT("Yaw: %f"), DeltaYaw);
 
-    float MaxYaw = RotationSpeed * DeltaTime;
+    const float MaxYaw = RotationSpeed * DeltaTime;
     if(FMath::Abs(DeltaYaw) <= MaxYaw) {
         // Rotate and move.
         const FVector DeltaLocation = TargetLocation - GetActorLocation();
@@ -167,7 +165,6 @@ void ATankPawn::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     const FVector DeltaLocation = GetActorForwardVector() * MoveForwardAxisValue * MovementSpeed * DeltaTime;
-    FQuat DeltaRotationQuat = FQuat(FVector(0, 0, 1), MoveRightAxisValue * RotationSpeed * DeltaTime);
     MoveAndRotate(DeltaLocation, FRotator(0, MoveRightAxisValue * RotationSpeed * DeltaTime, 0));
 }
 

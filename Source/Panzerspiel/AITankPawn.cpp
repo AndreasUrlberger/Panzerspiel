@@ -46,12 +46,6 @@ bool AAITankPawn::MoveTo(FVector TargetLocation, float DeltaTime) {
     float Length;
     Route.ToDirectionAndLength(Direction, Length);
 
-    // Check if tank looks towards TargetDestination
-    // If Yes -> move there
-    // If no ->
-    // Calculate degree the tank has to rotate
-    // Calculate what value to pass to MoveRightAxisValue
-
     FVector DeltaMove = Direction * MovementSpeed * DeltaTime;
     if(DeltaMove.SizeSquared2D() - Route.SizeSquared2D() >= 0) {
         // Tank would move too far -> we reached the TargetLocation.
@@ -59,8 +53,8 @@ bool AAITankPawn::MoveTo(FVector TargetLocation, float DeltaTime) {
         UE_LOG(LogTemp, Warning, TEXT("Reached Point"));
         bReachedTarget = true;
     }
+    // Performs actual move.
     CalculateActualMovement(GetActorLocation() + DeltaMove, DeltaTime);
-    //MoveAndRotate(DeltaMove, Direction.Rotation() - GetActorRotation());
 
     // Tells whether we reached the TargetLocation.
     return bReachedTarget;
