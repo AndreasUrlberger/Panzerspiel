@@ -38,7 +38,7 @@ EBTNodeResult::Type UBTT_TankMoveTo::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		LogArray(PathPoints);
 		UpdatePathPoints();
 		LogArray(PathPoints);
-		TankPawn->FollowSpline(this, SplineComp);
+		TankPawn->FollowSpline(this, SplineComp, PathPoints);
 	} else {
 		Abort();
 	}
@@ -98,7 +98,7 @@ void UBTT_TankMoveTo::UpdatePathPoints() {
 	}
 	// Add the first point (which is probably unnecessary unless we use the points for a spline).
 	NewPathPoints.Add(PathPoints[0]);
-	SplineComp->AddSplinePoint(PathPoints[0], ESplineCoordinateSpace::World, true);
+	SplineComp->AddSplineWorldPoint(PathPoints[0]);
 	for (int32 Index = 1; Index < PathPoints.Num() - 1; ++Index) {
 		// Get points and distances we need. The Index calls are save since the loop starts at Index 1 and ends at Num() - 2.
 		const FVector Point1 = PathPoints[Index - 1];
@@ -108,30 +108,38 @@ void UBTT_TankMoveTo::UpdatePathPoints() {
 		const FVector Distance2 = Point3 - Point2;
 		// Calculate new points.
 		// First new point.
-		// Comparing squared distances for a performance increase.
-		if (Distance1.SizeSquared() < FMath::Square(MinCurveRadius)) {
+		// Comparing squared distances for a performance increase. The distance has to be at least twice as long as the
+		// MinCurveRadius since otherwise the points from both sides could overlap. Its important to remember that we
+		// have to multiply with 4 since we are comparing the squared distances thus 2 -> 4 (We could also put a *2
+		// inside the FMath::Square brackets).
+		// EDIT: Changed it to 3 times since before there could have been to points very close together in the middle.
+		if (Distance1.SizeSquared() < 9*FMath::Square(MinCurveRadius)) {
 			// We dont need to add another point since it would be on Point1 anyway.
 		} else {
 			// Add a point on the line from 2 to 1 in distance MinCurveRadius.
 			const FVector NewPoint = Point2 + Distance1.GetSafeNormal() * MinCurveRadius;
 			NewPathPoints.Add(NewPoint);
-			SplineComp->AddSplinePoint(NewPoint, ESplineCoordinateSpace::World, true);
+			SplineComp->AddSplineWorldPoint(NewPoint);
 		}
 		// Already existing point.
 		NewPathPoints.Add(Point2);
-		SplineComp->AddSplinePoint(Point2, ESplineCoordinateSpace::World, true);
+		SplineComp->AddSplineWorldPoint(Point2);
 		// Second new point.
-		if (Distance2.SizeSquared() < FMath::Square(MinCurveRadius)) {
+		if (Distance2.SizeSquared() < 9*FMath::Square(MinCurveRadius)) {
 			// We dont need to add another point since it would be on Point3 anyway.
 		} else {
 			const FVector NewPoint = Point2 + Distance2.GetSafeNormal() * MinCurveRadius;
 			NewPathPoints.Add(NewPoint);
-			SplineComp->AddSplinePoint(NewPoint, ESplineCoordinateSpace::World, true);
+			SplineComp->AddSplineWorldPoint(NewPoint);
 		}
 	}
 	// Add the last point.
 	NewPathPoints.Add(PathPoints[PathPoints.Num() - 1]);
-	SplineComp->AddSplinePoint(PathPoints[PathPoints.Num() - 1], ESplineCoordinateSpace::World, true);
+	SplineComp->AddSplineWorldPoint(PathPoints[PathPoints.Num() - 1]);
 	// Finally store the NewPathPoints as our PathPoints.
 	PathPoints = NewPathPoints;
+
+	const int32 NumSplinePoints = SplineComp->GetNumberOfSplinePoints();
+	const int32 SplineLength = SplineComp->GetSplineLength();
+	UE_LOG(LogTemp, Warning, TEXT("SplinePoints: %d, SplineLength: %d"), NumSplinePoints, SplineLength);
 }

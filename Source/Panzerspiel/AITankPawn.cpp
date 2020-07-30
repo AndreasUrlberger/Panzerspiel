@@ -94,6 +94,7 @@ void AAITankPawn::Tick(float DeltaTime) {
         const FVector TargetLocation = Spline->GetWorldLocationAtDistanceAlongSpline(DistanceOnSpline);
         //CalculateActualMovement(TargetLocation, DeltaTime);
         SetActorLocation(TargetLocation, false);
+        SetActorRotation(Spline->GetWorldRotationAtDistanceAlongSpline(DistanceOnSpline));
         
 
         if(FMath::IsNearlyEqual(DistanceOnSpline, Spline->GetSplineLength())) {
@@ -107,9 +108,10 @@ void AAITankPawn::Tick(float DeltaTime) {
     NavigationTrace();
 }
 
-bool AAITankPawn::FollowSpline(UBTT_TankMoveTo *Task, USplineComponent* SplineToFollow) {
+bool AAITankPawn::FollowSpline(UBTT_TankMoveTo *Task, USplineComponent* SplineToFollow, TArray<FVector> Points) {
     CallingTask = Task;
     Spline = SplineToFollow;
+    PathPoints = Points;
     DistanceOnSpline = 0;
     FollowingSpline = true;
     return true;

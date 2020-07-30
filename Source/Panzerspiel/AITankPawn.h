@@ -46,9 +46,6 @@ class PANZERSPIEL_API AAITankPawn : public ATankPawn
 	UArrowComponent *SensorRight;
 
 	UPROPERTY(VisibleAnywhere)
-	USplineComponent *Spline;
-
-	UPROPERTY(VisibleAnywhere)
 	float DistanceOnSpline;
 
 	UPROPERTY()
@@ -56,6 +53,13 @@ class PANZERSPIEL_API AAITankPawn : public ATankPawn
 
 	UPROPERTY()
 	class UBTT_TankMoveTo *CallingTask;
+
+	public:
+	UPROPERTY(EditAnywhere)
+	USplineComponent *Spline;
+
+	UPROPERTY(EditAnywhere)
+	TArray<FVector> PathPoints;
 
 	// Functions
 	virtual void MoveRight(float AxisValue) override;
@@ -72,5 +76,5 @@ public:
 	// Called every frame.
 	virtual void Tick(float DeltaTime) override;
 
-	bool FollowSpline(UBTT_TankMoveTo *Task, USplineComponent *SplineToFollow);
+	bool FollowSpline(UBTT_TankMoveTo *Task, USplineComponent *SplineToFollow, TArray<FVector> Points);
 };

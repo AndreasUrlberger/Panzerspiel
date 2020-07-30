@@ -17,7 +17,7 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class AAITankPawn *TankPawn;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category="Navigation")
 	TArray<FVector> PathPoints;
 
 	UPROPERTY(VisibleAnywhere)
@@ -26,17 +26,17 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class AAIController *AIController;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Navigation")
 	float MinCurveRadius;
-
-	UPROPERTY(VisibleAnywhere)
-	class USplineComponent *SplineComp;
 
 	UPROPERTY()
 	UBehaviorTreeComponent *OwnerBTC;
 
+	UPROPERTY(EditAnywhere, Category="Navigation")
+	class USplineComponent *SplineComp;
 
 public:
+	
 	virtual void OnGameplayTaskActivated(UGameplayTask& Task) override;
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, ::uint8* NodeMemory) override;
