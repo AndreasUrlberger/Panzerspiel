@@ -25,6 +25,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	class AAITankPawn *TankPawn;
 
+	UPROPERTY(EditAnywhere)
+	float MergeThreshold = 15;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
