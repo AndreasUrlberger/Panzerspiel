@@ -35,6 +35,10 @@ private:
 	UPROPERTY(EditAnywhere, Category="Navigation")
 	class USplineComponent *SplineComp;
 
+	// Two points on the spline get merged if their distance falls below this threshold.
+	UPROPERTY(EditAnywhere, Category="Navigation")
+	float MergeThreshold = 15;
+
 public:
 	
 	virtual void OnGameplayTaskActivated(UGameplayTask& Task) override;
@@ -58,5 +62,10 @@ private:
 	void LogArray(TArray<FVector> Array);
 
 	// Creates new path points which include some new points to populate the SplineComp.
+	UFUNCTION()
 	void UpdatePathPoints();
+
+	// Manipulates the PathPoints and populates the SplineComp, which gets manipulated further to smooth it out.
+	UFUNCTION()
+	void CreateSmoothSpline();
 };
