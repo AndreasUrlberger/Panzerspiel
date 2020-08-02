@@ -14,17 +14,11 @@ class PANZERSPIEL_API UBTT_TankMoveTo : public UBTTask_BlackboardBase
 {
 	GENERATED_BODY()
 private:
-	UPROPERTY(VisibleAnywhere)
-	class AAITankPawn *TankPawn;
+	UPROPERTY()
+	class AAITankPawn *AITankPawn;
 
-	UPROPERTY(VisibleAnywhere, Category="Navigation")
+	UPROPERTY()
 	TArray<FVector> PathPoints;
-
-	UPROPERTY(VisibleAnywhere)
-	class AActor *Enemy;
-
-	UPROPERTY(VisibleAnywhere)
-	class AAIController *AIController;
 
 	UPROPERTY(EditAnywhere, Category="Navigation")
 	float MinCurveRadius;
@@ -32,12 +26,15 @@ private:
 	UPROPERTY()
 	UBehaviorTreeComponent *OwnerBTC;
 
-	UPROPERTY(EditAnywhere, Category="Navigation")
+	UPROPERTY()
 	class USplineComponent *SplineComp;
 
 	// Two points on the spline get merged if their distance falls below this threshold.
 	UPROPERTY(EditAnywhere, Category="Navigation")
 	float MergeThreshold = 15;
+
+	UPROPERTY()
+	class AActor *Enemy;
 
 public:
 	
@@ -55,10 +52,7 @@ public:
 	UFUNCTION()
 	void Finish();
 
-private:
-	// Return true if tank reached the end of the path.
-	bool FollowPath(float DeltaTime);
-	
+private:	
 	void LogArray(TArray<FVector> Array);
 
 	// Creates new path points which include some new points to populate the SplineComp.

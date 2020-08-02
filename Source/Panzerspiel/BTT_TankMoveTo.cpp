@@ -18,29 +18,25 @@ void UBTT_TankMoveTo::OnGameplayTaskActivated(UGameplayTask& Task) {
 EBTNodeResult::Type UBTT_TankMoveTo::ExecuteTask(UBehaviorTreeComponent& OwnerComp, ::uint8* NodeMemory) {
 	// Needed for the Abort function.
 	OwnerBTC = &OwnerComp;
-	// Our TankAIController.
-	AIController = Cast<AAIController>(OwnerComp.GetAIOwner());
-	// Enemy from the Blackboard.
-	Enemy = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValue<UBlackboardKeyType_Object>("Enemy"));
-	if (AIController && Enemy) {
-		const FVector StartPos = AIController->GetNavAgentLocation();
-		const FVector EndPos = OwnerComp.GetBlackboardComponent()->GetValueAsVector("NewMoveLocation");
-		//Enemy->GetActorLocation();
-		TankPawn = Cast<AAITankPawn>(AIController->GetPawn());
-
-		UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(
-			AIController->GetPawn(), StartPos, EndPos, TankPawn);
+	AITankPawn = Cast<AAITankPawn>(OwnerComp.GetAIOwner()->GetPawn());
+	Enemy = Cast<ATankPawn>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(GetSelectedBlackboardKey()));
+	if (AITankPawn && Enemy) {
+		const FVector StartPos = AITankPawn->GetNavAgentLocation();
+		const FVector EndPos = Enemy->GetActorLocation();
+		UE_LOG(LogTemp, Warning, TEXT("StartPos: %s, EndPos: %s"), *StartPos.ToCompactString(), *EndPos.ToCompactString());
+		UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AITankPawn, StartPos, EndPos, AITankPawn);
 		PathPoints = NavPath->PathPoints;
 		if (PathPoints.Num() <= 0)
 			Abort();
-
-		UE_LOG(LogTemp, Warning, TEXT("Path is %svalid, and %spartial"), NavPath->IsValid()?TEXT(" "):TEXT("not "), NavPath->IsPartial()?TEXT(" "):TEXT("not "));
-		LogArray(PathPoints);
-		// Adds additional points since otherwise the tanks path would get too round and it would get stuck at corners a lot.
-		UpdatePathPoints();
-		CreateSmoothSpline();
-		LogArray(PathPoints);
-		TankPawn->FollowSpline(this, SplineComp, PathPoints);
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("Path is %spartial"), NavPath->IsPartial()?TEXT(""):TEXT("not "));
+			// Adds additional points since otherwise the tanks path would get too round and it would get stuck at corners a lot.
+			LogArray(PathPoints);
+			UpdatePathPoints();
+			CreateSmoothSpline();
+			LogArray(PathPoints);
+			AITankPawn->FollowSpline(this, SplineComp, PathPoints);
+		}
 	} else {
 		Abort();
 	}
@@ -59,20 +55,6 @@ UBTT_TankMoveTo::UBTT_TankMoveTo() {
 
 }
 
-bool UBTT_TankMoveTo::FollowPath(float DeltaTime) {
-	if (IsValid(TankPawn)) {
-		if (TankPawn->MoveTo(PathPoints[0], DeltaTime)) {
-			// Tank reached PathPoints.Top
-			PathPoints.RemoveAt(0);
-			if (PathPoints.Num() <= 0)
-				return true;
-		}
-	}
-
-	return false;
-}
-
-
 void UBTT_TankMoveTo::LogArray(TArray<FVector> Array) {
 	UE_LOG(LogTemp, Warning, TEXT("PathPoints: "));
 	for (int32 Index = 0; Index < Array.Num(); ++Index) {
@@ -81,7 +63,8 @@ void UBTT_TankMoveTo::LogArray(TArray<FVector> Array) {
 }
 
 void UBTT_TankMoveTo::Abort() {
-	TankPawn = nullptr;
+	UE_LOG(LogTemp, Warning, TEXT("Task aborted due to missing Actors."));
+	AITankPawn = nullptr;
 	FinishLatentTask(*OwnerBTC, EBTNodeResult::Failed);
 }
 
@@ -91,6 +74,7 @@ void UBTT_TankMoveTo::Finish() {
 
 void UBTT_TankMoveTo::UpdatePathPoints() {
 	TArray<FVector> NewPathPoints;
+	check(PathPoints.Num() > 0);
 	for (int32 Index = 0; Index < PathPoints.Num(); ++Index) {
 		PathPoints[Index].Z = 0;
 	}
