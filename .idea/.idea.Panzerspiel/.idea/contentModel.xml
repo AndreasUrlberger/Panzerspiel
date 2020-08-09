@@ -43827,6 +43827,8 @@
           <e p="AITankPawn.h" t="Include" />
           <e p="BTT_TankMoveTo.cpp" t="Include" />
           <e p="BTT_TankMoveTo.h" t="Include" />
+          <e p="BTTask_SimpleTankMoveTo.cpp" t="Include" />
+          <e p="BTTask_SimpleTankMoveTo.h" t="Include" />
           <e p="Bullet.cpp" t="Include" />
           <e p="Bullet.h" t="Include" />
           <e p="Mine.cpp" t="Include" />
@@ -43836,6 +43838,8 @@
           <e p="Panzerspiel.h" t="Include" />
           <e p="PanzerspielGameModeBase.cpp" t="Include" />
           <e p="PanzerspielGameModeBase.h" t="Include" />
+          <e p="SimpleAITankPawn.cpp" t="Include" />
+          <e p="SimpleAITankPawn.h" t="Include" />
           <e p="SplineTestVisualizer.cpp" t="Include" />
           <e p="SplineTestVisualizer.h" t="Include" />
           <e p="TankPawn.cpp" t="Include" />

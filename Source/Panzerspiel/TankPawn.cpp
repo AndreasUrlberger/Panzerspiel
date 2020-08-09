@@ -33,8 +33,6 @@ void ATankPawn::AlignTower(const FVector Target) {
     TurretMesh->SetWorldRotation(Rotation.ToOrientationRotator(), true);
 }
 
-
-
 void ATankPawn::Shoot()
 {    
     if (ActiveShots < MaxShots)

@@ -45,7 +45,7 @@ class PANZERSPIEL_API AAITankPawn : public ATankPawn
 	UPROPERTY(EditDefaultsOnly, Category="AI")
 	UArrowComponent *SensorRight;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category="AI")
 	float DistanceOnSpline;
 
 	UPROPERTY()
@@ -55,10 +55,10 @@ class PANZERSPIEL_API AAITankPawn : public ATankPawn
 	class UBTT_TankMoveTo *CallingTask;
 
 	public:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="AI")
 	USplineComponent *Spline;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="AI")
 	TArray<FVector> PathPoints;
 
 	// Functions

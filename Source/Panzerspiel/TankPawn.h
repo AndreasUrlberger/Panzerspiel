@@ -101,7 +101,7 @@ public:
     // Points the tanks tower towards the Target.
     UFUNCTION()
     void AlignTower(const FVector Target);
-
+    
 private:
     UFUNCTION()
     void Shoot();

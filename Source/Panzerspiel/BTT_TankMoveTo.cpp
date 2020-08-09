@@ -23,13 +23,13 @@ EBTNodeResult::Type UBTT_TankMoveTo::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	if (AITankPawn && Enemy) {
 		const FVector StartPos = AITankPawn->GetNavAgentLocation();
 		const FVector EndPos = Enemy->GetActorLocation();
-		UE_LOG(LogTemp, Warning, TEXT("StartPos: %s, EndPos: %s"), *StartPos.ToCompactString(), *EndPos.ToCompactString());
+		//UE_LOG(LogTemp, Warning, TEXT("StartPos: %s, EndPos: %s"), *StartPos.ToCompactString(), *EndPos.ToCompactString());
 		UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AITankPawn, StartPos, EndPos, AITankPawn);
 		PathPoints = NavPath->PathPoints;
 		if (PathPoints.Num() <= 0)
 			Abort();
 		else {
-			UE_LOG(LogTemp, Warning, TEXT("Path is %spartial"), NavPath->IsPartial()?TEXT(""):TEXT("not "));
+			//UE_LOG(LogTemp, Warning, TEXT("Path is %spartial"), NavPath->IsPartial()?TEXT(""):TEXT("not "));
 			// Adds additional points since otherwise the tanks path would get too round and it would get stuck at corners a lot.
 			LogArray(PathPoints);
 			UpdatePathPoints();
