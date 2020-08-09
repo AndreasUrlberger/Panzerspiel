@@ -14,7 +14,7 @@ void ASimpleAITankPawn::MoveRight(float AxisValue) {
 
 ASimpleAITankPawn::ASimpleAITankPawn() {
     // We fill the array at the beginning so we dont have to check if an index exists each tick.
-    Distances.Init(0, 5);
+    Distances.Init(INT32_MAX, 5);
 
     // Create Sensors.
     SensorLeft = CreateDefaultSubobject<UArrowComponent>(TEXT("SensorLeft"));
@@ -51,7 +51,7 @@ void ASimpleAITankPawn::NavigationTrace() {
             if(HitResult.bBlockingHit)
                 Distances[Index] = HitResult.Distance;
             else
-                Distances[Index] = -1;
+                Distances[Index] = INT32_MAX;
 
             // Debug.
             DrawDebugLine(World, StartLoc, EndLoc, FColor::Red);
@@ -61,6 +61,8 @@ void ASimpleAITankPawn::NavigationTrace() {
 
 void ASimpleAITankPawn::Tick(float DeltaTime) {
     Super::Tick(DeltaTime);
+    NavigationTrace();
+    
     if(FollowingPathPoints) {
         const float Distance = FVector::Dist(PathPoints[CurrentPathPoint], GetActorLocation());
         if(Distance < ReachRadius) {
@@ -69,17 +71,31 @@ void ASimpleAITankPawn::Tick(float DeltaTime) {
             if(CurrentPathPoint >= PathPoints.Num()) {
                 // Reached end of path.
                 FollowingPathPoints = false;
-                CallingTask->Abort();    
+                CallingTask->Finish();    
             }
         }else {
+            // Calculate in which direction to move to avoid collisions.
+            FVector AvoidVector = FVector::ZeroVector;
+            if(Distances[4] < AvoidDistance) {
+                AvoidVector += -GetActorRightVector() * (AvoidDistance/Distance);
+            }
+            AvoidVector = (AvoidVector * AvoidStrength);
+            UE_LOG(LogTemp, Warning, TEXT("Avoidance Vector: %s"), *AvoidVector.ToString());
+
             // Follow Path.
             const FVector Target = PathPoints[CurrentPathPoint];
-            const FVector Desired =  Target - GetActorLocation();
-            FVector CurrentVelocity = MovementComp->Velocity;
-            CurrentVelocity.Z = 0;
-            FVector DeltaMove = Desired;// - CurrentVelocity;
-            DeltaMove = DeltaMove.GetUnsafeNormal();
-            UE_LOG(LogTemp, Warning, TEXT("CurrentPosition: %s, DeltaMove: %s, CurrentVelocity: %s"), *GetActorLocation().ToCompactString(), *DeltaMove.ToCompactString(), *CurrentVelocity.ToCompactString())
+            const FVector Desired =  (Target - GetActorLocation()).GetUnsafeNormal();
+            FVector DeltaMove = ((Desired + AvoidVector)/2 + FakeVelocity * VelocityImpact).GetUnsafeNormal();
+            FakeVelocity = DeltaMove;
+            FakeVelocity.Z = 0;
+
+            // We dont need to calculate DeltaMove.Size() since its always 1 as it gets normalized just a few lines above.
+            const float DeltaSize = MovementComp->MaxSpeed * DeltaTime;
+            // Dont move farther than the target.
+            if(DeltaSize > Distance)
+                DeltaMove *= Distance / DeltaSize;
+            
+            UE_LOG(LogTemp, Warning, TEXT("Desired: %s, DeltaMove: %s, FakeVelocity: %s"), *Desired.ToString(), *DeltaMove.ToString(), *FakeVelocity.ToString())
             MovementComp->AddInputVector(DeltaMove);
         }
     }
@@ -89,6 +105,7 @@ void ASimpleAITankPawn::Tick(float DeltaTime) {
 bool ASimpleAITankPawn::FollowPathPoints(UBTTask_SimpleTankMoveTo *Task, TArray<FVector> Points) {
     CallingTask = Task;
     PathPoints = Points;
+    CurrentPathPoint = 0;
     // NavSystem always gives a value in the air.
     for (int32 Index = 0; Index < PathPoints.Num(); ++Index)
         PathPoints[Index].Z = 0;
