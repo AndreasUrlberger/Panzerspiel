@@ -23,6 +23,9 @@ class PANZERSPIEL_API UBTTask_SimpleTankMoveTo : public UBTTask_BlackboardBase
 	UPROPERTY()
 	class AActor *Enemy;
 
+	UPROPERTY(EditAnywhere)
+	float NavAgentRadius = 200;
+	
 	public:
 	
 	virtual void OnGameplayTaskActivated(UGameplayTask& Task) override;

@@ -9,6 +9,7 @@
 #include "NavigationPath.h"
 #include "SimpleAITankPawn.h"
 #include "Containers/Array.h"
+#include "DrawDebugHelpers.h"
 
 void UBTTask_SimpleTankMoveTo::OnGameplayTaskActivated(UGameplayTask& Task) {
 	UE_LOG(LogTemp, Warning, TEXT("OnGameplayTaskActivated"));
@@ -54,6 +55,8 @@ void UBTTask_SimpleTankMoveTo::LogArray(TArray<FVector> Array) {
 	UE_LOG(LogTemp, Warning, TEXT("PathPoints: "));
 	for (int32 Index = 0; Index < Array.Num(); ++Index) {
 		UE_LOG(LogTemp, Warning, TEXT("Point at %d: %s"), Index, *Array[Index].ToString());
+		if(Index < Array.Num() - 1)
+			DrawDebugLine(GetWorld(), 	Array[Index], Array[Index + 1], FColor::Emerald, true);
 	}
 }
 

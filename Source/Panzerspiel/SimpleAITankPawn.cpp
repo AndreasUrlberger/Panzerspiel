@@ -76,8 +76,8 @@ void ASimpleAITankPawn::Tick(float DeltaTime) {
         }else {
             // Calculate in which direction to move to avoid collisions.
             FVector AvoidVector = FVector::ZeroVector;
-            if(Distances[4] < AvoidDistance) {
-                AvoidVector += -GetActorRightVector() * (AvoidDistance/Distance);
+            for(int32 Index = 0; Index < Distances.Num(); ++Index) {
+                AvoidVector -= Sensors[Index]->GetForwardVector() * FMath::Square(AvoidDistance/Distances[Index]);
             }
             AvoidVector = (AvoidVector * AvoidStrength);
             UE_LOG(LogTemp, Warning, TEXT("Avoidance Vector: %s"), *AvoidVector.ToString());
@@ -86,8 +86,6 @@ void ASimpleAITankPawn::Tick(float DeltaTime) {
             const FVector Target = PathPoints[CurrentPathPoint];
             const FVector Desired =  (Target - GetActorLocation()).GetUnsafeNormal();
             FVector DeltaMove = ((Desired + AvoidVector)/2 + FakeVelocity * VelocityImpact).GetUnsafeNormal();
-            FakeVelocity = DeltaMove;
-            FakeVelocity.Z = 0;
 
             // We dont need to calculate DeltaMove.Size() since its always 1 as it gets normalized just a few lines above.
             const float DeltaSize = MovementComp->MaxSpeed * DeltaTime;
@@ -97,6 +95,11 @@ void ASimpleAITankPawn::Tick(float DeltaTime) {
             
             UE_LOG(LogTemp, Warning, TEXT("Desired: %s, DeltaMove: %s, FakeVelocity: %s"), *Desired.ToString(), *DeltaMove.ToString(), *FakeVelocity.ToString())
             MovementComp->AddInputVector(DeltaMove);
+
+            FakeVelocity = DeltaMove;
+            FakeVelocity.Z = 0;
+
+            SetActorRotation(DeltaMove.Rotation());
         }
     }
     NavigationTrace();
