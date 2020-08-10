@@ -84,10 +84,10 @@ void ASimpleAITankPawn::Tick(float DeltaTime) {
             const FVector Target = PathPoints[CurrentPathPoint];
             const FVector Desired =  (Target - GetActorLocation()).GetUnsafeNormal();
             FVector DeltaMove = ((Desired + AvoidVector)/2 + FakeVelocity * VelocityImpact).GetUnsafeNormal();
-            UE_LOG(LogTemp, Warning, TEXT("DeltaMove before: %s"), *DeltaMove.ToString());
+            //UE_LOG(LogTemp, Warning, TEXT("DeltaMove before: %s"), *DeltaMove.ToString());
             // Updates the DeltaMove to follow the tanks movement rules.
             DeltaMove = UpdateMovement(DeltaTime, DeltaMove);
-            UE_LOG(LogTemp, Warning, TEXT("DelteMove after: %s"), *DeltaMove.ToString());
+            //UE_LOG(LogTemp, Warning, TEXT("DelteMove after: %s"), *DeltaMove.ToString());
 
             // We dont need to calculate DeltaMove.Size() since its always 1 as it gets normalized just a few lines above.
             const float DeltaSize = MovementComp->MaxSpeed * DeltaTime;
@@ -95,7 +95,7 @@ void ASimpleAITankPawn::Tick(float DeltaTime) {
             if(DeltaSize > Distance)
                 DeltaMove *= Distance / DeltaSize;
             
-            UE_LOG(LogTemp, Warning, TEXT("Desired: %s, DeltaMove: %s, FakeVelocity: %s"), *Desired.ToString(), *DeltaMove.ToString(), *FakeVelocity.ToString())
+            //UE_LOG(LogTemp, Warning, TEXT("Desired: %s, DeltaMove: %s, FakeVelocity: %s"), *Desired.ToString(), *DeltaMove.ToString(), *FakeVelocity.ToString())
             MovementComp->AddInputVector(DeltaMove);
 
             FakeVelocity = DeltaMove;
@@ -126,7 +126,7 @@ FVector ASimpleAITankPawn::GetAvoidVector() {
         AvoidVector -= Sensors[Index]->GetForwardVector() * FMath::Square(AvoidDistance/Distances[Index]);
     }
     AvoidVector = (AvoidVector * AvoidStrength);
-    UE_LOG(LogTemp, Warning, TEXT("Avoidance Vector: %s"), *AvoidVector.ToString());
+    //UE_LOG(LogTemp, Warning, TEXT("Avoidance Vector: %s"), *AvoidVector.ToString());
     return AvoidVector;
 }
 
