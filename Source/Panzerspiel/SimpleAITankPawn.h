@@ -72,6 +72,12 @@ class PANZERSPIEL_API ASimpleAITankPawn : public ATankPawn
 	// Functions
 	virtual void MoveRight(float AxisValue) override;
 
+	UFUNCTION()
+	FVector GetAvoidVector();
+
+	UFUNCTION()
+	FVector UpdateMovement(float DeltaTime, const FVector DesiredDeltaMove);
+
 public:
 	ASimpleAITankPawn();
 

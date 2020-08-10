@@ -7,6 +7,7 @@
 #include "Containers/Array.h"
 #include "BTTask_SimpleTankMoveTo.h"
 #include "GameFramework/FloatingPawnMovement.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void ASimpleAITankPawn::MoveRight(float AxisValue) {
     // Do nothing.
@@ -75,17 +76,18 @@ void ASimpleAITankPawn::Tick(float DeltaTime) {
             }
         }else {
             // Calculate in which direction to move to avoid collisions.
-            FVector AvoidVector = FVector::ZeroVector;
-            for(int32 Index = 0; Index < Distances.Num(); ++Index) {
-                AvoidVector -= Sensors[Index]->GetForwardVector() * FMath::Square(AvoidDistance/Distances[Index]);
-            }
-            AvoidVector = (AvoidVector * AvoidStrength);
-            UE_LOG(LogTemp, Warning, TEXT("Avoidance Vector: %s"), *AvoidVector.ToString());
+            // TODO: Might want to save Sensor data over multiple frames and add them to smoothen the response a bit.
+            // TODO: Tanks should drive backwards instead of making a 180 degree turn.
+            const FVector AvoidVector = GetAvoidVector();
 
             // Follow Path.
             const FVector Target = PathPoints[CurrentPathPoint];
             const FVector Desired =  (Target - GetActorLocation()).GetUnsafeNormal();
             FVector DeltaMove = ((Desired + AvoidVector)/2 + FakeVelocity * VelocityImpact).GetUnsafeNormal();
+            UE_LOG(LogTemp, Warning, TEXT("DeltaMove before: %s"), *DeltaMove.ToString());
+            // Updates the DeltaMove to follow the tanks movement rules.
+            DeltaMove = UpdateMovement(DeltaTime, DeltaMove);
+            UE_LOG(LogTemp, Warning, TEXT("DelteMove after: %s"), *DeltaMove.ToString());
 
             // We dont need to calculate DeltaMove.Size() since its always 1 as it gets normalized just a few lines above.
             const float DeltaSize = MovementComp->MaxSpeed * DeltaTime;
@@ -100,6 +102,7 @@ void ASimpleAITankPawn::Tick(float DeltaTime) {
             FakeVelocity.Z = 0;
 
             SetActorRotation(DeltaMove.Rotation());
+            
         }
     }
     NavigationTrace();
@@ -114,4 +117,37 @@ bool ASimpleAITankPawn::FollowPathPoints(UBTTask_SimpleTankMoveTo *Task, TArray<
         PathPoints[Index].Z = 0;
     FollowingPathPoints = true;
     return true;
+}
+
+
+FVector ASimpleAITankPawn::GetAvoidVector() {
+    FVector AvoidVector = FVector::ZeroVector;
+    for(int32 Index = 0; Index < Distances.Num(); ++Index) {
+        AvoidVector -= Sensors[Index]->GetForwardVector() * FMath::Square(AvoidDistance/Distances[Index]);
+    }
+    AvoidVector = (AvoidVector * AvoidStrength);
+    UE_LOG(LogTemp, Warning, TEXT("Avoidance Vector: %s"), *AvoidVector.ToString());
+    return AvoidVector;
+}
+
+FVector ASimpleAITankPawn::UpdateMovement(float DeltaTime, const FVector DesiredDeltaMove) {
+    // TODO: Tanks need to slow down when they want to drive a tight corner.
+    FVector Forward = GetActorForwardVector();
+    FVector DesiredDirection = DesiredDeltaMove;
+    // Better safe than sorry.
+    Forward.Z = 0;
+    DesiredDirection.Z = 0;
+
+    const FVector NewForward = FMath::VInterpNormalRotationTo(Forward, DesiredDirection, DeltaTime, RotationSpeed);
+    UE_LOG(LogTemp, Warning, TEXT("New Forward Vector: %s"), *NewForward.ToString());
+    SetActorRotation(NewForward.Rotation());
+
+    FVector CurrentLoc = GetActorLocation();
+    FVector TargetLoc = CurrentLoc + DesiredDeltaMove;
+    // Same as above.
+    CurrentLoc.Z = 0;
+    TargetLoc.Z = 0;
+    const FVector NewDeltaMove = NewForward * DeltaTime * MovementSpeed;
+    
+    return NewDeltaMove;
 }
