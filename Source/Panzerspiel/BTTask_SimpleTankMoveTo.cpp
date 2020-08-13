@@ -23,7 +23,7 @@ EBTNodeResult::Type UBTTask_SimpleTankMoveTo::ExecuteTask(UBehaviorTreeComponent
 	if (AITankPawn && Enemy) {
 		const FVector StartPos = AITankPawn->GetNavAgentLocation();
 		const FVector EndPos = Enemy->GetActorLocation();
-		UE_LOG(LogTemp, Warning, TEXT("StartPos: %s, EndPos: %s"), *StartPos.ToCompactString(), *EndPos.ToCompactString());
+		//UE_LOG(LogTemp, Warning, TEXT("StartPos: %s, EndPos: %s"), *StartPos.ToCompactString(), *EndPos.ToCompactString());
 		UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AITankPawn, StartPos, EndPos, AITankPawn);
 		const TArray<FVector> PathPoints = NavPath->PathPoints;
 		if(!NavPath->IsValid())
@@ -52,9 +52,9 @@ UBTTask_SimpleTankMoveTo::UBTTask_SimpleTankMoveTo() {
 }
 
 void UBTTask_SimpleTankMoveTo::LogArray(TArray<FVector> Array) {
-	UE_LOG(LogTemp, Warning, TEXT("PathPoints: "));
+	//UE_LOG(LogTemp, Warning, TEXT("PathPoints: "));
 	for (int32 Index = 0; Index < Array.Num(); ++Index) {
-		UE_LOG(LogTemp, Warning, TEXT("Point at %d: %s"), Index, *Array[Index].ToString());
+		//UE_LOG(LogTemp, Warning, TEXT("Point at %d: %s"), Index, *Array[Index].ToString());
 		if(Index < Array.Num() - 1)
 			DrawDebugLine(GetWorld(), 	Array[Index], Array[Index + 1], FColor::Emerald, true);
 	}

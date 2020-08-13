@@ -18,17 +18,20 @@ ASimpleAITankPawn::ASimpleAITankPawn() {
     // We fill the array at the beginning so we dont have to check if an index exists each tick.
     Distances.Init(INT32_MAX, 5);
 
+    SensorsRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SensorsRootComponent"));
+    SensorsRoot->SetupAttachment(BaseMesh);
+    
     // Create Sensors.
     SensorLeft = CreateDefaultSubobject<UArrowComponent>(TEXT("SensorLeft"));
-    SensorHalfLeft = CreateDefaultSubobject<UArrowComponent>("SensorHalfLeft");
-    SensorFront = CreateDefaultSubobject<UArrowComponent>("SensorFront");
-    SensorHalfRight = CreateDefaultSubobject<UArrowComponent>("SensorHalfRight");
-    SensorRight = CreateDefaultSubobject<UArrowComponent>("SensorRight");
-    SensorLeft->SetupAttachment(BaseMesh);
-    SensorHalfLeft->SetupAttachment(BaseMesh);
-    SensorFront->SetupAttachment(BaseMesh);
-    SensorHalfRight->SetupAttachment(BaseMesh);
-    SensorRight->SetupAttachment(BaseMesh);
+    SensorHalfLeft = CreateDefaultSubobject<UArrowComponent>(TEXT("SensorHalfLeft"));
+    SensorFront = CreateDefaultSubobject<UArrowComponent>(TEXT("SensorFront"));
+    SensorHalfRight = CreateDefaultSubobject<UArrowComponent>(TEXT("SensorHalfRight"));
+    SensorRight = CreateDefaultSubobject<UArrowComponent>(TEXT("SensorRight"));
+    SensorLeft->SetupAttachment(SensorsRoot);
+    SensorHalfLeft->SetupAttachment(SensorsRoot);
+    SensorFront->SetupAttachment(SensorsRoot);
+    SensorHalfRight->SetupAttachment(SensorsRoot);
+    SensorRight->SetupAttachment(SensorsRoot);
     // Fill them in the Sensors array.
     Sensors.Add(SensorLeft);
     Sensors.Add(SensorHalfLeft);
@@ -147,6 +150,8 @@ FVector ASimpleAITankPawn::UpdateMovement(float DeltaTime, const FVector Desired
         // Target is in opposite direction thus we change direction.
         Direction *= -1;
         Forward *= -1;
+        // Orient the Sensor in the other direction.
+        SensorsRoot->AddRelativeRotation(FRotator(0, 180, 0));
     }
     const FVector NewForward = FMath::VInterpNormalRotationTo(Forward, DesiredDirection, DeltaTime, RotationSpeed);
     if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("New Forward Vector: %s"), *NewForward.ToString());

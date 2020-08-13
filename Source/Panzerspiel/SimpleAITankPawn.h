@@ -25,6 +25,9 @@ class PANZERSPIEL_API ASimpleAITankPawn : public ATankPawn
 	// Sensors
 	UPROPERTY(VisibleAnywhere, Category="AI")
 	TArray<class UArrowComponent*> Sensors;
+
+	UPROPERTY(VisibleAnywhere, Category="AI")
+	USceneComponent *SensorsRoot;
 	
 	UPROPERTY(EditDefaultsOnly, Category="AI")
 	UArrowComponent *SensorLeft;
