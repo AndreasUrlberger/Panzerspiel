@@ -12,7 +12,7 @@
 #include "DrawDebugHelpers.h"
 
 void UBTTask_SimpleTankMoveTo::OnGameplayTaskActivated(UGameplayTask& Task) {
-	UE_LOG(LogTemp, Warning, TEXT("OnGameplayTaskActivated"));
+
 }
 
 EBTNodeResult::Type UBTTask_SimpleTankMoveTo::ExecuteTask(UBehaviorTreeComponent& OwnerComp, ::uint8* NodeMemory) {
@@ -23,7 +23,7 @@ EBTNodeResult::Type UBTTask_SimpleTankMoveTo::ExecuteTask(UBehaviorTreeComponent
 	if (AITankPawn && Enemy) {
 		const FVector StartPos = AITankPawn->GetNavAgentLocation();
 		const FVector EndPos = Enemy->GetActorLocation();
-		//UE_LOG(LogTemp, Warning, TEXT("StartPos: %s, EndPos: %s"), *StartPos.ToCompactString(), *EndPos.ToCompactString());
+		UE_LOG(LogTemp, Warning, TEXT("StartPos: %s, EndPos: %s"), *StartPos.ToCompactString(), *EndPos.ToCompactString());
 		UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(AITankPawn, StartPos, EndPos, AITankPawn);
 		const TArray<FVector> PathPoints = NavPath->PathPoints;
 		if(!NavPath->IsValid())

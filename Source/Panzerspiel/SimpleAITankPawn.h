@@ -64,10 +64,16 @@ class PANZERSPIEL_API ASimpleAITankPawn : public ATankPawn
 	float VelocityImpact = 0.25;
 
 	UPROPERTY(EditAnywhere, Category="CollisionAvoidance")
-	float AvoidDistance = 100;
+	TArray<float> AvoidDistances;
 
 	UPROPERTY(EditAnywhere, Category="CollisionAvoidance")
 	float AvoidStrength = 1;
+
+	UPROPERTY(EditAnywhere, Category="AI")
+	bool DebugLog = false;
+
+	UPROPERTY()
+	int8 Direction = 1;
 
 	// Functions
 	virtual void MoveRight(float AxisValue) override;

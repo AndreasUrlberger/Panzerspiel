@@ -2,6 +2,7 @@
 
 
 #include "SimpleAITankPawn.h"
+
 #include "DrawDebugHelpers.h"
 #include "Components/ArrowComponent.h"
 #include "Containers/Array.h"
@@ -67,7 +68,7 @@ void ASimpleAITankPawn::Tick(float DeltaTime) {
     if(FollowingPathPoints) {
         const float Distance = FVector::Dist(PathPoints[CurrentPathPoint], GetActorLocation());
         if(Distance < ReachRadius) {
-            UE_LOG(LogTemp, Warning, TEXT("Reached Point"));
+            if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("Reached Point"));
             ++CurrentPathPoint;
             if(CurrentPathPoint >= PathPoints.Num()) {
                 // Reached end of path.
@@ -77,7 +78,7 @@ void ASimpleAITankPawn::Tick(float DeltaTime) {
         }else {
             // Calculate in which direction to move to avoid collisions.
             // TODO: Might want to save Sensor data over multiple frames and add them to smoothen the response a bit.
-            // TODO: Tanks should drive backwards instead of making a 180 degree turn.
+            // TODO: Each Sensor should have its own AvoidDistance and maybe some weight.
             const FVector AvoidVector = GetAvoidVector();
 
             // Follow Path.
@@ -87,7 +88,7 @@ void ASimpleAITankPawn::Tick(float DeltaTime) {
             //UE_LOG(LogTemp, Warning, TEXT("DeltaMove before: %s"), *DeltaMove.ToString());
             // Updates the DeltaMove to follow the tanks movement rules.
             DeltaMove = UpdateMovement(DeltaTime, DeltaMove);
-            //UE_LOG(LogTemp, Warning, TEXT("DelteMove after: %s"), *DeltaMove.ToString());
+            //UE_LOG(LogTemp, Warning, TEXT("DeltaMove after: %s"), *DeltaMove.ToString());
 
             // We dont need to calculate DeltaMove.Size() since its always 1 as it gets normalized just a few lines above.
             const float DeltaSize = MovementComp->MaxSpeed * DeltaTime;
@@ -101,7 +102,7 @@ void ASimpleAITankPawn::Tick(float DeltaTime) {
             FakeVelocity = DeltaMove;
             FakeVelocity.Z = 0;
 
-            SetActorRotation(DeltaMove.Rotation());
+            SetActorRotation((DeltaMove * Direction).Rotation());
             
         }
     }
@@ -121,9 +122,11 @@ bool ASimpleAITankPawn::FollowPathPoints(UBTTask_SimpleTankMoveTo *Task, TArray<
 
 
 FVector ASimpleAITankPawn::GetAvoidVector() {
+    // Following loop would break if we dont have at least as many AvoidDistances as we have sensors.
+    check(AvoidDistances.Num() >= Distances.Num());
     FVector AvoidVector = FVector::ZeroVector;
     for(int32 Index = 0; Index < Distances.Num(); ++Index) {
-        AvoidVector -= Sensors[Index]->GetForwardVector() * FMath::Square(AvoidDistance/Distances[Index]);
+        AvoidVector -= Sensors[Index]->GetForwardVector() * FMath::Square(AvoidDistances[Index]/Distances[Index]);
     }
     AvoidVector = (AvoidVector * AvoidStrength);
     //UE_LOG(LogTemp, Warning, TEXT("Avoidance Vector: %s"), *AvoidVector.ToString());
@@ -132,14 +135,21 @@ FVector ASimpleAITankPawn::GetAvoidVector() {
 
 FVector ASimpleAITankPawn::UpdateMovement(float DeltaTime, const FVector DesiredDeltaMove) {
     // TODO: Tanks need to slow down when they want to drive a tight corner.
-    FVector Forward = GetActorForwardVector();
+    // TODO: Current point on path should be determined by how close it is to a point (right angle distance).
+    FVector Forward = GetActorForwardVector() * Direction;
     FVector DesiredDirection = DesiredDeltaMove;
     // Better safe than sorry.
     Forward.Z = 0;
     DesiredDirection.Z = 0;
 
+    // Positive if smaller than 90 deg and Negative if bigger.
+    if(FVector::DotProduct(Forward, DesiredDirection) < 0) {
+        // Target is in opposite direction thus we change direction.
+        Direction *= -1;
+        Forward *= -1;
+    }
     const FVector NewForward = FMath::VInterpNormalRotationTo(Forward, DesiredDirection, DeltaTime, RotationSpeed);
-    UE_LOG(LogTemp, Warning, TEXT("New Forward Vector: %s"), *NewForward.ToString());
+    if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("New Forward Vector: %s"), *NewForward.ToString());
     SetActorRotation(NewForward.Rotation());
 
     FVector CurrentLoc = GetActorLocation();
