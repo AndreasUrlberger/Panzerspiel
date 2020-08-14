@@ -74,6 +74,13 @@ private:
     UPROPERTY(EditAnywhere)
     class USoundBase* ExplosionSound;
 
+    UPROPERTY(EditAnywhere, Category="Movement")
+    bool ControllerInput = false;
+
+public:
+    UPROPERTY(EditAnywhere, Category="Debug")
+    bool DebugLog = false;
+
     // Methods
 public:
     // Sets default values for this character's properties
@@ -113,6 +120,12 @@ private:
     
     UFUNCTION()
     virtual void MoveRight(float AxisValue);
+
+    UFUNCTION()
+    void ControllerMoveForward(float AxisValue);
+    
+    UFUNCTION()
+    void ControllerMoveRight(float AxisValue);
     
     UFUNCTION()
     FVector GetBulletSpawnPoint() const;
@@ -132,4 +145,7 @@ protected:
     // Checks if the tank is facing the movement direction and rotates it if necessary, due to this the tank might not move.
     UFUNCTION()
     void CalculateActualMovement(FVector TargetLocation, float DeltaTime);
+
+    UFUNCTION()
+    void ControllerMove();
 };

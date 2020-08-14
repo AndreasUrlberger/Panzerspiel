@@ -144,7 +144,7 @@ void ATankPawn::CalculateActualMovement(FVector TargetLocation, float DeltaTime)
     FRotator DeltaRotator = TargetDirection - CurrentRotation;
     DeltaRotator.Normalize();
     const float DeltaYaw = DeltaRotator.Yaw;
-    UE_LOG(LogTemp, Warning, TEXT("Yaw: %f"), DeltaYaw);
+    if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("Yaw: %f"), DeltaYaw);
 
     const float MaxYaw = RotationSpeed * DeltaTime;
     if(FMath::Abs(DeltaYaw) <= MaxYaw) {
@@ -158,23 +158,59 @@ void ATankPawn::CalculateActualMovement(FVector TargetLocation, float DeltaTime)
     }
 }
 
+void ATankPawn::ControllerMove() {
+    if(FMath::Abs(MoveForwardAxisValue) == 0 && FMath::Abs(MoveRightAxisValue) == 0) {
+        // Theres no input so we dont want to move and especially dont want to change the tanks rotation.
+        return;
+    }
+    const FVector DeltaMove = FVector(MoveForwardAxisValue, MoveRightAxisValue, 0);
+    MovementComp->AddInputVector(DeltaMove);
+
+    // TODO: Tank exceeds the max Rotation speed if in controller mode.
+    if(FVector::DotProduct(GetActorForwardVector(), DeltaMove) < 0) {
+        // Target is in opposite direction thus we change direction.
+        SetActorRotation((-DeltaMove).Rotation());
+    }else {
+        SetActorRotation(DeltaMove.Rotation());
+    }
+}
+
 // Called every frame
 void ATankPawn::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    const FVector DeltaLocation = GetActorForwardVector() * MoveForwardAxisValue * MovementSpeed * DeltaTime;
-    MoveAndRotate(DeltaLocation, FRotator(0, MoveRightAxisValue * RotationSpeed * DeltaTime, 0));
+    if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("Forward: %f, Right: %f"), MoveForwardAxisValue, MoveRightAxisValue);
+    if(ControllerInput) {
+        ControllerMove();
+    }else {
+        const FVector DeltaLocation = GetActorForwardVector() * MoveForwardAxisValue * MovementSpeed * DeltaTime;
+        MoveAndRotate(DeltaLocation, FRotator(0, MoveRightAxisValue * RotationSpeed * DeltaTime, 0));
+    }
 }
 
 // Called to bind functionality to input
 void ATankPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
-    PlayerInputComponent->BindAxis("MoveForward", this, &ATankPawn::MoveForward);
-    PlayerInputComponent->BindAxis("MoveRight", this, &ATankPawn::MoveRight);
+    if(ControllerInput) {
+        PlayerInputComponent->BindAxis("ControllerMoveForward", this, &ATankPawn::ControllerMoveForward);
+        PlayerInputComponent->BindAxis("ControllerMoveRight", this, &ATankPawn::ControllerMoveRight);
+    }else {
+        PlayerInputComponent->BindAxis("MoveForward", this, &ATankPawn::MoveForward);
+        PlayerInputComponent->BindAxis("MoveRight", this, &ATankPawn::MoveRight);
+    }
 
     PlayerInputComponent->BindAction("Shoot", EInputEvent::IE_Pressed, this, &ATankPawn::Shoot);
     PlayerInputComponent->BindAction("PlaceMine", EInputEvent::IE_Pressed, this, &ATankPawn::PlaceMine);
+}
+
+
+void ATankPawn::ControllerMoveForward(float AxisValue) {
+    MoveForwardAxisValue = AxisValue;
+}
+
+void ATankPawn::ControllerMoveRight(float AxisValue) {
+    MoveRightAxisValue = AxisValue;
 }
 
 void ATankPawn::Kill(ATankPawn* Enemy)
