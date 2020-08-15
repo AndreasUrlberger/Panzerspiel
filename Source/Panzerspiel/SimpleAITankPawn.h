@@ -10,12 +10,11 @@
  * 
  */
 UCLASS()
-class PANZERSPIEL_API ASimpleAITankPawn : public ATankPawn
-{
+class PANZERSPIEL_API ASimpleAITankPawn : public ATankPawn {
 	GENERATED_BODY()
-	
+
 	// Variables
-	private:
+private:
 	UPROPERTY(EditAnywhere, Category="AI")
 	float TraceRange;
 
@@ -27,28 +26,28 @@ class PANZERSPIEL_API ASimpleAITankPawn : public ATankPawn
 	TArray<class UArrowComponent*> Sensors;
 
 	UPROPERTY(VisibleAnywhere, Category="AI")
-	USceneComponent *SensorsRoot;
-	
-	UPROPERTY(EditDefaultsOnly, Category="AI")
-	UArrowComponent *SensorLeft;
+	USceneComponent* SensorsRoot;
 
 	UPROPERTY(EditDefaultsOnly, Category="AI")
-	UArrowComponent *SensorHalfLeft;
+	UArrowComponent* SensorLeft;
 
 	UPROPERTY(EditDefaultsOnly, Category="AI")
-	UArrowComponent *SensorFront;
+	UArrowComponent* SensorHalfLeft;
 
 	UPROPERTY(EditDefaultsOnly, Category="AI")
-	UArrowComponent *SensorHalfRight;
+	UArrowComponent* SensorFront;
 
 	UPROPERTY(EditDefaultsOnly, Category="AI")
-	UArrowComponent *SensorRight;
+	UArrowComponent* SensorHalfRight;
+
+	UPROPERTY(EditDefaultsOnly, Category="AI")
+	UArrowComponent* SensorRight;
 
 	UPROPERTY()
 	bool FollowingPathPoints;
 
 	UPROPERTY()
-	class UBTTask_SimpleTankMoveTo *CallingTask;
+	class UBTTask_SimpleTankMoveTo* CallingTask;
 
 	UPROPERTY(EditAnywhere, Category="AI")
 	TArray<FVector> PathPoints;
@@ -71,7 +70,7 @@ class PANZERSPIEL_API ASimpleAITankPawn : public ATankPawn
 
 	UPROPERTY(EditAnywhere, Category="CollisionAvoidance")
 	float AvoidStrength = 1;
-	
+
 
 	// Functions
 	virtual void MoveRight(float AxisValue) override;
@@ -86,10 +85,10 @@ public:
 	ASimpleAITankPawn();
 
 	UFUNCTION()
-    void NavigationTrace();
+	void NavigationTrace();
 
 	// Called every frame.
 	virtual void Tick(float DeltaTime) override;
 
-	bool FollowPathPoints(UBTTask_SimpleTankMoveTo *Task, TArray<FVector> Points);
+	bool FollowPathPoints(UBTTask_SimpleTankMoveTo* Task, TArray<FVector> Points);
 };

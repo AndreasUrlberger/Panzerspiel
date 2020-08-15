@@ -14,222 +14,206 @@
 #include "Math/UnrealMathUtility.h"
 
 
-ATankPawn::ATankPawn()
-{
-// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-    PrimaryActorTick.bCanEverTick = true;
+ATankPawn::ATankPawn() {
+	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
 
-    BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
-    BaseMesh->SetupAttachment(RootComponent);
-    TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>("TurretMesh");
-    TurretMesh->SetupAttachment(BaseMesh);
-    MovementComp = CreateDefaultSubobject<UFloatingPawnMovement>("MovementComponent");
+	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
+	BaseMesh->SetupAttachment(RootComponent);
+	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>("TurretMesh");
+	TurretMesh->SetupAttachment(BaseMesh);
+	MovementComp = CreateDefaultSubobject<UFloatingPawnMovement>("MovementComponent");
 }
 
 void ATankPawn::AlignTower(const FVector Target) {
-    FVector Rotation = Target - GetActorLocation();
-    Rotation.Z = 0;
-    
-    TurretMesh->SetWorldRotation(Rotation.ToOrientationRotator(), true);
+	FVector Rotation = Target - GetActorLocation();
+	Rotation.Z = 0;
+
+	TurretMesh->SetWorldRotation(Rotation.ToOrientationRotator(), true);
 }
 
-void ATankPawn::Shoot()
-{    
-    if (ActiveShots < MaxShots)
-    {
-        if (UWorld* World = GetWorld())
-        {
-            FActorSpawnParameters Params;
-            Params.Owner = this;
-            Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
+void ATankPawn::Shoot() {
+	if (ActiveShots < MaxShots) {
+		if (UWorld* World = GetWorld()) {
+			FActorSpawnParameters Params;
+			Params.Owner = this;
+			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
 
-            const FRotator Rotation = TurretMesh->GetComponentRotation();
-            const FVector Location = GetBulletSpawnPoint();
+			const FRotator Rotation = TurretMesh->GetComponentRotation();
+			const FVector Location = GetBulletSpawnPoint();
 
-            ABullet* Bullet = World->SpawnActor<ABullet>(ToSpawnBullet, Location, Rotation, Params);
+			ABullet* Bullet = World->SpawnActor<ABullet>(ToSpawnBullet, Location, Rotation, Params);
 
 
-            // Check if the spawn was successful.
-            if (Bullet)
-            {
-                ++ActiveShots;
-                Bullet->Init(this);
-                if (FireSound)
-                    UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
-            }else {
-                // Player tried to shoot directly into a wall -> He dies.
-                if(FireSound)
-                    UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
-                Die();
-            }
-        }
-    }
+			// Check if the spawn was successful.
+			if (Bullet) {
+				++ActiveShots;
+				Bullet->Init(this);
+				if (FireSound)
+					UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
+			} else {
+				// Player tried to shoot directly into a wall -> He dies.
+				if (FireSound)
+					UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
+				Die();
+			}
+		}
+	}
 }
 
 void ATankPawn::PlaceMine() {
-    if (ActiveMines < MaxMines)
-    {
-        if (UWorld* World = GetWorld())
-        {
-            FActorSpawnParameters Params;
-            Params.Owner = this;
-   
-            // Some kind of random rotation seems to be a good idea.
-            const FRotator Rotation = TurretMesh->GetComponentRotation();
-            const FVector Location = GetActorLocation();
+	if (ActiveMines < MaxMines) {
+		if (UWorld* World = GetWorld()) {
+			FActorSpawnParameters Params;
+			Params.Owner = this;
 
-            AMine* Mine = World->SpawnActor<AMine>(ToSpawnMine, Location, Rotation, Params);
+			// Some kind of random rotation seems to be a good idea.
+			const FRotator Rotation = TurretMesh->GetComponentRotation();
+			const FVector Location = GetActorLocation();
+
+			AMine* Mine = World->SpawnActor<AMine>(ToSpawnMine, Location, Rotation, Params);
 
 
-            // Check if the spawn was successful.
-            if (Mine)
-            {
-                ++ActiveMines;
-                Mine->Init(this);
-                if (MinePlantSound)
-                    UGameplayStatics::PlaySoundAtLocation(this, MinePlantSound, Location);
-            }
-        }
-    }
+			// Check if the spawn was successful.
+			if (Mine) {
+				++ActiveMines;
+				Mine->Init(this);
+				if (MinePlantSound)
+					UGameplayStatics::PlaySoundAtLocation(this, MinePlantSound, Location);
+			}
+		}
+	}
 }
 
-void ATankPawn::MoveForward(float AxisValue)
-{
-    MoveForwardAxisValue = AxisValue;
+void ATankPawn::MoveForward(float AxisValue) {
+	MoveForwardAxisValue = AxisValue;
 }
 
-void ATankPawn::MoveRight(float AxisValue)
-{
-    MoveRightAxisValue = AxisValue;
+void ATankPawn::MoveRight(float AxisValue) {
+	MoveRightAxisValue = AxisValue;
 }
 
 FVector ATankPawn::GetBulletSpawnPoint() const {
-    return TurretMesh->GetComponentLocation() + FVector(0, 0, BarrelHeight) + TurretMesh->GetComponentRotation().Vector() * BarrelLength;
+	return TurretMesh->GetComponentLocation() + FVector(0, 0, BarrelHeight) + TurretMesh->GetComponentRotation().
+		Vector() * BarrelLength;
 }
 
-void ATankPawn::Die()
-{
-    if(ExplosionSound)
-        UGameplayStatics::PlaySoundAtLocation(this, ExplosionSound, GetActorLocation());
-    PlayNiagaraExplosion(GetActorLocation());
-    Destroy();
+void ATankPawn::Die() {
+	if (ExplosionSound)
+		UGameplayStatics::PlaySoundAtLocation(this, ExplosionSound, GetActorLocation());
+	PlayNiagaraExplosion(GetActorLocation());
+	Destroy();
 }
 
-void ATankPawn::BulletDestroyed()
-{
-    check(ActiveShots > 0);
-    --ActiveShots;
+void ATankPawn::BulletDestroyed() {
+	check(ActiveShots > 0);
+	--ActiveShots;
 }
 
-void ATankPawn::MineDestroyed()
-{
-    check(ActiveMines > 0);
-    --ActiveMines;
+void ATankPawn::MineDestroyed() {
+	check(ActiveMines > 0);
+	--ActiveMines;
 }
 
 // Called when the game starts or when spawned
-void ATankPawn::BeginPlay()
-{
-    Super::BeginPlay();
+void ATankPawn::BeginPlay() {
+	Super::BeginPlay();
 }
 
 void ATankPawn::MoveAndRotate(const FVector DeltaLocation, const FRotator DeltaRotation) {
-    SetActorRotation(GetActorRotation() + DeltaRotation);
-    MovementComp->AddInputVector(DeltaLocation.GetSafeNormal());
+	SetActorRotation(GetActorRotation() + DeltaRotation);
+	MovementComp->AddInputVector(DeltaLocation.GetSafeNormal());
 }
 
 void ATankPawn::CalculateActualMovement(FVector TargetLocation, float DeltaTime) {
-    const FRotator CurrentRotation = GetActorRotation();
-    const FRotator TargetDirection = (TargetLocation - GetActorLocation()).Rotation();
-    FRotator DeltaRotator = TargetDirection - CurrentRotation;
-    DeltaRotator.Normalize();
-    const float DeltaYaw = DeltaRotator.Yaw;
-    if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("Yaw: %f"), DeltaYaw);
+	const FRotator CurrentRotation = GetActorRotation();
+	const FRotator TargetDirection = (TargetLocation - GetActorLocation()).Rotation();
+	FRotator DeltaRotator = TargetDirection - CurrentRotation;
+	DeltaRotator.Normalize();
+	const float DeltaYaw = DeltaRotator.Yaw;
+	if (DebugLog) UE_LOG(LogTemp, Warning, TEXT("Yaw: %f"), DeltaYaw);
 
-    const float MaxYaw = RotationSpeed * DeltaTime;
-    if(FMath::Abs(DeltaYaw) <= MaxYaw) {
-        // Rotate and move.
-        const FVector DeltaLocation = TargetLocation - GetActorLocation();
-        MoveAndRotate(DeltaLocation, DeltaRotator);
-    }else {
-        // Rotate and not move.
-        const FRotator DeltaRotation = FRotator(0, FMath::Sign(DeltaYaw) * MaxYaw, 0);
-        MoveAndRotate(FVector::ZeroVector, DeltaRotation);
-    }
+	const float MaxYaw = RotationSpeed * DeltaTime;
+	if (FMath::Abs(DeltaYaw) <= MaxYaw) {
+		// Rotate and move.
+		const FVector DeltaLocation = TargetLocation - GetActorLocation();
+		MoveAndRotate(DeltaLocation, DeltaRotator);
+	} else {
+		// Rotate and not move.
+		const FRotator DeltaRotation = FRotator(0, FMath::Sign(DeltaYaw) * MaxYaw, 0);
+		MoveAndRotate(FVector::ZeroVector, DeltaRotation);
+	}
 }
 
 void ATankPawn::ControllerMove(float DeltaTime) {
-    // TODO: Might need a deadzone threshold here.
-    if(FMath::Abs(MoveForwardAxisValue) == 0 && FMath::Abs(MoveRightAxisValue) == 0) {
-        // Theres no input so we dont want to move and especially dont want to change the tanks rotation.
-        return;
-    }
-    
-    FVector Forward = GetActorForwardVector() * Direction;
-    const FVector DeltaMove = FVector(MoveForwardAxisValue, MoveRightAxisValue, 0);
-    const float Size = DeltaMove.Size();
-    
-    // Better safe than sorry.
-    Forward.Z = 0;
+	// TODO: Might need a deadzone threshold here.
+	if (FMath::Abs(MoveForwardAxisValue) == 0 && FMath::Abs(MoveRightAxisValue) == 0) {
+		// Theres no input so we dont want to move and especially dont want to change the tanks rotation.
+		return;
+	}
 
-    // Positive if smaller than 90 deg and Negative if bigger.
-    if(FVector::DotProduct(Forward, DeltaMove) < 0) {
-        // Target is in opposite direction thus we change direction.
-        Direction *= -1;
-        Forward *= -1;
-    }
-    FVector NewForward = FMath::VInterpNormalRotationTo(Forward, DeltaMove, DeltaTime, RotationSpeed);
-    // Make sure we keep the players input strength.
-    NewForward = NewForward.GetUnsafeNormal() * Size;
-    if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("New Forward Vector: %s"), *NewForward.ToString());
-    // Makes sure we arent suddenly switching backwards since Direction will neutralize itself.
-    SetActorRotation((Direction * NewForward).Rotation());
-    // Only move if were pointing in the target direction or if we are using the alternative controller movement.
-    if(NewForward.Equals(DeltaMove) || AlternativeControllerMovement) {
-        // Move
-        MovementComp->AddInputVector(DeltaMove);
-    }
+	FVector Forward = GetActorForwardVector() * Direction;
+	const FVector DeltaMove = FVector(MoveForwardAxisValue, MoveRightAxisValue, 0);
+	const float Size = DeltaMove.Size();
+
+	// Better safe than sorry.
+	Forward.Z = 0;
+
+	// Positive if smaller than 90 deg and Negative if bigger.
+	if (FVector::DotProduct(Forward, DeltaMove) < 0) {
+		// Target is in opposite direction thus we change direction.
+		Direction *= -1;
+		Forward *= -1;
+	}
+	FVector NewForward = FMath::VInterpNormalRotationTo(Forward, DeltaMove, DeltaTime, RotationSpeed);
+	// Make sure we keep the players input strength.
+	NewForward = NewForward.GetUnsafeNormal() * Size;
+	if (DebugLog) UE_LOG(LogTemp, Warning, TEXT("New Forward Vector: %s"), *NewForward.ToString());
+	// Makes sure we arent suddenly switching backwards since Direction will neutralize itself.
+	SetActorRotation((Direction * NewForward).Rotation());
+	// Only move if were pointing in the target direction or if we are using the alternative controller movement.
+	if (NewForward.Equals(DeltaMove) || AlternativeControllerMovement) {
+		// Move
+		MovementComp->AddInputVector(DeltaMove);
+	}
 }
 
 // Called every frame
-void ATankPawn::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-    if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("Forward: %f, Right: %f"), MoveForwardAxisValue, MoveRightAxisValue);
-    if(ControllerInput) {
-        ControllerMove(DeltaTime);
-    }else {
-        const FVector DeltaLocation = GetActorForwardVector() * MoveForwardAxisValue * MovementSpeed * DeltaTime;
-        MoveAndRotate(DeltaLocation, FRotator(0, MoveRightAxisValue * RotationSpeed * DeltaTime, 0));
-    }
+void ATankPawn::Tick(float DeltaTime) {
+	Super::Tick(DeltaTime);
+	if (DebugLog) UE_LOG(LogTemp, Warning, TEXT("Forward: %f, Right: %f"), MoveForwardAxisValue, MoveRightAxisValue);
+	if (ControllerInput) {
+		ControllerMove(DeltaTime);
+	} else {
+		const FVector DeltaLocation = GetActorForwardVector() * MoveForwardAxisValue * MovementSpeed * DeltaTime;
+		MoveAndRotate(DeltaLocation, FRotator(0, MoveRightAxisValue * RotationSpeed * DeltaTime, 0));
+	}
 }
 
 // Called to bind functionality to input
-void ATankPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-    Super::SetupPlayerInputComponent(PlayerInputComponent);
-    if(ControllerInput) {
-        PlayerInputComponent->BindAxis("ControllerMoveForward", this, &ATankPawn::ControllerMoveForward);
-        PlayerInputComponent->BindAxis("ControllerMoveRight", this, &ATankPawn::ControllerMoveRight);
-    }else {
-        PlayerInputComponent->BindAxis("MoveForward", this, &ATankPawn::MoveForward);
-        PlayerInputComponent->BindAxis("MoveRight", this, &ATankPawn::MoveRight);
-    }
+void ATankPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	if (ControllerInput) {
+		PlayerInputComponent->BindAxis("ControllerMoveForward", this, &ATankPawn::ControllerMoveForward);
+		PlayerInputComponent->BindAxis("ControllerMoveRight", this, &ATankPawn::ControllerMoveRight);
+	} else {
+		PlayerInputComponent->BindAxis("MoveForward", this, &ATankPawn::MoveForward);
+		PlayerInputComponent->BindAxis("MoveRight", this, &ATankPawn::MoveRight);
+	}
 
-    PlayerInputComponent->BindAction("Shoot", EInputEvent::IE_Pressed, this, &ATankPawn::Shoot);
-    PlayerInputComponent->BindAction("PlaceMine", EInputEvent::IE_Pressed, this, &ATankPawn::PlaceMine);
+	PlayerInputComponent->BindAction("Shoot", EInputEvent::IE_Pressed, this, &ATankPawn::Shoot);
+	PlayerInputComponent->BindAction("PlaceMine", EInputEvent::IE_Pressed, this, &ATankPawn::PlaceMine);
 }
 
 
 void ATankPawn::ControllerMoveForward(float AxisValue) {
-    MoveForwardAxisValue = AxisValue;
+	MoveForwardAxisValue = AxisValue;
 }
 
 void ATankPawn::ControllerMoveRight(float AxisValue) {
-    MoveRightAxisValue = AxisValue;
+	MoveRightAxisValue = AxisValue;
 }
 
-void ATankPawn::Kill(ATankPawn* Enemy)
-{
-    Die();
+void ATankPawn::Kill(ATankPawn* Enemy) {
+	Die();
 }
