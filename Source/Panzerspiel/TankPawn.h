@@ -34,6 +34,9 @@ protected:
     UPROPERTY(VisibleAnywhere)
     float MoveRightAxisValue;
 
+    UPROPERTY()
+    int8 Direction = 1;
+
 private:
     
 
@@ -76,6 +79,9 @@ private:
 
     UPROPERTY(EditAnywhere, Category="Movement")
     bool ControllerInput = false;
+
+    UPROPERTY(EditAnywhere, Category="Movement")
+    bool AlternativeControllerMovement = false;
 
 public:
     UPROPERTY(EditAnywhere, Category="Debug")
@@ -147,5 +153,5 @@ protected:
     void CalculateActualMovement(FVector TargetLocation, float DeltaTime);
 
     UFUNCTION()
-    void ControllerMove();
+    void ControllerMove(float DeltaTime);
 };

@@ -44,11 +44,11 @@ bool AAITankPawn::MoveTo(FVector TargetLocation, float DeltaTime) {
     FVector Route = TargetLocation - CurrentLocation;
     // For some reason the Path tells the object to move up.
     Route.Z = 0;
-    FVector Direction;
+    FVector TargetDirection;
     float Length;
-    Route.ToDirectionAndLength(Direction, Length);
+    Route.ToDirectionAndLength(TargetDirection, Length);
 
-    FVector DeltaMove = Direction * MovementSpeed * DeltaTime;
+    FVector DeltaMove = TargetDirection * MovementSpeed * DeltaTime;
     if(DeltaMove.SizeSquared2D() - Route.SizeSquared2D() >= 0) {
         // Tank would move too far -> we reached the TargetLocation.
         DeltaMove = Route;

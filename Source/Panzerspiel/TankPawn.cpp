@@ -158,20 +158,36 @@ void ATankPawn::CalculateActualMovement(FVector TargetLocation, float DeltaTime)
     }
 }
 
-void ATankPawn::ControllerMove() {
+void ATankPawn::ControllerMove(float DeltaTime) {
+    // TODO: Might need a deadzone threshold here.
     if(FMath::Abs(MoveForwardAxisValue) == 0 && FMath::Abs(MoveRightAxisValue) == 0) {
         // Theres no input so we dont want to move and especially dont want to change the tanks rotation.
         return;
     }
+    
+    FVector Forward = GetActorForwardVector() * Direction;
     const FVector DeltaMove = FVector(MoveForwardAxisValue, MoveRightAxisValue, 0);
-    MovementComp->AddInputVector(DeltaMove);
+    const float Size = DeltaMove.Size();
+    
+    // Better safe than sorry.
+    Forward.Z = 0;
 
-    // TODO: Tank exceeds the max Rotation speed if in controller mode.
-    if(FVector::DotProduct(GetActorForwardVector(), DeltaMove) < 0) {
+    // Positive if smaller than 90 deg and Negative if bigger.
+    if(FVector::DotProduct(Forward, DeltaMove) < 0) {
         // Target is in opposite direction thus we change direction.
-        SetActorRotation((-DeltaMove).Rotation());
-    }else {
-        SetActorRotation(DeltaMove.Rotation());
+        Direction *= -1;
+        Forward *= -1;
+    }
+    FVector NewForward = FMath::VInterpNormalRotationTo(Forward, DeltaMove, DeltaTime, RotationSpeed);
+    // Make sure we keep the players input strength.
+    NewForward = NewForward.GetUnsafeNormal() * Size;
+    if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("New Forward Vector: %s"), *NewForward.ToString());
+    // Makes sure we arent suddenly switching backwards since Direction will neutralize itself.
+    SetActorRotation((Direction * NewForward).Rotation());
+    // Only move if were pointing in the target direction or if we are using the alternative controller movement.
+    if(NewForward.Equals(DeltaMove) || AlternativeControllerMovement) {
+        // Move
+        MovementComp->AddInputVector(DeltaMove);
     }
 }
 
@@ -181,7 +197,7 @@ void ATankPawn::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
     if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("Forward: %f, Right: %f"), MoveForwardAxisValue, MoveRightAxisValue);
     if(ControllerInput) {
-        ControllerMove();
+        ControllerMove(DeltaTime);
     }else {
         const FVector DeltaLocation = GetActorForwardVector() * MoveForwardAxisValue * MovementSpeed * DeltaTime;
         MoveAndRotate(DeltaLocation, FRotator(0, MoveRightAxisValue * RotationSpeed * DeltaTime, 0));
