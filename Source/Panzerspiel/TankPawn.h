@@ -114,6 +114,10 @@ public:
     // Points the tanks tower towards the Target.
     UFUNCTION()
     void AlignTower(const FVector Target);
+
+    UFUNCTION()
+    void UseControllerMovement(bool UseController);
+
     
 private:
     UFUNCTION()

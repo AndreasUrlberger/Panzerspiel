@@ -33,6 +33,25 @@ void ATankPawn::AlignTower(const FVector Target) {
 	TurretMesh->SetWorldRotation(Rotation.ToOrientationRotator(), true);
 }
 
+void ATankPawn::UseControllerMovement(bool UseController) {
+	ControllerInput = UseController;
+	AlternativeControllerMovement = UseController;
+
+	if (ControllerInput) {
+	/*auto sortByMakeAndModel = [](const FInputAxisBinding &AxisBinding) -> bool
+    {
+    	return AxisBinding.AxisName.IsEqual("MoveForward");
+    };
+		int32 RemoveAmount = InputComponent->AxisBindings.RemoveAll(sortByMakeAndModel);
+		UE_LOG(LogTemp, Warning, TEXT("RemoveAmount: %d"), RemoveAmount);*/
+		InputComponent->BindAxis("ControllerMoveForward", this, &ATankPawn::ControllerMoveForward);
+		InputComponent->BindAxis("ControllerMoveRight", this, &ATankPawn::ControllerMoveRight);
+	} else {
+		InputComponent->BindAxis("MoveForward", this, &ATankPawn::MoveForward);
+		InputComponent->BindAxis("MoveRight", this, &ATankPawn::MoveRight);
+	}
+}
+
 void ATankPawn::Shoot() {
 	if (ActiveShots < MaxShots) {
 		if (UWorld* World = GetWorld()) {
@@ -175,7 +194,7 @@ void ATankPawn::ControllerMove(float DeltaTime) {
 	// Only move if were pointing in the target direction or if we are using the alternative controller movement.
 	if (NewForward.Equals(DeltaMove) || AlternativeControllerMovement) {
 		// Move
-		MovementComp->AddInputVector(DeltaMove);
+		MovementComp->AddInputVector(NewForward);
 	}
 }
 
