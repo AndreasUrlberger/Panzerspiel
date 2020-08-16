@@ -20,6 +20,7 @@ ATankPawn::ATankPawn() {
 
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
 	BaseMesh->SetupAttachment(RootComponent);
+	SetRootComponent(BaseMesh);
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>("TurretMesh");
 	TurretMesh->SetupAttachment(BaseMesh);
 	MovementComp = CreateDefaultSubobject<UFloatingPawnMovement>("MovementComponent");
