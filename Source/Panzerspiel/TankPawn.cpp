@@ -13,6 +13,7 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Math/UnrealMathUtility.h"
 
+// -------------------- Lifecycle -------------------- //
 
 ATankPawn::ATankPawn() {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -26,83 +27,49 @@ ATankPawn::ATankPawn() {
 	MovementComp = CreateDefaultSubobject<UFloatingPawnMovement>("MovementComponent");
 }
 
-void ATankPawn::AlignTower(const FVector Target) {
-	FVector Rotation = Target - GetActorLocation();
-	Rotation.Z = 0;
-
-	TurretMesh->SetWorldRotation(Rotation.ToOrientationRotator(), true);
+// Called when the game starts or when spawned
+void ATankPawn::BeginPlay() {
+	Super::BeginPlay();
 }
 
-void ATankPawn::UseControllerMovement(bool UseController) {
-	ControllerInput = UseController;
-	AlternativeControllerMovement = UseController;
-
+// Called every frame
+void ATankPawn::Tick(float DeltaTime) {
+	Super::Tick(DeltaTime);
+	if (DebugLog) UE_LOG(LogTemp, Warning, TEXT("Forward: %f, Right: %f"), MoveForwardAxisValue, MoveRightAxisValue);
 	if (ControllerInput) {
-	/*auto sortByMakeAndModel = [](const FInputAxisBinding &AxisBinding) -> bool
-    {
-    	return AxisBinding.AxisName.IsEqual("MoveForward");
-    };
-		int32 RemoveAmount = InputComponent->AxisBindings.RemoveAll(sortByMakeAndModel);
-		UE_LOG(LogTemp, Warning, TEXT("RemoveAmount: %d"), RemoveAmount);*/
-		InputComponent->BindAxis("ControllerMoveForward", this, &ATankPawn::ControllerMoveForward);
-		InputComponent->BindAxis("ControllerMoveRight", this, &ATankPawn::ControllerMoveRight);
+		ControllerMove(DeltaTime);
 	} else {
-		InputComponent->BindAxis("MoveForward", this, &ATankPawn::MoveForward);
-		InputComponent->BindAxis("MoveRight", this, &ATankPawn::MoveRight);
+		const FVector DeltaLocation = GetActorForwardVector() * MoveForwardAxisValue * MovementSpeed * DeltaTime;
+		MoveAndRotate(DeltaLocation, FRotator(0, MoveRightAxisValue * RotationSpeed * DeltaTime, 0));
 	}
 }
 
-void ATankPawn::Shoot() {
-	if (ActiveShots < MaxShots) {
-		if (UWorld* World = GetWorld()) {
-			FActorSpawnParameters Params;
-			Params.Owner = this;
-			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
-
-			const FRotator Rotation = TurretMesh->GetComponentRotation();
-			const FVector Location = GetBulletSpawnPoint();
-
-			ABullet* Bullet = World->SpawnActor<ABullet>(ToSpawnBullet, Location, Rotation, Params);
-
-
-			// Check if the spawn was successful.
-			if (Bullet) {
-				++ActiveShots;
-				Bullet->Init(this);
-				if (FireSound)
-					UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
-			} else {
-				// Player tried to shoot directly into a wall -> He dies.
-				if (FireSound)
-					UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
-				Die();
-			}
-		}
-	}
+void ATankPawn::Kill(ATankPawn* Enemy) {
+	Die();
 }
 
-void ATankPawn::PlaceMine() {
-	if (ActiveMines < MaxMines) {
-		if (UWorld* World = GetWorld()) {
-			FActorSpawnParameters Params;
-			Params.Owner = this;
+void ATankPawn::Die() {
+	if (ExplosionSound)
+		UGameplayStatics::PlaySoundAtLocation(this, ExplosionSound, GetActorLocation());
+	PlayNiagaraExplosion(GetActorLocation());
+	Destroy();
+}
 
-			// Some kind of random rotation seems to be a good idea.
-			const FRotator Rotation = TurretMesh->GetComponentRotation();
-			const FVector Location = GetActorLocation();
+// -------------------- Movement -------------------- //
 
-			AMine* Mine = World->SpawnActor<AMine>(ToSpawnMine, Location, Rotation, Params);
-
-
-			// Check if the spawn was successful.
-			if (Mine) {
-				++ActiveMines;
-				Mine->Init(this);
-				if (MinePlantSound)
-					UGameplayStatics::PlaySoundAtLocation(this, MinePlantSound, Location);
-			}
-		}
+// Called to bind functionality to input
+void ATankPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	if (ControllerInput) {
+		PlayerInputComponent->BindAxis("ControllerMoveForward", this, &ATankPawn::ControllerMoveForward);
+		PlayerInputComponent->BindAxis("ControllerMoveRight", this, &ATankPawn::ControllerMoveRight);
+	} else {
+		PlayerInputComponent->BindAxis("MoveForward", this, &ATankPawn::MoveForward);
+		PlayerInputComponent->BindAxis("MoveRight", this, &ATankPawn::MoveRight);
 	}
+
+	PlayerInputComponent->BindAction("Shoot", EInputEvent::IE_Pressed, this, &ATankPawn::Shoot);
+	PlayerInputComponent->BindAction("PlaceMine", EInputEvent::IE_Pressed, this, &ATankPawn::PlaceMine);
 }
 
 void ATankPawn::MoveForward(float AxisValue) {
@@ -113,31 +80,12 @@ void ATankPawn::MoveRight(float AxisValue) {
 	MoveRightAxisValue = AxisValue;
 }
 
-FVector ATankPawn::GetBulletSpawnPoint() const {
-	return TurretMesh->GetComponentLocation() + FVector(0, 0, BarrelHeight) + TurretMesh->GetComponentRotation().
-		Vector() * BarrelLength;
+void ATankPawn::ControllerMoveForward(float AxisValue) {
+	MoveForwardAxisValue = AxisValue;
 }
 
-void ATankPawn::Die() {
-	if (ExplosionSound)
-		UGameplayStatics::PlaySoundAtLocation(this, ExplosionSound, GetActorLocation());
-	PlayNiagaraExplosion(GetActorLocation());
-	Destroy();
-}
-
-void ATankPawn::BulletDestroyed() {
-	check(ActiveShots > 0);
-	--ActiveShots;
-}
-
-void ATankPawn::MineDestroyed() {
-	check(ActiveMines > 0);
-	--ActiveMines;
-}
-
-// Called when the game starts or when spawned
-void ATankPawn::BeginPlay() {
-	Super::BeginPlay();
+void ATankPawn::ControllerMoveRight(float AxisValue) {
+	MoveRightAxisValue = AxisValue;
 }
 
 void ATankPawn::MoveAndRotate(const FVector DeltaLocation, const FRotator DeltaRotation) {
@@ -198,42 +146,98 @@ void ATankPawn::ControllerMove(float DeltaTime) {
 	}
 }
 
-// Called every frame
-void ATankPawn::Tick(float DeltaTime) {
-	Super::Tick(DeltaTime);
-	if (DebugLog) UE_LOG(LogTemp, Warning, TEXT("Forward: %f, Right: %f"), MoveForwardAxisValue, MoveRightAxisValue);
+void ATankPawn::UseControllerMovement(bool UseController) {
+	ControllerInput = UseController;
+	AlternativeControllerMovement = UseController;
+
 	if (ControllerInput) {
-		ControllerMove(DeltaTime);
+		/*auto sortByMakeAndModel = [](const FInputAxisBinding &AxisBinding) -> bool
+    {
+    	return AxisBinding.AxisName.IsEqual("MoveForward");
+    };
+		int32 RemoveAmount = InputComponent->AxisBindings.RemoveAll(sortByMakeAndModel);
+		UE_LOG(LogTemp, Warning, TEXT("RemoveAmount: %d"), RemoveAmount);*/
+		InputComponent->BindAxis("ControllerMoveForward", this, &ATankPawn::ControllerMoveForward);
+		InputComponent->BindAxis("ControllerMoveRight", this, &ATankPawn::ControllerMoveRight);
 	} else {
-		const FVector DeltaLocation = GetActorForwardVector() * MoveForwardAxisValue * MovementSpeed * DeltaTime;
-		MoveAndRotate(DeltaLocation, FRotator(0, MoveRightAxisValue * RotationSpeed * DeltaTime, 0));
+		InputComponent->BindAxis("MoveForward", this, &ATankPawn::MoveForward);
+		InputComponent->BindAxis("MoveRight", this, &ATankPawn::MoveRight);
 	}
 }
 
-// Called to bind functionality to input
-void ATankPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	if (ControllerInput) {
-		PlayerInputComponent->BindAxis("ControllerMoveForward", this, &ATankPawn::ControllerMoveForward);
-		PlayerInputComponent->BindAxis("ControllerMoveRight", this, &ATankPawn::ControllerMoveRight);
-	} else {
-		PlayerInputComponent->BindAxis("MoveForward", this, &ATankPawn::MoveForward);
-		PlayerInputComponent->BindAxis("MoveRight", this, &ATankPawn::MoveRight);
+// -------------------- Combat -------------------- //
+
+void ATankPawn::AlignTower(const FVector Target) {
+	FVector Rotation = Target - GetActorLocation();
+	Rotation.Z = 0;
+
+	TurretMesh->SetWorldRotation(Rotation.ToOrientationRotator(), true);
+}
+
+void ATankPawn::Shoot() {
+	if (ActiveShots < MaxShots) {
+		if (UWorld* World = GetWorld()) {
+			FActorSpawnParameters Params;
+			Params.Owner = this;
+			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
+
+			const FRotator Rotation = TurretMesh->GetComponentRotation();
+			const FVector Location = GetBulletSpawnPoint();
+
+			ABullet* Bullet = World->SpawnActor<ABullet>(ToSpawnBullet, Location, Rotation, Params);
+
+
+			// Check if the spawn was successful.
+			if (Bullet) {
+				++ActiveShots;
+				Bullet->Init(this);
+				if (FireSound)
+					UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
+			} else {
+				// Player tried to shoot directly into a wall -> He dies.
+				if (FireSound)
+					UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
+				Die();
+			}
+		}
 	}
-
-	PlayerInputComponent->BindAction("Shoot", EInputEvent::IE_Pressed, this, &ATankPawn::Shoot);
-	PlayerInputComponent->BindAction("PlaceMine", EInputEvent::IE_Pressed, this, &ATankPawn::PlaceMine);
 }
 
+void ATankPawn::PlaceMine() {
+	if (ActiveMines < MaxMines) {
+		if (UWorld* World = GetWorld()) {
+			FActorSpawnParameters Params;
+			Params.Owner = this;
 
-void ATankPawn::ControllerMoveForward(float AxisValue) {
-	MoveForwardAxisValue = AxisValue;
+			// Some kind of random rotation seems to be a good idea.
+			const FRotator Rotation = TurretMesh->GetComponentRotation();
+			const FVector Location = GetActorLocation();
+
+			AMine* Mine = World->SpawnActor<AMine>(ToSpawnMine, Location, Rotation, Params);
+
+
+			// Check if the spawn was successful.
+			if (Mine) {
+				++ActiveMines;
+				Mine->Init(this);
+				if (MinePlantSound)
+					UGameplayStatics::PlaySoundAtLocation(this, MinePlantSound, Location);
+			}
+		}
+	}
 }
 
-void ATankPawn::ControllerMoveRight(float AxisValue) {
-	MoveRightAxisValue = AxisValue;
+FVector ATankPawn::GetBulletSpawnPoint() const {
+	return TurretMesh->GetComponentLocation() + FVector(0, 0, BarrelHeight) + TurretMesh->GetComponentRotation().
+		Vector() * BarrelLength;
 }
 
-void ATankPawn::Kill(ATankPawn* Enemy) {
-	Die();
+void ATankPawn::BulletDestroyed() {
+	check(ActiveShots > 0);
+	--ActiveShots;
+}
+
+void ATankPawn::MineDestroyed() {
+	check(ActiveMines > 0);
+	--ActiveMines;
 }
