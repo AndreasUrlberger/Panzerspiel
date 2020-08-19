@@ -10365,6 +10365,85 @@
         </e>
       </e>
     </e>
+    <e p="C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\Marketplace\UINavigation" t="Include">
+      <e p="Resources" t="Include">
+        <e p="Icon128.png" t="Include" />
+        <e p="UINav Logo.png" t="Include" />
+      </e>
+      <e p="Source" t="Include">
+        <e p="UINavigation" t="Include">
+          <e p="Private" t="Include">
+            <e p="SwapKeysWidget.cpp" t="Include" />
+            <e p="UINavBlueprintFunctionLibrary.cpp" t="Include" />
+            <e p="UINavButton.cpp" t="Include" />
+            <e p="UINavCollection.cpp" t="Include" />
+            <e p="UINavComponent.cpp" t="Include" />
+            <e p="UINavComponentBox.cpp" t="Include" />
+            <e p="UINavComponentWrapper.cpp" t="Include" />
+            <e p="UINavController.cpp" t="Include" />
+            <e p="UINavHorizontalComponent.cpp" t="Include" />
+            <e p="UINavigation.cpp" t="Include" />
+            <e p="UINavInputBox.cpp" t="Include" />
+            <e p="UINavInputComponent.cpp" t="Include" />
+            <e p="UINavInputContainer.cpp" t="Include" />
+            <e p="UINavOptionBox.cpp" t="Include" />
+            <e p="UINavPCComponent.cpp" t="Include" />
+            <e p="UINavPCReceiver.cpp" t="Include" />
+            <e p="UINavSettings.cpp" t="Include" />
+            <e p="UINavSlider.cpp" t="Include" />
+            <e p="UINavSliderBox.cpp" t="Include" />
+            <e p="UINavWidget.cpp" t="Include" />
+            <e p="UINavWidgetComponent.cpp" t="Include" />
+          </e>
+          <e p="Public" t="Include">
+            <e p="Data" t="Include">
+              <e p="AxisType.h" t="Include" />
+              <e p="ButtonNavigation.h" t="Include" />
+              <e p="ButtonStyle.h" t="Include" />
+              <e p="CountdownPhase.h" t="Include" />
+              <e p="Grid.h" t="Include" />
+              <e p="GridType.h" t="Include" />
+              <e p="InputCollisionData.h" t="Include" />
+              <e p="InputIconMapping.h" t="Include" />
+              <e p="InputMode.h" t="Include" />
+              <e p="InputNameMapping.h" t="Include" />
+              <e p="InputRebindData.h" t="Include" />
+              <e p="InputRestriction.h" t="Include" />
+              <e p="InputType.h" t="Include" />
+              <e p="NavigationDirection.h" t="Include" />
+              <e p="ReceiveInputType.h" t="Include" />
+              <e p="RevertRebindReason.h" t="Include" />
+              <e p="SelectorPosition.h" t="Include" />
+              <e p="TargetColumn.h" t="Include" />
+            </e>
+            <e p="SwapKeysWidget.h" t="Include" />
+            <e p="UINavBlueprintFunctionLibrary.h" t="Include" />
+            <e p="UINavButton.h" t="Include" />
+            <e p="UINavCollection.h" t="Include" />
+            <e p="UINavComponent.h" t="Include" />
+            <e p="UINavComponentBox.h" t="Include" />
+            <e p="UINavComponentWrapper.h" t="Include" />
+            <e p="UINavController.h" t="Include" />
+            <e p="UINavHorizontalComponent.h" t="Include" />
+            <e p="UINavigation.h" t="Include" />
+            <e p="UINavInputBox.h" t="Include" />
+            <e p="UINavInputComponent.h" t="Include" />
+            <e p="UINavInputContainer.h" t="Include" />
+            <e p="UINavMacros.h" t="Include" />
+            <e p="UINavOptionBox.h" t="Include" />
+            <e p="UINavPCComponent.h" t="Include" />
+            <e p="UINavPCReceiver.h" t="Include" />
+            <e p="UINavSettings.h" t="Include" />
+            <e p="UINavSlider.h" t="Include" />
+            <e p="UINavSliderBox.h" t="Include" />
+            <e p="UINavWidget.h" t="Include" />
+            <e p="UINavWidgetComponent.h" t="Include" />
+          </e>
+          <e p="UINavigation.Build.cs" t="Include" />
+        </e>
+      </e>
+      <e p="UINavigation.uplugin" t="Include" />
+    </e>
     <e p="C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\Media\AjaMedia" t="Include">
       <e p="AjaMedia.uplugin" t="Include" />
       <e p="Resources" t="Include">
@@ -43207,27 +43286,6 @@
             <e p="AMD_AGS.Build.cs" t="Include" />
           </e>
         </e>
-        <e p="Android" t="Include">
-          <e p="cxa_demangle" t="Include">
-            <e p="AndroidOpenSourceProject.tps" t="Include" />
-            <e p="cxademangle.Build.cs" t="Include" />
-            <e p="cxademangle.tps" t="Include" />
-          </e>
-          <e p="detex" t="Include">
-            <e p="AndroidETC.cpp" t="Include" />
-            <e p="AndroidETC.h" t="Include" />
-            <e p="AndroidETCConvert.cpp" t="Include" />
-            <e p="AndroidETCHalfFloat.cpp" t="Include" />
-            <e p="AndroidETCInternal.h" t="Include" />
-            <e p="detex.Build.cs" t="Include" />
-            <e p="detex.tps" t="Include" />
-          </e>
-          <e p="libunwind" t="Include">
-            <e p="libunwind.Build.cs" t="Include" />
-            <e p="libunwind.tps" t="Include" />
-            <e p="ReadMe.txt" t="Include" />
-          </e>
-        </e>
         <e p="Asio" t="Include">
           <e p="Asio.Build.cs" t="Include" />
           <e p="Asio.tps" t="Include" />
@@ -43354,12 +43412,6 @@
         <e p="IntelVTune" t="Include">
           <e p="IntelVTune.Build.cs" t="Include" />
           <e p="ITTAPI.tps" t="Include" />
-        </e>
-        <e p="IOS" t="Include">
-          <e p="SoundSwitch" t="Include">
-            <e p="SoundSwitch.Build.cs" t="Include" />
-            <e p="SoundSwitch.tps" t="Include" />
-          </e>
         </e>
         <e p="jemalloc" t="Include">
           <e p="jemalloc.Build.cs" t="Include" />
@@ -43696,7 +43748,6 @@
       <e p="packages" t="ExcludeRecursive" />
       <e p="Panzerspiel.sln" t="IncludeFlat" />
       <e p="Panzerspiel.uproject" t="Include" />
-      <e p="Plugins" t="Include" />
       <e p="README.md" t="Include" />
       <e p="Source" t="Include">
         <e p="Panzerspiel" t="Include">
