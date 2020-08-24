@@ -37,6 +37,10 @@ protected:
     UPROPERTY()
     int8 Direction = 1;
 
+    UPROPERTY(EditAnywhere, Category="Debug")
+    bool DebugLog = false;
+
+
 private:
     
 
@@ -83,9 +87,10 @@ private:
     UPROPERTY(EditAnywhere, Category="Movement")
     bool AlternativeControllerMovement = false;
 
-public:
-    UPROPERTY(EditAnywhere, Category="Debug")
-    bool DebugLog = false;
+private:
+    // Index of the TankPawns team. (Index 0 equals no team)
+    UPROPERTY(EditAnywhere, Category="Combat")
+    int32 Team = 0;
 
     // Methods
 public:
@@ -117,6 +122,9 @@ public:
 
     UFUNCTION()
     void UseControllerMovement(bool UseController);
+
+    UFUNCTION(BlueprintCallable, Category="TankPawn")
+    int32 GetTeam() const;
 
     
 private:

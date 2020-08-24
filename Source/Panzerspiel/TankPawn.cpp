@@ -241,3 +241,9 @@ void ATankPawn::MineDestroyed() {
 	check(ActiveMines > 0);
 	--ActiveMines;
 }
+
+// -------------------- Other -------------------- //
+
+int32 ATankPawn::GetTeam() const {
+	return Team;
+}
