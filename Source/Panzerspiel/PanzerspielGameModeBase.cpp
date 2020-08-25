@@ -34,10 +34,22 @@ TArray<ATankPawn*> APanzerspielGameModeBase::GetTankPawnsByTeams(TArray<int32> T
 TArray<ATankPawn*> APanzerspielGameModeBase::GetTankPawnNotInTeam(int32 TeamIndex) {
 	TArray<ATankPawn*> FilteredPawns;
 	for(ATankPawn *Pawn: PlayerPawns) {
-		if(Pawn->GetTeam() != TeamIndex)
+		if(IsValid(Pawn) && Pawn->GetTeam() != TeamIndex)
 			FilteredPawns.Add(Pawn);
 	}
 	return FilteredPawns;
+}
+
+void APanzerspielGameModeBase::TankPawnRemoveSelf(ATankPawn* Self) {
+	PlayerPawns.Remove(Self);
+}
+
+void APanzerspielGameModeBase::TankPawnRegisterSelf(ATankPawn* Self) {
+	PlayerPawns.Add(Self);
+}
+
+void APanzerspielGameModeBase::ClearTankPawns() {
+	PlayerPawns.Empty();
 }
 
 
@@ -49,10 +61,4 @@ void APanzerspielGameModeBase::BeginPlay() {
 		APlayerController *Controller = UGameplayStatics::CreatePlayer(this);
 		PlayerControllers.Init(Controller, 0);
 	}*/
-
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(this, ATankPawn::StaticClass(), FoundActors);
-	for(AActor *Actor: FoundActors) {
-		PlayerPawns.Add(Cast<ATankPawn>(Actor));
-	}
 }

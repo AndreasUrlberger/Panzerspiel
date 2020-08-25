@@ -9,6 +9,7 @@
 #include "Bullet.h"
 #include "Kismet/GameplayStatics.h"
 #include "Mine.h"
+#include "PanzerspielGameModeBase.h"
 #include "Engine/EngineTypes.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Math/UnrealMathUtility.h"
@@ -30,6 +31,11 @@ ATankPawn::ATankPawn() {
 // Called when the game starts or when spawned
 void ATankPawn::BeginPlay() {
 	Super::BeginPlay();
+
+	if(UWorld * World = GetWorld())
+		GameMode = Cast<APanzerspielGameModeBase>(World->GetAuthGameMode());
+	checkf(GameMode, TEXT("Could not get the GameMode. Note that GetAuthGameMode returns null on the client."));
+	GameMode->TankPawnRegisterSelf(this);
 }
 
 // Called every frame
@@ -52,6 +58,7 @@ void ATankPawn::Die() {
 	if (ExplosionSound)
 		UGameplayStatics::PlaySoundAtLocation(this, ExplosionSound, GetActorLocation());
 	PlayNiagaraExplosion(GetActorLocation());
+	GameMode->TankPawnRemoveSelf(this);
 	Destroy();
 }
 

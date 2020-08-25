@@ -87,10 +87,12 @@ private:
     UPROPERTY(EditAnywhere, Category="Movement")
     bool AlternativeControllerMovement = false;
 
-private:
     // Index of the TankPawns team. (Index 0 equals no team)
     UPROPERTY(EditAnywhere, Category="Combat")
     int32 Team = 0;
+    
+    UPROPERTY()
+    class APanzerspielGameModeBase *GameMode;
 
     // Methods
 public:
@@ -106,6 +108,7 @@ public:
     // Will be called by a Bullet when it hits this Tank.
     UFUNCTION()
     void Kill(ATankPawn* Enemy);
+    
     // Will be called by a Bullet before it dies to inform this tank that it regains one shot.
     UFUNCTION()
     void BulletDestroyed();

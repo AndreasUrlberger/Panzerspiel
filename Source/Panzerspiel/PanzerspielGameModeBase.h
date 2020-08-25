@@ -16,13 +16,15 @@ class PANZERSPIEL_API APanzerspielGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 
+private:
+	
 	UPROPERTY(VisibleAnywhere, Category="Players")
 	TArray<APlayerController*> PlayerControllers;
 
 	UPROPERTY(EditAnywhere, Category="Debug")
 	bool DebugLog = false;
 
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly, Category="Players")
 	TArray<class ATankPawn*> PlayerPawns;
 
 	/*UPROPERTY(EditAnywhere, Category="Players")
@@ -47,4 +49,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="PlayerPawns")
 	TArray<ATankPawn*> GetTankPawnNotInTeam(int32 TeamIndex);
+
+	UFUNCTION()
+	void TankPawnRemoveSelf(ATankPawn *Self);
+
+	UFUNCTION()
+	void TankPawnRegisterSelf(ATankPawn *Self);
+
+	// Must be called before a LevelStream to remove the old TankPawn references.
+	UFUNCTION(BlueprintCallable)
+	void ClearTankPawns();
 };
