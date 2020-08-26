@@ -2,7 +2,6 @@
 
 
 #include "BTTask_SimpleTankMoveTo.h"
-#include "NavigationSystem.h"
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
@@ -10,6 +9,7 @@
 #include "SimpleAITankPawn.h"
 #include "Containers/Array.h"
 #include "DrawDebugHelpers.h"
+#include "NavigationSystem.h"
 
 void UBTTask_SimpleTankMoveTo::OnGameplayTaskActivated(UGameplayTask& Task) {
 

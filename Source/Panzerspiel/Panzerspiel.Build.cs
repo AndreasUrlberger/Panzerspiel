@@ -8,9 +8,11 @@ public class Panzerspiel : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "Niagara", "CoreUObject", "Engine", "InputCore", "NavigationSystem" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "Niagara", "CoreUObject", "Engine", "InputCore", "NavigationSystem", "UINavigation" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		
+		PublicIncludePaths.AddRange(new string[] {"../Plugins/Marketplace/UINavigation/Source/UINavigation/Public", "../Plugins/Marketplace/UINavigation/Source/UINavigation/Classes" });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

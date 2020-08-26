@@ -1,5 +1,4 @@
-// All rights reserved @Apfelstrudel Games.
-
+// Copyright Apfelstrudel Games - All Rights Reserved
 
 #include "AITankPawn.h"
 #include "DrawDebugHelpers.h"

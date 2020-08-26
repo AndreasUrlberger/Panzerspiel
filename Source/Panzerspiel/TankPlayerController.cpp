@@ -1,9 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright Apfelstrudel Games - All Rights Reserved
 #define CrosshairPlaneTraceChannel ETraceTypeQuery::TraceTypeQuery3
 
 
 #include "TankPlayerController.h"
 #include "TankPawn.h"
+#include "../Plugins/Marketplace/UINavigation/Source/UINavigation/Public/UINavPCComponent.h"
 
 ATankPlayerController::ATankPlayerController() {
 }
@@ -19,6 +20,7 @@ void ATankPlayerController::Tick(float DeltaTime) {
 }
 
 void ATankPlayerController::BeginPlay() {
+    Super::BeginPlay();
     // Spawn Crosshair if blueprint is given.
     if (CrosshairToSpawn) {
         if (UWorld* World = GetWorld()) {

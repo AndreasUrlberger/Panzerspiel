@@ -1,16 +1,17 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright Apfelstrudel Games - All Rights Reserved
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/PlayerController.h"
+//#include "../../../../../../../Program Files/Epic Games/UE_4.25/Engine/Plugins/Marketplace/UINavigation/Source/UINavigation/Public/UINavController.h"
+#include "../Plugins/Marketplace/UINavigation/Source/UINavigation/Public/UINavController.h"
 #include "TankPlayerController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PANZERSPIEL_API ATankPlayerController : public APlayerController
+class PANZERSPIEL_API ATankPlayerController : public AUINavController
 {
 	GENERATED_BODY()
 
