@@ -36,13 +36,62 @@ void ATankPlayerController::BeginPlay() {
     }
 }
 
+void ATankPlayerController::SetCrosshairVisibility(bool IsVisible) {
+    Crosshair->SetActorHiddenInGame(!IsVisible);
+}
+
 void ATankPlayerController::SetupInputComponent() {
     Super::SetupInputComponent();
     if(ControllerInput) {
         InputComponent->BindAxis("MoveCrosshairUp", this, &ATankPlayerController::CrosshairMoveUp);
         InputComponent->BindAxis("MoveCrosshairRight", this, &ATankPlayerController::CrosshairMoveRight);
+        InputComponent->BindAxis("ControllerMoveForward", this, &ATankPlayerController::ControllerMoveForward);
+        InputComponent->BindAxis("ControllerMoveRight", this, &ATankPlayerController::ControllerMoveRight);
+    } else {
+        InputComponent->BindAxis("MoveForward", this, &ATankPlayerController::MoveForward);
+        InputComponent->BindAxis("MoveRight", this, &ATankPlayerController::MoveRight);
     }
+
+    InputComponent->BindAction("Shoot", EInputEvent::IE_Pressed, this, &ATankPlayerController::FireButtonPressed);
+    InputComponent->BindAction("PlaceMine", EInputEvent::IE_Pressed, this, &ATankPlayerController::MineButtonPressed);
 }
+
+void ATankPlayerController::FireButtonPressed() {
+    ATankPawn *TankPawn = Cast<ATankPawn>(GetPawn());
+    if(IsValid(TankPawn))
+        TankPawn->Shoot();   
+}
+
+void ATankPlayerController::MineButtonPressed() {
+    ATankPawn *TankPawn = Cast<ATankPawn>(GetPawn());
+    if(IsValid(TankPawn))
+        TankPawn->PlaceMine();
+}
+
+void ATankPlayerController::MoveForward(float AxisValue) {
+    ATankPawn *TankPawn = Cast<ATankPawn>(GetPawn());
+    if(IsValid(TankPawn))
+        TankPawn->MoveForward(AxisValue);
+}
+
+void ATankPlayerController::MoveRight(float AxisValue) {
+    ATankPawn *TankPawn = Cast<ATankPawn>(GetPawn());
+    if(IsValid(TankPawn))
+        TankPawn->MoveRight(AxisValue);
+}
+
+void ATankPlayerController::ControllerMoveForward(float AxisValue) {
+    ATankPawn *TankPawn = Cast<ATankPawn>(GetPawn());
+    if(IsValid(TankPawn))
+        TankPawn->ControllerMoveForward(AxisValue);
+}
+
+void ATankPlayerController::ControllerMoveRight(float AxisValue) {
+    ATankPawn *TankPawn = Cast<ATankPawn>(GetPawn());
+    if(IsValid(TankPawn))
+        TankPawn->ControllerMoveRight(AxisValue);
+}
+
 
 void ATankPlayerController::UpdateCrosshair() const {
     // Move crosshair to cursor location if crosshair was created.

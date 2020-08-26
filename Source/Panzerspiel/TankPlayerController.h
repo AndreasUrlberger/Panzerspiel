@@ -57,6 +57,9 @@ public:
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable)
+	void SetCrosshairVisibility(bool IsVisible);
+
 protected:
 	virtual void SetupInputComponent() override;
 	
@@ -73,4 +76,25 @@ private:
 
 	UFUNCTION()
 	void CrosshairMoveRight(float AxisValue);
+	
+	UFUNCTION()
+    void FireButtonPressed();
+	
+	UFUNCTION()
+    void MineButtonPressed();
+
+	UFUNCTION()
+    void MoveForward(float AxisValue);
+    
+	UFUNCTION()
+    virtual void MoveRight(float AxisValue);
+
+	UFUNCTION()
+    void ControllerMoveForward(float AxisValue);
+    
+	UFUNCTION()
+    void ControllerMoveRight(float AxisValue);
+    
+
 };
+

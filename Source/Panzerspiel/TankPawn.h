@@ -94,16 +94,32 @@ private:
     UPROPERTY()
     class APanzerspielGameModeBase *GameMode;
 
-    // Methods
+    // Functions
 public:
+
+    UFUNCTION()
+    void Shoot();
+    
+    UFUNCTION()
+    void PlaceMine();
+
+    UFUNCTION()
+    void MoveForward(float AxisValue);
+    
+    UFUNCTION()
+    virtual void MoveRight(float AxisValue);
+
+    UFUNCTION()
+    void ControllerMoveForward(float AxisValue);
+    
+    UFUNCTION()
+    void ControllerMoveRight(float AxisValue);
+    
     // Sets default values for this character's properties
     ATankPawn();
 
     // Called every frame
     virtual void Tick(float DeltaTime) override;
-
-    // Called to bind functionality to input
-    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
     // Will be called by a Bullet when it hits this Tank.
     UFUNCTION()
@@ -128,25 +144,8 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="TankPawn")
     int32 GetTeam() const;
-
     
 private:
-    UFUNCTION()
-    void Shoot();
-    UFUNCTION()
-    void PlaceMine();
-
-    UFUNCTION()
-    void MoveForward(float AxisValue);
-    
-    UFUNCTION()
-    virtual void MoveRight(float AxisValue);
-
-    UFUNCTION()
-    void ControllerMoveForward(float AxisValue);
-    
-    UFUNCTION()
-    void ControllerMoveRight(float AxisValue);
     
     UFUNCTION()
     FVector GetBulletSpawnPoint() const;
@@ -156,6 +155,7 @@ private:
 
 
 protected:
+    
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
 

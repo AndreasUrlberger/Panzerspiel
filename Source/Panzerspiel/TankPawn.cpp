@@ -64,21 +64,6 @@ void ATankPawn::Die() {
 
 // -------------------- Movement -------------------- //
 
-// Called to bind functionality to input
-void ATankPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	if (ControllerInput) {
-		PlayerInputComponent->BindAxis("ControllerMoveForward", this, &ATankPawn::ControllerMoveForward);
-		PlayerInputComponent->BindAxis("ControllerMoveRight", this, &ATankPawn::ControllerMoveRight);
-	} else {
-		PlayerInputComponent->BindAxis("MoveForward", this, &ATankPawn::MoveForward);
-		PlayerInputComponent->BindAxis("MoveRight", this, &ATankPawn::MoveRight);
-	}
-
-	PlayerInputComponent->BindAction("Shoot", EInputEvent::IE_Pressed, this, &ATankPawn::Shoot);
-	PlayerInputComponent->BindAction("PlaceMine", EInputEvent::IE_Pressed, this, &ATankPawn::PlaceMine);
-}
-
 void ATankPawn::MoveForward(float AxisValue) {
 	MoveForwardAxisValue = AxisValue;
 }
