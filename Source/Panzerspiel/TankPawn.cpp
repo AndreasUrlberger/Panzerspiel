@@ -32,7 +32,7 @@ ATankPawn::ATankPawn() {
 void ATankPawn::BeginPlay() {
 	Super::BeginPlay();
 
-	if(UWorld * World = GetWorld())
+	if (UWorld* World = GetWorld())
 		GameMode = Cast<APanzerspielGameModeBase>(World->GetAuthGameMode());
 	checkf(GameMode, TEXT("Could not get the GameMode. Note that GetAuthGameMode returns null on the client."));
 	GameMode->TankPawnRegisterSelf(this);
@@ -69,14 +69,6 @@ void ATankPawn::MoveForward(float AxisValue) {
 }
 
 void ATankPawn::MoveRight(float AxisValue) {
-	MoveRightAxisValue = AxisValue;
-}
-
-void ATankPawn::ControllerMoveForward(float AxisValue) {
-	MoveForwardAxisValue = AxisValue;
-}
-
-void ATankPawn::ControllerMoveRight(float AxisValue) {
 	MoveRightAxisValue = AxisValue;
 }
 
@@ -141,20 +133,6 @@ void ATankPawn::ControllerMove(float DeltaTime) {
 void ATankPawn::UseControllerMovement(bool UseController) {
 	ControllerInput = UseController;
 	AlternativeControllerMovement = UseController;
-
-	if (ControllerInput) {
-		/*auto sortByMakeAndModel = [](const FInputAxisBinding &AxisBinding) -> bool
-    {
-    	return AxisBinding.AxisName.IsEqual("MoveForward");
-    };
-		int32 RemoveAmount = InputComponent->AxisBindings.RemoveAll(sortByMakeAndModel);
-		UE_LOG(LogTemp, Warning, TEXT("RemoveAmount: %d"), RemoveAmount);*/
-		InputComponent->BindAxis("ControllerMoveForward", this, &ATankPawn::ControllerMoveForward);
-		InputComponent->BindAxis("ControllerMoveRight", this, &ATankPawn::ControllerMoveRight);
-	} else {
-		InputComponent->BindAxis("MoveForward", this, &ATankPawn::MoveForward);
-		InputComponent->BindAxis("MoveRight", this, &ATankPawn::MoveRight);
-	}
 }
 
 // -------------------- Combat -------------------- //
@@ -167,56 +145,59 @@ void ATankPawn::AlignTower(const FVector Target) {
 }
 
 void ATankPawn::Shoot() {
-	if (ActiveShots < MaxShots) {
-		if (UWorld* World = GetWorld()) {
-			FActorSpawnParameters Params;
-			Params.Owner = this;
-			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
+	if(ActiveShots >= MaxShots)
+		return;
+	
+	if (UWorld* World = GetWorld()) {
+		FActorSpawnParameters Params;
+		Params.Owner = this;
+		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
 
-			const FRotator Rotation = TurretMesh->GetComponentRotation();
-			const FVector Location = GetBulletSpawnPoint();
+		const FRotator Rotation = TurretMesh->GetComponentRotation();
+		const FVector Location = GetBulletSpawnPoint();
 
-			ABullet* Bullet = World->SpawnActor<ABullet>(ToSpawnBullet, Location, Rotation, Params);
+		ABullet* Bullet = World->SpawnActor<ABullet>(ToSpawnBullet, Location, Rotation, Params);
 
 
-			// Check if the spawn was successful.
-			if (Bullet) {
-				++ActiveShots;
-				Bullet->Init(this);
-				if (FireSound)
-					UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
-			} else {
-				// Player tried to shoot directly into a wall -> He dies.
-				if (FireSound)
-					UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
-				Die();
-			}
+		// Check if the spawn was successful.
+		if (Bullet) {
+			++ActiveShots;
+			Bullet->Init(this);
+			if (FireSound)
+				UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
+		} else {
+			// Player tried to shoot directly into a wall -> He dies.
+			if (FireSound)
+				UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
+			Die();
 		}
 	}
 }
 
 void ATankPawn::PlaceMine() {
-	if (ActiveMines < MaxMines) {
-		if (UWorld* World = GetWorld()) {
-			FActorSpawnParameters Params;
-			Params.Owner = this;
+	if (ActiveMines >= MaxMines)
+		return;
 
-			// Some kind of random rotation seems to be a good idea.
-			const FRotator Rotation = TurretMesh->GetComponentRotation();
-			const FVector Location = GetActorLocation();
+	if (UWorld* World = GetWorld()) {
+		FActorSpawnParameters Params;
+		Params.Owner = this;
 
-			AMine* Mine = World->SpawnActor<AMine>(ToSpawnMine, Location, Rotation, Params);
+		// Some kind of random rotation seems to be a good idea.
+		const FRotator Rotation = TurretMesh->GetComponentRotation();
+		const FVector Location = GetActorLocation();
+
+		AMine* Mine = World->SpawnActor<AMine>(ToSpawnMine, Location, Rotation, Params);
 
 
-			// Check if the spawn was successful.
-			if (Mine) {
-				++ActiveMines;
-				Mine->Init(this);
-				if (MinePlantSound)
-					UGameplayStatics::PlaySoundAtLocation(this, MinePlantSound, Location);
-			}
+		// Check if the spawn was successful.
+		if (Mine) {
+			++ActiveMines;
+			Mine->Init(this);
+			if (MinePlantSound)
+				UGameplayStatics::PlaySoundAtLocation(this, MinePlantSound, Location);
 		}
 	}
+
 }
 
 FVector ATankPawn::GetBulletSpawnPoint() const {

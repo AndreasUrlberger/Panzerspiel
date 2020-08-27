@@ -59,6 +59,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetCrosshairVisibility(bool IsVisible);
+	
+	UFUNCTION(BlueprintCallable)
+    void UseControllerInput(bool UsesController);
+    
 
 protected:
 	virtual void SetupInputComponent() override;
@@ -89,12 +93,6 @@ private:
 	UFUNCTION()
     virtual void MoveRight(float AxisValue);
 
-	UFUNCTION()
-    void ControllerMoveForward(float AxisValue);
-    
-	UFUNCTION()
-    void ControllerMoveRight(float AxisValue);
-    
-
+	virtual void OnPossess(APawn* InPawn) override;
+	
 };
-

@@ -34,7 +34,24 @@ void ATankPlayerController::BeginPlay() {
             Crosshair = World->SpawnActor<AActor>(CrosshairToSpawn, Location, Rotation, Params);
         }
     }
+   
 }
+
+void ATankPlayerController::OnPossess(APawn* InPawn) {
+    Super::OnPossess(InPawn);
+    // Make sure the possessed pawn uses the same input mode as specified in the controller.
+    ATankPawn *TankPawn = Cast<ATankPawn>(InPawn);
+    if(IsValid(TankPawn))
+        TankPawn->UseControllerMovement(ControllerInput);
+}
+
+void ATankPlayerController::UseControllerInput(bool UsesController) {
+    ControllerInput = UsesController;
+    ATankPawn *TankPawn = Cast<ATankPawn>(GetPawn());
+    if(IsValid(TankPawn))
+        TankPawn->UseControllerMovement(ControllerInput);
+}
+
 
 void ATankPlayerController::SetCrosshairVisibility(bool IsVisible) {
     Crosshair->SetActorHiddenInGame(!IsVisible);
@@ -42,15 +59,11 @@ void ATankPlayerController::SetCrosshairVisibility(bool IsVisible) {
 
 void ATankPlayerController::SetupInputComponent() {
     Super::SetupInputComponent();
-    if(ControllerInput) {
-        InputComponent->BindAxis("MoveCrosshairUp", this, &ATankPlayerController::CrosshairMoveUp);
-        InputComponent->BindAxis("MoveCrosshairRight", this, &ATankPlayerController::CrosshairMoveRight);
-        InputComponent->BindAxis("ControllerMoveForward", this, &ATankPlayerController::ControllerMoveForward);
-        InputComponent->BindAxis("ControllerMoveRight", this, &ATankPlayerController::ControllerMoveRight);
-    } else {
-        InputComponent->BindAxis("MoveForward", this, &ATankPlayerController::MoveForward);
-        InputComponent->BindAxis("MoveRight", this, &ATankPlayerController::MoveRight);
-    }
+    InputComponent->BindAxis("MoveCrosshairUp", this, &ATankPlayerController::CrosshairMoveUp);
+    InputComponent->BindAxis("MoveCrosshairRight", this, &ATankPlayerController::CrosshairMoveRight);
+    
+    InputComponent->BindAxis("MoveForward", this, &ATankPlayerController::MoveForward);
+    InputComponent->BindAxis("MoveRight", this, &ATankPlayerController::MoveRight);
 
     InputComponent->BindAction("Shoot", EInputEvent::IE_Pressed, this, &ATankPlayerController::FireButtonPressed);
     InputComponent->BindAction("PlaceMine", EInputEvent::IE_Pressed, this, &ATankPlayerController::MineButtonPressed);
@@ -78,18 +91,6 @@ void ATankPlayerController::MoveRight(float AxisValue) {
     ATankPawn *TankPawn = Cast<ATankPawn>(GetPawn());
     if(IsValid(TankPawn))
         TankPawn->MoveRight(AxisValue);
-}
-
-void ATankPlayerController::ControllerMoveForward(float AxisValue) {
-    ATankPawn *TankPawn = Cast<ATankPawn>(GetPawn());
-    if(IsValid(TankPawn))
-        TankPawn->ControllerMoveForward(AxisValue);
-}
-
-void ATankPlayerController::ControllerMoveRight(float AxisValue) {
-    ATankPawn *TankPawn = Cast<ATankPawn>(GetPawn());
-    if(IsValid(TankPawn))
-        TankPawn->ControllerMoveRight(AxisValue);
 }
 
 

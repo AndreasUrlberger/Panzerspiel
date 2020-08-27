@@ -109,12 +109,6 @@ public:
     UFUNCTION()
     virtual void MoveRight(float AxisValue);
 
-    UFUNCTION()
-    void ControllerMoveForward(float AxisValue);
-    
-    UFUNCTION()
-    void ControllerMoveRight(float AxisValue);
-    
     // Sets default values for this character's properties
     ATankPawn();
 
@@ -144,7 +138,7 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="TankPawn")
     int32 GetTeam() const;
-    
+
 private:
     
     UFUNCTION()
