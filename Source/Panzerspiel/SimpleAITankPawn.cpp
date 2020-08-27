@@ -110,6 +110,33 @@ void ASimpleAITankPawn::Tick(float DeltaTime) {
         }
     }
     NavigationTrace();
+
+    // Lock on aim.
+    if(IsValid(LockOnActor))
+        AlignTower(LockOnActor->GetActorLocation());
+
+    // Always update the TimeTillNextShoot.
+    TimeTillNextShot -= DeltaTime;
+    // Only shoot when a target is selected.
+    if(IsValid(LockOnActor) && FireMode) {
+        UWorld *World = GetWorld();
+        if(World && TimeTillNextShot <= 0) {
+            FHitResult HitResult;
+            FCollisionQueryParams Params;
+            Params.AddIgnoredActor(this);
+            FVector StartLoc = GetBulletSpawnPoint();
+            FVector EndLoc = LockOnActor->GetActorLocation();
+            World->LineTraceSingleByChannel(HitResult, StartLoc, EndLoc, ECollisionChannel::ECC_Camera, Params);
+            // Only shoot when the target can be seen.
+            if(HitResult.Actor == LockOnActor) {
+                bool ShotFired = Shoot();
+                // Renew TimeTillNextShot.
+                if(ShotFired) {
+                    TimeTillNextShot = FMath::RandRange(MinShootDelay, RandomShootDelay);
+                }
+            }
+        }
+    }
 }
 
 bool ASimpleAITankPawn::FollowPathPoints(UBTTask_SimpleTankMoveTo *Task, TArray<FVector> Points) {
@@ -121,6 +148,14 @@ bool ASimpleAITankPawn::FollowPathPoints(UBTTask_SimpleTankMoveTo *Task, TArray<
         PathPoints[Index].Z = 0;
     FollowingPathPoints = true;
     return true;
+}
+
+void ASimpleAITankPawn::LockOntoTarget(AActor* LockOnTarget) {
+    LockOnActor = LockOnTarget;
+}
+
+void ASimpleAITankPawn::SetFireMode(bool DoesFire) {
+    FireMode = DoesFire;
 }
 
 

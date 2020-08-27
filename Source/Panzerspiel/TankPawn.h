@@ -97,8 +97,9 @@ private:
     // Functions
 public:
 
+    // Returns whether a shoot was fired.
     UFUNCTION()
-    void Shoot();
+    bool Shoot();
     
     UFUNCTION()
     void PlaceMine();
@@ -141,8 +142,6 @@ public:
 
 private:
     
-    UFUNCTION()
-    FVector GetBulletSpawnPoint() const;
     
     UFUNCTION()
     void Die();
@@ -163,4 +162,7 @@ protected:
 
     UFUNCTION()
     void ControllerMove(float DeltaTime);
+
+    UFUNCTION()
+    FVector GetBulletSpawnPoint() const;
 };

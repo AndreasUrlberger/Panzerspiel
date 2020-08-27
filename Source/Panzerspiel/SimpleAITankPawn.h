@@ -13,7 +13,7 @@ UCLASS()
 class PANZERSPIEL_API ASimpleAITankPawn : public ATankPawn {
 	GENERATED_BODY()
 
-	// Variables
+// Variables
 private:
 	UPROPERTY(EditAnywhere, Category="AI")
 	float TraceRange;
@@ -71,6 +71,22 @@ private:
 	UPROPERTY(EditAnywhere, Category="CollisionAvoidance")
 	float AvoidStrength = 1;
 
+	UPROPERTY()
+	AActor *LockOnActor;
+
+	// Measured in seconds.
+	UPROPERTY(EditAnywhere, Category="Combat")
+	float RandomShootDelay = 3;
+
+	// Measured in seconds.
+	UPROPERTY(EditAnywhere, Category="Combat")
+	float MinShootDelay = 0.3;
+
+	UPROPERTY(VisibleAnywhere, Category="Combat")
+	bool FireMode = false;
+
+	UPROPERTY(VisibleAnywhere, Category="Combat")
+	float TimeTillNextShot = 0;
 
 	// Functions
 	virtual void MoveRight(float AxisValue) override;
@@ -90,5 +106,13 @@ public:
 	// Called every frame.
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable)
 	bool FollowPathPoints(UBTTask_SimpleTankMoveTo* Task, TArray<FVector> Points);
+
+	// To free the lock mode you can just pass a nullptr.
+	UFUNCTION(BlueprintCallable)
+	void LockOntoTarget(AActor *LockOnTarget);
+
+	UFUNCTION(BlueprintCallable)
+	void SetFireMode(bool DoesFire);
 };

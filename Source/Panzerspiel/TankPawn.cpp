@@ -144,34 +144,38 @@ void ATankPawn::AlignTower(const FVector Target) {
 	TurretMesh->SetWorldRotation(Rotation.ToOrientationRotator(), true);
 }
 
-void ATankPawn::Shoot() {
+bool ATankPawn::Shoot() {
 	if(ActiveShots >= MaxShots)
-		return;
+		return false;
+
+	UWorld *World = GetWorld();
+	if(World == nullptr)
+		return false;
 	
-	if (UWorld* World = GetWorld()) {
-		FActorSpawnParameters Params;
-		Params.Owner = this;
-		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
-
-		const FRotator Rotation = TurretMesh->GetComponentRotation();
-		const FVector Location = GetBulletSpawnPoint();
-
-		ABullet* Bullet = World->SpawnActor<ABullet>(ToSpawnBullet, Location, Rotation, Params);
+	// Spawn bullet.
+	FActorSpawnParameters Params;
+	Params.Owner = this;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
+	const FRotator Rotation = TurretMesh->GetComponentRotation();
+	const FVector Location = GetBulletSpawnPoint();
+	ABullet* Bullet = World->SpawnActor<ABullet>(ToSpawnBullet, Location, Rotation, Params);
 
 
-		// Check if the spawn was successful.
-		if (Bullet) {
-			++ActiveShots;
-			Bullet->Init(this);
-			if (FireSound)
-				UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
-		} else {
-			// Player tried to shoot directly into a wall -> He dies.
-			if (FireSound)
-				UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
-			Die();
-		}
+	// Check if the spawn was successful.
+	if (Bullet) {
+		++ActiveShots;
+		Bullet->Init(this);
+		if (FireSound)
+			UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
+	} else {
+		// Player tried to shoot directly into a wall -> He dies.
+		if (FireSound)
+			UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location);
+		Die();
 	}
+
+	// Bullet was successfully shot.
+	return true;
 }
 
 void ATankPawn::PlaceMine() {
