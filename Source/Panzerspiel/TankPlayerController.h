@@ -51,6 +51,9 @@ private:
 	UPROPERTY(EditAnywhere, Category="Movement")
 	float CrosshairMovementSpeed = 10;
 
+	UPROPERTY()
+	class ATankPawn *TankPawn;
+
 public:
 
 	virtual void Tick(float DeltaTime) override;
@@ -94,5 +97,6 @@ private:
     virtual void MoveRight(float AxisValue);
 
 	virtual void OnPossess(APawn* InPawn) override;
-	
+
+	virtual void OnUnPossess() override;
 };
