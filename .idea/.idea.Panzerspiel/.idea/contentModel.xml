@@ -43759,6 +43759,8 @@
           <e p="BTTask_SimpleTankMoveTo.h" t="Include" />
           <e p="Bullet.cpp" t="Include" />
           <e p="Bullet.h" t="Include" />
+          <e p="CubeObstacle.cpp" t="Include" />
+          <e p="CubeObstacle.h" t="Include" />
           <e p="Mine.cpp" t="Include" />
           <e p="Mine.h" t="Include" />
           <e p="Panzerspiel.Build.cs" t="Include" />
@@ -43774,6 +43776,8 @@
           <e p="TankPawn.h" t="Include" />
           <e p="TankPlayerController.cpp" t="Include" />
           <e p="TankPlayerController.h" t="Include" />
+          <e p="WorldObstacle.cpp" t="Include" />
+          <e p="WorldObstacle.h" t="Include" />
         </e>
         <e p="Panzerspiel.Target.cs" t="Include" />
         <e p="PanzerspielEditor.Target.cs" t="Include" />
