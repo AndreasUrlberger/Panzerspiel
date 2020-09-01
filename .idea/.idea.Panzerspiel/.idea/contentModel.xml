@@ -43768,6 +43768,8 @@
           <e p="Panzerspiel.h" t="Include" />
           <e p="PanzerspielGameModeBase.cpp" t="Include" />
           <e p="PanzerspielGameModeBase.h" t="Include" />
+          <e p="RicochetAimer.cpp" t="Include" />
+          <e p="RicochetAimer.h" t="Include" />
           <e p="SimpleAITankPawn.cpp" t="Include" />
           <e p="SimpleAITankPawn.h" t="Include" />
           <e p="SplineTestVisualizer.cpp" t="Include" />

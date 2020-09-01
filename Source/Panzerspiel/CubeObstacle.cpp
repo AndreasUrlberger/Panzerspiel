@@ -18,15 +18,18 @@ ACubeObstacle::ACubeObstacle() {
 	BottomLeftC->SetupAttachment(RootComponent);
 	CornerMarkers.Add(BottomLeftC);
 
-	CornersLocations.Add(FVector2D(TopLeftC->GetComponentLocation()));
-	CornersLocations.Add(FVector2D(TopRightC->GetComponentLocation()));
-	CornersLocations.Add(FVector2D(BottomRightC->GetComponentLocation()));
-	CornersLocations.Add(FVector2D(BottomLeftC->GetComponentLocation()));
-	
+	/*CornersLocations.Add(FVector2D(GetActorLocation() + TopLeftC->GetComponentLocation()));
+	CornersLocations.Add(FVector2D(GetActorLocation() + TopRightC->GetComponentLocation()));
+	CornersLocations.Add(FVector2D(GetActorLocation() + BottomRightC->GetComponentLocation()));
+	CornersLocations.Add(FVector2D(GetActorLocation() + BottomLeftC->GetComponentLocation()));*/
 }
 
 void ACubeObstacle::BeginPlay() {
 	Super::BeginPlay();
+	CornersLocations.Add(FVector2D(TopLeftC->GetComponentLocation()));
+	CornersLocations.Add(FVector2D(TopRightC->GetComponentLocation()));
+	CornersLocations.Add(FVector2D(BottomRightC->GetComponentLocation()));
+	CornersLocations.Add(FVector2D(BottomLeftC->GetComponentLocation()));
 }
 
 TArray<FObstacleEdge> ACubeObstacle::GetPossibleEdges(FVector2D BulletOrigin) {
@@ -45,37 +48,36 @@ TArray<FObstacleEdge> ACubeObstacle::GetPossibleEdges(FVector2D BulletOrigin) {
 		const FVector2D DirectionLeftRotated = FVector2D(DirectionLeft.Y, -DirectionLeft.X);
 		const FVector2D DirectionRight = Corners[RightMostIndex] - BulletOrigin;
 		// Same as for the Left vector.
-		const FVector2D DirectionRightRotated = FVector2D(DirectionRight.Y, -Direction.X);
-		
-		if(FVector2D::DotProduct(DirectionLeftRotated, Direction) < 0) {
+		const FVector2D DirectionRightRotated = FVector2D(DirectionRight.Y, -DirectionRight.X);
+
+		if(FVector2D::DotProduct(DirectionLeftRotated, Direction) > 0) {
 			// More left than the leftmost.
 			LeftMostIndex = Index;
-		}else if(FVector2D::DotProduct(DirectionRightRotated, Direction) > 0 ){
+		}else if(FVector2D::DotProduct(DirectionRightRotated, Direction) < 0 ){
 			// More than the rightMost.
 			RightMostIndex = Index;
 		}
 	}
-
+	
 	// Now we have the left- and rightmost corner.
 	const FVector2D BorderVector = Corners[LeftMostIndex] - Corners[RightMostIndex];
-	FVector2D RotatedBorder = FVector2D(BorderVector.Y, -BorderVector.X);
+	const FVector2D RotatedBorder = FVector2D(BorderVector.Y, -BorderVector.X);
+	// Add all possible edges.
+	TArray<FObstacleEdge> PossibleEdges;
+	PossibleEdges.Add(FObstacleEdge(Corners[0], Corners[1]));
+	PossibleEdges.Add(FObstacleEdge(Corners[1], Corners[2]));
+	PossibleEdges.Add(FObstacleEdge(Corners[2], Corners[3]));
+	PossibleEdges.Add(FObstacleEdge(Corners[3], Corners[0]));
 
 	// Find which corners are not visible and thus are to be removed.
-	TArray<int32> ToRemove;
 	for(int32 Index = 0; Index < 4; ++Index) {
 		if(Index != LeftMostIndex && Index != RightMostIndex) {
 			FVector2D Direction = Corners[Index] - FVector2D(GetActorLocation());
-			if(FVector2D::DotProduct(RotatedBorder, Direction) > 0)
-				ToRemove.Add(Index);
+			if(FVector2D::DotProduct(RotatedBorder, Direction) < 0) {
+				FVector2D Corner = Corners[Index];
+				PossibleEdges.RemoveAll([Corner](FObstacleEdge n){ return n.Start == Corner || n.End == Corner; });
+			}
 		}
 	}
-	for(int32 ToRemoveAt : ToRemove)
-		Corners.RemoveAt(ToRemoveAt);
-
-	// Add all possible edges.
-	TArray<FObstacleEdge> PossibleEdges;
-	for(int32 Index = 1; Index < Corners.Num(); ++Index)
-		PossibleEdges.Add(FObstacleEdge(Corners[Index - 1], Corners[Index] - Corners[Index - 1]));
-	
 	return PossibleEdges;
 }

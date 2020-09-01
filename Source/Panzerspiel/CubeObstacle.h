@@ -30,11 +30,15 @@ private:
 	UPROPERTY(EditAnywhere, Category="Corners")
 	USceneComponent *BottomLeftC;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Category="Corners")
 	TArray<FVector2D> CornersLocations;
+
+	UPROPERTY(EditAnywhere, Category="Debug")
+	bool bDebugLog = false;
 
 protected:
 	virtual void BeginPlay() override;
 
+public:
 	virtual TArray<FObstacleEdge> GetPossibleEdges(FVector2D BulletOrigin) override;	
 };

@@ -6,21 +6,20 @@
 #include "GameFramework/Actor.h"
 #include "WorldObstacle.generated.h"
 
-USTRUCT()
+USTRUCT(Immutable)
 struct PANZERSPIEL_API FObstacleEdge {
 
 	GENERATED_USTRUCT_BODY()
 public:
-    FObstacleEdge(FVector2D NewOrigin = FVector2D::ZeroVector, FVector2D NewDirection = FVector2D::ZeroVector) {
-		Origin = NewOrigin;
-		Direction = NewDirection;
-	}
+    FObstacleEdge(FVector2D NewStart = FVector2D::ZeroVector, FVector2D NewEnd = FVector2D::ZeroVector)
+	: Start(NewStart), End(NewEnd) {}
 
-	UPROPERTY()
-	FVector2D Origin;
+	UPROPERTY(VisibleAnywhere)
+	FVector2D Start;
 
-	UPROPERTY()
-	FVector2D Direction;
+	UPROPERTY(VisibleAnywhere)
+	FVector2D End;
+
 };
 
 
@@ -41,7 +40,7 @@ protected:
 	USceneComponent *RootSceneComp;
 
 	UFUNCTION()
-	virtual TArray<USceneComponent*> GetCornerMarkers();
+	TArray<USceneComponent*> GetCornerMarkers();
 
 	UFUNCTION()
 	virtual TArray<FObstacleEdge> GetPossibleEdges(FVector2D BulletOrigin);

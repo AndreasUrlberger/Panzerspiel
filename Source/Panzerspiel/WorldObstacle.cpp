@@ -15,3 +15,8 @@ AWorldObstacle::AWorldObstacle()
 TArray<USceneComponent*> AWorldObstacle::GetCornerMarkers() {
 	return CornerMarkers;
 }
+
+TArray<FObstacleEdge> AWorldObstacle::GetPossibleEdges(FVector2D BulletOrigin) {
+	TArray<FObstacleEdge> Empty;
+	return Empty;
+}
