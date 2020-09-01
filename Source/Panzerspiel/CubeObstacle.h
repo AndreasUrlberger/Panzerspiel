@@ -33,6 +33,9 @@ private:
 	UPROPERTY(VisibleAnywhere, Category="Corners")
 	TArray<FVector2D> CornersLocations;
 
+	UPROPERTY(VisibleAnywhere, Category="Corners")
+	TArray<FVector2D> EdgeLocations;
+
 	UPROPERTY(EditAnywhere, Category="Debug")
 	bool bDebugLog = false;
 
@@ -40,5 +43,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual TArray<FObstacleEdge> GetPossibleEdges(FVector2D BulletOrigin) override;	
+	virtual TArray<FObstacleEdge> GetPossibleEdges(FVector2D BulletOrigin) override;
+	
+	virtual TArray<FObstacleEdge> GetPossibleEdges2(FVector2D BulletOrigin) override;
 };

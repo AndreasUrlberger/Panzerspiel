@@ -20,3 +20,8 @@ TArray<FObstacleEdge> AWorldObstacle::GetPossibleEdges(FVector2D BulletOrigin) {
 	TArray<FObstacleEdge> Empty;
 	return Empty;
 }
+
+TArray<FObstacleEdge> AWorldObstacle::GetPossibleEdges2(FVector2D BulletOrigin) {
+	TArray<FObstacleEdge> Empty;
+	return Empty;
+}

@@ -30,6 +30,15 @@ void ACubeObstacle::BeginPlay() {
 	CornersLocations.Add(FVector2D(TopRightC->GetComponentLocation()));
 	CornersLocations.Add(FVector2D(BottomRightC->GetComponentLocation()));
 	CornersLocations.Add(FVector2D(BottomLeftC->GetComponentLocation()));
+
+	FVector2D TopLeft = FVector2D(TopLeftC->GetComponentLocation());
+	FVector2D TopRight = FVector2D(TopRightC->GetComponentLocation());
+	FVector2D BottomRight = FVector2D(BottomRightC->GetComponentLocation());
+	FVector2D BottomLeft = FVector2D(BottomLeftC->GetComponentLocation());
+	EdgeLocations.Add(TopLeft + (TopRight - TopLeft)/2);
+	EdgeLocations.Add(TopRight + (BottomRight - TopRight)/2);
+	EdgeLocations.Add(BottomRight + (BottomLeft - BottomRight)/2);
+	EdgeLocations.Add(BottomLeft + (TopLeft - BottomLeft)/2);
 }
 
 TArray<FObstacleEdge> ACubeObstacle::GetPossibleEdges(FVector2D BulletOrigin) {
@@ -81,3 +90,42 @@ TArray<FObstacleEdge> ACubeObstacle::GetPossibleEdges(FVector2D BulletOrigin) {
 	}
 	return PossibleEdges;
 }
+
+TArray<FObstacleEdge> ACubeObstacle::GetPossibleEdges2(FVector2D BulletOrigin) {
+	TArray<FObstacleEdge> PossibleEdges;
+	// First Edge.
+	FVector2D Edge = CornersLocations[1] - CornersLocations[0];
+	FVector2D EdgeLocation = EdgeLocations[0];
+	FVector2D EdgeNormal = FVector2D(Edge.Y, -Edge.X);
+	FVector2D TankDirection = BulletOrigin - EdgeLocation;
+	if(FVector2D::DotProduct(TankDirection, EdgeNormal) > 0)
+		PossibleEdges.Add(FObstacleEdge(CornersLocations[0], CornersLocations[1]));
+
+	// Second Edge.
+	Edge = CornersLocations[2] - CornersLocations[1];
+	EdgeLocation = EdgeLocations[1];
+	EdgeNormal = FVector2D(Edge.Y, -Edge.X);
+	TankDirection = BulletOrigin - EdgeLocation;
+	if(FVector2D::DotProduct(TankDirection, EdgeNormal) > 0)
+		PossibleEdges.Add(FObstacleEdge(CornersLocations[1], CornersLocations[2]));
+
+	// Third Edge.
+	Edge = CornersLocations[3] - CornersLocations[2];
+	EdgeLocation = EdgeLocations[2];
+	EdgeNormal = FVector2D(Edge.Y, -Edge.X);
+	TankDirection = BulletOrigin - EdgeLocation;
+	if(FVector2D::DotProduct(TankDirection, EdgeNormal) > 0)
+		PossibleEdges.Add(FObstacleEdge(CornersLocations[2], CornersLocations[3]));
+
+	// Fourth Edge.
+	Edge = CornersLocations[0] - CornersLocations[3];
+	EdgeLocation = EdgeLocations[3];
+	EdgeNormal = FVector2D(Edge.Y, -Edge.X);
+	TankDirection = BulletOrigin - EdgeLocation;
+	if(FVector2D::DotProduct(TankDirection, EdgeNormal) > 0)
+		PossibleEdges.Add(FObstacleEdge(CornersLocations[3], CornersLocations[0]));
+
+	return PossibleEdges;
+}
+
+

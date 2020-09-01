@@ -45,4 +45,7 @@ protected:
 	UFUNCTION()
 	virtual TArray<FObstacleEdge> GetPossibleEdges(FVector2D BulletOrigin);
 
+	UFUNCTION()
+	virtual TArray<FObstacleEdge> GetPossibleEdges2(FVector2D BulletOrigin);
+
 };

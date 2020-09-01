@@ -14,10 +14,6 @@ ARicochetAimer::ARicochetAimer()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
-	/*TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(this, ACubeObstacle::StaticClass(), FoundActors);
-	for(AActor *Cube : FoundActors)
-		Cubes.Add(Cast<ACubeObstacle>(Cube));*/
 }
 
 // Called when the game starts or when spawned
@@ -25,6 +21,7 @@ void ARicochetAimer::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Cubes.Empty();
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(this, ACubeObstacle::StaticClass(), FoundActors);
 	for(AActor *Cube : FoundActors)
@@ -42,14 +39,17 @@ void ARicochetAimer::Tick(float DeltaTime)
 	if(IsValid(TankPawn)) {
 		Edges.Empty();
 		const FVector2D Location = FVector2D(TankPawn->GetActorLocation());
-		for(ACubeObstacle *Obstacle : Cubes)
-			Edges.Append(Obstacle->GetPossibleEdges(Location));
+		for(ACubeObstacle *Obstacle : Cubes) {
+			if(!Obstacle)
+				UE_LOG(LogTemp, Warning, TEXT("Obstacle is null"));
+			Edges.Append(Obstacle->GetPossibleEdges2(Location));
+		}
 		if(bDebugDraw)
 			ShowEdges(Edges);
 	}
 	
 	double End = FPlatformTime::Seconds();
-	if(bDebugLog) UE_LOG(LogTemp, Warning, TEXT("code executed in %f seconds."), End-Start);
+	if(bDebugLog) UE_LOG(LogTemp, Warning, TEXT("code executed in %f seconds, found %d edges."), End-Start, Edges.Num());
 }
 
 void ARicochetAimer::ShowEdges(TArray<FObstacleEdge> EdgesToShow) const {
