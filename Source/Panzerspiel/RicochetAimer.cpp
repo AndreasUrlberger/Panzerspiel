@@ -31,18 +31,15 @@ void ARicochetAimer::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
 
-	double Start = FPlatformTime::Seconds();
+	const double Start = FPlatformTime::Seconds();
 
+	// TODO: Doing the gathering and intersecting of the edges both in the same loop could improve the performance, the downside is that we then cant use the potentially visible edges for comparison with other tanks.
 	if (IsValid(TankPawn)) {
 		Edges1.Empty();
 		const FVector2D Location = FVector2D(TankPawn->GetActorLocation());
 		for (ACubeObstacle* Obstacle : Cubes) {
-			if (!Obstacle)
-			UE_LOG(LogTemp, Warning, TEXT("Obstacle is null"));
 			Edges1.Append(Obstacle->GetPossibleEdges2(Location));
 		}
-		/*if(bDebugDraw)
-			ShowEdges(Edges1);*/
 		Edges1.Sort();
 	}
 
@@ -50,16 +47,11 @@ void ARicochetAimer::Tick(float DeltaTime) {
 		Edges2.Empty();
 		const FVector2D Location = FVector2D(TankPawn2->GetActorLocation());
 		for (ACubeObstacle* Obstacle : Cubes) {
-			if (!Obstacle)
-			UE_LOG(LogTemp, Warning, TEXT("Obstacle is null"));
 			Edges2.Append(Obstacle->GetPossibleEdges2(Location));
 		}
-		/*if(bDebugDraw)
-			ShowEdges(Edges2);*/
 		Edges2.Sort();
 	}
 
-	// TODO: Create the union of the edges to get the ones that are visible from both tanks.
 	IntersectedEdges = IntersectArrays(Edges1, Edges2);
 	// Just to make the inspection in the editor easier.
 	IntersectedEdges.Sort();
@@ -79,7 +71,6 @@ void ARicochetAimer::ShowEdges(TArray<FObstacleEdge> EdgesToShow) const {
 }
 
 TArray<FObstacleEdge> ARicochetAimer::IntersectArrays(TArray<FObstacleEdge> First, TArray<FObstacleEdge> Second) {
-	UE_LOG(LogTemp, Warning, TEXT("Called IntersectArrays"));
 	TArray<FObstacleEdge> Intersection;
 	const int32 LengthFirst = First.Num();
 	const int32 LengthSecond = Second.Num();
@@ -96,6 +87,5 @@ TArray<FObstacleEdge> ARicochetAimer::IntersectArrays(TArray<FObstacleEdge> Firs
 			j++;
 		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Leaves IntersectArrays"));
 	return Intersection;
 }
