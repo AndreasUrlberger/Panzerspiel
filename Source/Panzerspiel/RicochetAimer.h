@@ -31,6 +31,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	class ATankPawn *TankPawn;
+	
+	UPROPERTY(EditAnywhere)
+	class ATankPawn *TankPawn2;
 
 	
 
@@ -39,6 +42,15 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category="Debug")
 	TArray<FObstacleEdge> Edges;
+	
+	UPROPERTY(VisibleAnywhere, Category="Debug")
+	TArray<FObstacleEdge> IntersectedEdges;
+	
+	UPROPERTY(VisibleAnywhere, Category="Debug")
+	TArray<FObstacleEdge> Edges1;
+	
+	UPROPERTY(VisibleAnywhere, Category="Debug")
+	TArray<FObstacleEdge> Edges2;
 
 	UPROPERTY(EditAnywhere, Category="Debug")
 	float LineThickness = 5;
@@ -48,6 +60,7 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category="Debug")
 	bool bDebugLog = false;
+
 	
 public:	
 	// Sets default values for this actor's properties
@@ -62,4 +75,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void ShowEdges(TArray<FObstacleEdge> EdgesToShow) const;
+	
+	UFUNCTION()
+	static TArray<FObstacleEdge> IntersectArrays(TArray<FObstacleEdge> First, TArray<FObstacleEdge> Second);
 };

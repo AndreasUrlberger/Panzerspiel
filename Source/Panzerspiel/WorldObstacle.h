@@ -12,7 +12,7 @@ struct PANZERSPIEL_API FObstacleEdge {
 	GENERATED_USTRUCT_BODY()
 public:
     FObstacleEdge(FVector2D NewStart = FVector2D::ZeroVector, FVector2D NewEnd = FVector2D::ZeroVector)
-	: Start(NewStart), End(NewEnd) {}
+	: Start(NewStart), End(NewEnd) { }
 
 	UPROPERTY(VisibleAnywhere)
 	FVector2D Start;
@@ -20,6 +20,19 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	FVector2D End;
 
+	bool Equals(const FObstacleEdge& OtherEdge) const;
+
+	bool operator<(const FObstacleEdge& Other) const;
+	
+	bool operator<=(const FObstacleEdge& Other) const;
+	
+	bool operator>(const FObstacleEdge& Other) const;
+	
+	bool operator>=(const FObstacleEdge& Other) const;
+	
+	bool operator==(const FObstacleEdge& Other) const;
+	
+	bool operator!=(const FObstacleEdge& Other) const;
 };
 
 
