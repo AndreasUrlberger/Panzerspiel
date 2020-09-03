@@ -33,6 +33,8 @@ public:
 	bool operator==(const FObstacleEdge& Other) const;
 	
 	bool operator!=(const FObstacleEdge& Other) const;
+
+	FString ToString() const;
 };
 
 

@@ -62,7 +62,19 @@ private:
 	bool bDebugDrawEdgeCalculation = false;
 	
 	UPROPERTY(EditAnywhere, Category="Debug")
+	bool bDebugDrawRaycastCalculation = false;
+	
+	UPROPERTY(EditAnywhere, Category="Debug")
 	bool bDebugLog = false;
+
+	UPROPERTY(EditAnywhere, Category="Debug")
+	float SphereRadius = 25;
+
+	UPROPERTY(EditAnywhere, Category="Raycast")
+	float RaycastHeight = 100;
+
+	UPROPERTY(EditAnywhere, Category="Raycast")
+	float HitThreshold = 25;
 
 	
 public:	
@@ -89,4 +101,11 @@ public:
 	// Mirrors a given FVector2D (ToMirror) at a given Axis (MirrorDirection).
 	UFUNCTION()
 	static FVector2D MirrorVector(const FVector2D ToMirror, const FVector2D MirrorOrigin, const FVector2D MirrorDirection);
+
+	// Mirrors a given Point (ToMirror) at a given Axis (MirrorDirection).
+	UFUNCTION()
+    static FVector2D MirrorPoint(const FVector2D ToMirror, const FVector2D MirrorOrigin, const FVector2D MirrorDirection);
+
+	UFUNCTION()
+	bool RaycastFilter(const FObstacleEdge Edge, const FVector2D Origin, const FVector2D Target) const;
 };

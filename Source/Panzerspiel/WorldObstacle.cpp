@@ -82,6 +82,11 @@ FORCEINLINE bool FObstacleEdge::operator!=(const FObstacleEdge& Other) const
 	return this->Start!=Other.Start && this->End!=Other.End;
 }
 
+FORCEINLINE FString FObstacleEdge::ToString() const
+{
+	return FString::Printf(TEXT("{Start=%s End=%s}"), *Start.ToString(), *End.ToString());
+}
+
 // Sets default values
 AWorldObstacle::AWorldObstacle()
 {

@@ -49,19 +49,24 @@ void ARicochetAimer::Tick(float DeltaTime) {
 		}
 		Edges2.Sort();
 
+		// Only keep edges that are visible from both locations.
 		IntersectedEdges = IntersectArrays(Edges1, Edges2);
 
+		// Only keep edges that can reflect the bullet to the target according to their rotation.
 		TArray<FObstacleEdge> FilteredEdges;
 		for(FObstacleEdge Edge : IntersectedEdges)
 			if(CanBulletEverHitTarget(Edge, Tank1Location, Tank2Location))
 				FilteredEdges.Add(Edge);
+		// Make sure its empty.
+		IntersectedEdges.Empty();
+		if(bDebugDraw) ShowEdges(FilteredEdges);
+		
+		for(FObstacleEdge Edge : FilteredEdges)
+			if(RaycastFilter(Edge, Tank1Location, Tank2Location))
+				IntersectedEdges.Add(Edge);
 
-		IntersectedEdges = FilteredEdges;
-		// Just to make the inspection in the editor easier.
-		IntersectedEdges.Sort();
-		if (bDebugDraw) ShowEdges(IntersectedEdges);
 
-		double End = FPlatformTime::Seconds();
+		const double End = FPlatformTime::Seconds();
 		if (bDebugLog) UE_LOG(LogTemp, Warning, TEXT("code executed in %f seconds, found %d edges."), End-Start, IntersectedEdges.Num());
 	}
 }
@@ -156,4 +161,93 @@ FVector2D ARicochetAimer::MirrorVector(const FVector2D ToMirror, const FVector2D
 	const FVector2D MirroredVector = MirroredPoint - MirrorOrigin;
 	
 	return MirroredVector;
+}
+
+
+FVector2D ARicochetAimer::MirrorPoint(const FVector2D ToMirror, const FVector2D MirrorOrigin, const FVector2D MirrorDirection) {
+	// U = MirrorOrigin; d = ToMirror; n = MirrorDirection;
+	// 1. Step.
+	const FVector2D Tmp = MirrorOrigin - ToMirror;
+	// 2. Step.
+	const float CleanScalar = FVector2D::DotProduct(Tmp, MirrorDirection);
+	const float VariableScalar = FVector2D::DotProduct(MirrorDirection, MirrorDirection);
+	// In Noteability: t.
+	const float Theta = -CleanScalar / VariableScalar;
+	// 3. Step.
+	const FVector2D Intersection = MirrorOrigin + Theta * MirrorDirection;
+	// 4. Step.
+	const FVector2D PointToIntersection = Intersection - ToMirror;
+	// 5. Step.
+	const FVector2D MirroredPoint = ToMirror + 2 * PointToIntersection;
+
+	return MirroredPoint;
+}
+
+bool ARicochetAimer::RaycastFilter(const FObstacleEdge Edge, const FVector2D Origin, const FVector2D Target) const {
+	UWorld *World = GetWorld();
+	if(!World)
+		return false;
+	UE_LOG(LogTemp, Warning, TEXT("RaycastFilter: Edge: %s"), *Edge.ToString());
+	// Mirror target at the edge.
+	const FVector2D EdgeNormal = FVector2D(Edge.End.Y - Edge.Start.Y, -(Edge.End.X - Edge.Start.X));
+	FVector2D MirroredTarget = MirrorPoint(Target, Edge.Start, Edge.End - Edge.Start);
+	// Do raycast from the origin and check if it hit the edge.
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	// TODO: TankPawn should not be hardcoded right here as well as below.
+	Params.AddIgnoredActor(TankPawn);
+	World->LineTraceSingleByChannel(HitResult, FVector(Origin.X, Origin.Y, RaycastHeight),
+		FVector(MirroredTarget.X, MirroredTarget.Y, RaycastHeight), ECollisionChannel::ECC_Camera, Params);
+	const FVector2D EdgeDirection = Edge.End - Edge.Start;
+	FVector2D HitLocation = FVector2D(HitResult.Location.X, HitResult.Location.Y);
+	float CrossProduct = FVector2D::CrossProduct(EdgeDirection, (HitLocation - Edge.Start));
+	if(bDebugLog) UE_LOG(LogTemp, Warning, TEXT("CrossProduct1: %f"), CrossProduct);
+	if(bDebugDrawRaycastCalculation) DrawDebugSphere(GetWorld(), HitResult.Location, SphereRadius, 12, FColor::Red,
+		false, -1, 0, LineThickness);
+	if(FMath::Abs(CrossProduct) > HitThreshold) {
+		// We hit something else than the edge.
+		if(bDebugDrawRaycastCalculation) {
+			// Draw line from Origin to Edge.
+			DrawDebugLine(GetWorld(), FVector(Origin.X, Origin.Y, RaycastHeight),
+                HitResult.Location, FColor::Red, false, -1, 0, LineThickness);
+		}
+		return false;
+	}
+	if(bDebugDrawRaycastCalculation) {
+		// Draw line from Origin to Edge.
+		DrawDebugLine(GetWorld(), FVector(Origin.X, Origin.Y, DisplayHeight),
+            HitResult.Location, FColor::Green, false, -1, 0, LineThickness);
+	}
+
+	// Do raycast from the target and check if it hit the edge.
+	Params.ClearIgnoredActors();
+	Params.AddIgnoredActor(TankPawn2);
+	// We do the raycast to the last hit location and multiply it by two just to make sure it does not stop directly in front of it.
+	FVector RaycastOrigin = FVector(Target.X, Target.Y, RaycastHeight);
+	FVector RaycastTarget = HitResult.Location + HitResult.Location - RaycastOrigin;
+	World->LineTraceSingleByChannel(HitResult, FVector(Target.X, Target.Y, RaycastHeight),
+        RaycastTarget, ECollisionChannel::ECC_Camera, Params);
+	HitLocation = FVector2D(HitResult.Location.X, HitResult.Location.Y);
+	CrossProduct = FVector2D::CrossProduct(EdgeDirection, (HitLocation - Edge.Start));
+	if(bDebugLog) UE_LOG(LogTemp, Warning, TEXT("CrossProduct2: %f"), CrossProduct);
+	if(bDebugDrawRaycastCalculation) DrawDebugSphere(GetWorld(), HitResult.Location, SphereRadius, 12, FColor::Red,
+        false, -1, 0, LineThickness);
+	if(FMath::Abs(CrossProduct) > HitThreshold) {
+		// We hit something else than the edge.
+		if(bDebugDrawRaycastCalculation) {
+			// Draw line from Origin to Edge.
+			DrawDebugLine(GetWorld(), FVector(Target.X, Target.Y, RaycastHeight),
+                HitResult.Location, FColor::Red, false, -1, 0, LineThickness);
+		}
+		return false; 
+	}
+	if(bDebugDrawRaycastCalculation) {
+		// Draw line from Origin to Edge.
+		DrawDebugLine(GetWorld(), FVector(Target.X, Target.Y, DisplayHeight),
+            HitResult.Location, FColor::Green, false, -1, 0, LineThickness);
+	}
+
+	// TODO: Store the total distance and return it as well.
+	// We hit both edges.
+	return true;
 }
