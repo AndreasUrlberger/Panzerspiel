@@ -57,6 +57,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Debug")
 	bool bDebugDraw = false;
+
+	UPROPERTY(EditAnywhere, Category="Debug")
+	bool bDebugDrawEdgeCalculation = false;
 	
 	UPROPERTY(EditAnywhere, Category="Debug")
 	bool bDebugLog = false;
@@ -74,8 +77,16 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION()
 	void ShowEdges(TArray<FObstacleEdge> EdgesToShow) const;
 	
 	UFUNCTION()
 	static TArray<FObstacleEdge> IntersectArrays(TArray<FObstacleEdge> First, TArray<FObstacleEdge> Second);
+
+	UFUNCTION()
+	bool CanBulletEverHitTarget(const FObstacleEdge& Edge, FVector2D BulletOrigin, FVector2D Target);
+
+	// Mirrors a given FVector2D (ToMirror) at a given Axis (MirrorDirection).
+	UFUNCTION()
+	static FVector2D MirrorVector(const FVector2D ToMirror, const FVector2D MirrorOrigin, const FVector2D MirrorDirection);
 };

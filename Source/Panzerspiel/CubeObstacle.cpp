@@ -18,10 +18,6 @@ ACubeObstacle::ACubeObstacle() {
 	BottomLeftC->SetupAttachment(RootComponent);
 	CornerMarkers.Add(BottomLeftC);
 
-	/*CornersLocations.Add(FVector2D(GetActorLocation() + TopLeftC->GetComponentLocation()));
-	CornersLocations.Add(FVector2D(GetActorLocation() + TopRightC->GetComponentLocation()));
-	CornersLocations.Add(FVector2D(GetActorLocation() + BottomRightC->GetComponentLocation()));
-	CornersLocations.Add(FVector2D(GetActorLocation() + BottomLeftC->GetComponentLocation()));*/
 }
 
 void ACubeObstacle::BeginPlay() {
@@ -31,10 +27,10 @@ void ACubeObstacle::BeginPlay() {
 	CornersLocations.Add(FVector2D(BottomRightC->GetComponentLocation()));
 	CornersLocations.Add(FVector2D(BottomLeftC->GetComponentLocation()));
 
-	FVector2D TopLeft = FVector2D(TopLeftC->GetComponentLocation());
-	FVector2D TopRight = FVector2D(TopRightC->GetComponentLocation());
-	FVector2D BottomRight = FVector2D(BottomRightC->GetComponentLocation());
-	FVector2D BottomLeft = FVector2D(BottomLeftC->GetComponentLocation());
+	const FVector2D TopLeft = FVector2D(TopLeftC->GetComponentLocation());
+	const FVector2D TopRight = FVector2D(TopRightC->GetComponentLocation());
+	const FVector2D BottomRight = FVector2D(BottomRightC->GetComponentLocation());
+	const FVector2D BottomLeft = FVector2D(BottomLeftC->GetComponentLocation());
 	EdgeLocations.Add(TopLeft + (TopRight - TopLeft)/2);
 	EdgeLocations.Add(TopRight + (BottomRight - TopRight)/2);
 	EdgeLocations.Add(BottomRight + (BottomLeft - BottomRight)/2);
