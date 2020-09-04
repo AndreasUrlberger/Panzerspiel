@@ -59,7 +59,7 @@ void ARicochetAimer::Tick(float DeltaTime) {
 		// Make sure its empty.
 		IntersectedEdges.Empty();
 
-		const TArray<FBulletPath> BulletPaths;
+		TArray<FBulletPath> BulletPaths;
 		for(const FObstacleEdge Edge : FilteredEdges)
 			RaycastFilter(Edge, Tank1Location, Tank2Location, BulletPaths);
 
@@ -70,7 +70,7 @@ void ARicochetAimer::Tick(float DeltaTime) {
 	}
 }
 
-void ARicochetAimer::ShowEdges(TArray<FObstacleEdge> EdgesToShow) const {
+void ARicochetAimer::ShowEdges(TArray<FObstacleEdge> &EdgesToShow) const {
 	for (const FObstacleEdge Edge : EdgesToShow) {
 		FVector From = FVector(Edge.Start.X, Edge.Start.Y, DisplayHeight);
 		FVector To = FVector(Edge.End.X, Edge.End.Y, DisplayHeight);
@@ -78,7 +78,7 @@ void ARicochetAimer::ShowEdges(TArray<FObstacleEdge> EdgesToShow) const {
 	}
 }
 
-TArray<FObstacleEdge> ARicochetAimer::IntersectArrays(TArray<FObstacleEdge> First, TArray<FObstacleEdge> Second) {
+TArray<FObstacleEdge> ARicochetAimer::IntersectArrays(TArray<FObstacleEdge> &First, TArray<FObstacleEdge> &Second) {
 	TArray<FObstacleEdge> Intersection;
 	const int32 LengthFirst = First.Num();
 	const int32 LengthSecond = Second.Num();
@@ -183,7 +183,7 @@ FVector2D ARicochetAimer::MirrorPoint(const FVector2D ToMirror, const FVector2D 
 	return MirroredPoint;
 }
 
-void ARicochetAimer::RaycastFilter(const FObstacleEdge Edge, const FVector2D Origin, const FVector2D Target, TArray<FBulletPath> BulletPaths) const {
+void ARicochetAimer::RaycastFilter(const FObstacleEdge Edge, const FVector2D Origin, const FVector2D Target, TArray<FBulletPath> &BulletPaths) const {
 	UWorld *World = GetWorld();
 	if(!World)
 		return;
@@ -230,7 +230,7 @@ void ARicochetAimer::RaycastFilter(const FObstacleEdge Edge, const FVector2D Ori
 	BulletPaths.Add(FBulletPath(FVector(MirroredTarget.X, MirroredTarget.Y, 0) , PathLength));
 }
 
-void ARicochetAimer::ShowBulletPaths(TArray<FBulletPath> BulletPaths) const {
+void ARicochetAimer::ShowBulletPaths(TArray<FBulletPath> &BulletPaths) const {
 	for(FBulletPath Path : BulletPaths) {
 		FVector From = TankPawn->GetActorLocation();
 		FVector To = From + (Path.Target - From) / 2;

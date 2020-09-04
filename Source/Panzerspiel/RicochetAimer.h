@@ -91,13 +91,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-	void ShowEdges(TArray<FObstacleEdge> EdgesToShow) const;
+	void ShowEdges(TArray<FObstacleEdge> &EdgesToShow) const;
 	
 	UFUNCTION()
-	static TArray<FObstacleEdge> IntersectArrays(TArray<FObstacleEdge> First, TArray<FObstacleEdge> Second);
+	static TArray<FObstacleEdge> IntersectArrays(TArray<FObstacleEdge> &First, TArray<FObstacleEdge> &Second);
 
 	UFUNCTION()
-	bool CanBulletEverHitTarget(const FObstacleEdge& Edge, FVector2D BulletOrigin, FVector2D Target);
+	bool CanBulletEverHitTarget(const FObstacleEdge &Edge, FVector2D BulletOrigin, FVector2D Target);
 
 	// Mirrors a given FVector2D (ToMirror) at a given Axis (MirrorDirection).
 	UFUNCTION()
@@ -108,8 +108,8 @@ public:
     static FVector2D MirrorPoint(const FVector2D ToMirror, const FVector2D MirrorOrigin, const FVector2D MirrorDirection);
 
 	UFUNCTION()
-	void RaycastFilter(const FObstacleEdge Edge, const FVector2D Origin, const FVector2D Target, TArray<FBulletPath> BulletPaths) const;
+	void RaycastFilter(const FObstacleEdge Edge, const FVector2D Origin, const FVector2D Target, TArray<FBulletPath> &BulletPaths) const;
 
 	UFUNCTION()
-	void ShowBulletPaths(TArray<FBulletPath> BulletPaths) const;
+	void ShowBulletPaths(TArray<FBulletPath> &BulletPaths) const;
 };
