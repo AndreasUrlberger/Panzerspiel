@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "WorldObstacle.h"
 #include "GameFramework/Actor.h"
+#include "BulletPath.h"
 #include "RicochetAimer.generated.h"
 
 /**
@@ -107,5 +108,8 @@ public:
     static FVector2D MirrorPoint(const FVector2D ToMirror, const FVector2D MirrorOrigin, const FVector2D MirrorDirection);
 
 	UFUNCTION()
-	bool RaycastFilter(const FObstacleEdge Edge, const FVector2D Origin, const FVector2D Target) const;
+	void RaycastFilter(const FObstacleEdge Edge, const FVector2D Origin, const FVector2D Target, TArray<FBulletPath> BulletPaths) const;
+
+	UFUNCTION()
+	void ShowBulletPaths(TArray<FBulletPath> BulletPaths) const;
 };

@@ -43705,7 +43705,7 @@
       <e p="UE4Game.Target.cs" t="Include" />
     </e>
     <e p="C:\Users\Spieler 4\AppData\Local\JetBrains\Rider2020.2\extResources" t="IncludeRecursive" />
-    <e p="C:\Users\Spieler 4\AppData\Local\JetBrains\Rider2020.2\resharper-host\Local\Transient\ReSharperHost\v202\SolutionCaches\_Panzerspiel.1971006993.00" t="ExcludeRecursive" />
+    <e p="C:\Users\Spieler 4\AppData\Local\JetBrains\Rider2020.2\resharper-host\Local\Transient\Rider\v202\SolutionCaches\_Panzerspiel.1971006993.00" t="ExcludeRecursive" />
     <e p="C:\Users\Spieler 4\Documents\Unreal_Projects\Panzerspiel" t="IncludeFlat">
       <e p=".gitignore" t="Include" />
       <e p="Config" t="Include">
@@ -43759,6 +43759,8 @@
           <e p="BTTask_SimpleTankMoveTo.h" t="Include" />
           <e p="Bullet.cpp" t="Include" />
           <e p="Bullet.h" t="Include" />
+          <e p="BulletPath.cpp" t="Include" />
+          <e p="BulletPath.h" t="Include" />
           <e p="CubeObstacle.cpp" t="Include" />
           <e p="CubeObstacle.h" t="Include" />
           <e p="Mine.cpp" t="Include" />

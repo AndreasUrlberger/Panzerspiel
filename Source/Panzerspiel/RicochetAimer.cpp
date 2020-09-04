@@ -3,6 +3,7 @@
 
 #include "RicochetAimer.h"
 
+
 #include "CubeObstacle.h"
 #include "Kismet/GameplayStatics.h"
 #include "TankPawn.h"
@@ -57,16 +58,15 @@ void ARicochetAimer::Tick(float DeltaTime) {
 				FilteredEdges.Add(Edge);
 		// Make sure its empty.
 		IntersectedEdges.Empty();
-		IntersectedEdges = FilteredEdges;
-		if(bDebugDraw) ShowEdges(FilteredEdges);
-		
-		for(FObstacleEdge Edge : FilteredEdges)
-			if(RaycastFilter(Edge, Tank1Location, Tank2Location))
-				IntersectedEdges.Add(Edge);
 
+		const TArray<FBulletPath> BulletPaths;
+		for(const FObstacleEdge Edge : FilteredEdges)
+			RaycastFilter(Edge, Tank1Location, Tank2Location, BulletPaths);
+
+		if(bDebugDrawRaycastCalculation) ShowBulletPaths(BulletPaths);
 
 		const double End = FPlatformTime::Seconds();
-		if (bDebugLog) UE_LOG(LogTemp, Warning, TEXT("code executed in %f seconds, found %d edges."), End-Start, IntersectedEdges.Num());
+		if (bDebugLog) UE_LOG(LogTemp, Warning, TEXT("code executed in %f seconds, found %d edges."), End-Start, BulletPaths.Num());
 	}
 }
 
@@ -183,10 +183,10 @@ FVector2D ARicochetAimer::MirrorPoint(const FVector2D ToMirror, const FVector2D 
 	return MirroredPoint;
 }
 
-bool ARicochetAimer::RaycastFilter(const FObstacleEdge Edge, const FVector2D Origin, const FVector2D Target) const {
+void ARicochetAimer::RaycastFilter(const FObstacleEdge Edge, const FVector2D Origin, const FVector2D Target, TArray<FBulletPath> BulletPaths) const {
 	UWorld *World = GetWorld();
 	if(!World)
-		return false;
+		return;
 	// Mirror target at the edge.
 	const FVector2D EdgeNormal = FVector2D(Edge.End.Y - Edge.Start.Y, -(Edge.End.X - Edge.Start.X));
 	FVector2D MirroredTarget = MirrorPoint(Target, Edge.Start, Edge.End - Edge.Start);
@@ -201,22 +201,12 @@ bool ARicochetAimer::RaycastFilter(const FObstacleEdge Edge, const FVector2D Ori
 	FVector2D HitLocation = FVector2D(HitResult.Location.X, HitResult.Location.Y);
 	float CrossProduct = FVector2D::CrossProduct(EdgeDirection, (HitLocation - Edge.Start));
 	//if(bDebugLog) UE_LOG(LogTemp, Warning, TEXT("CrossProduct1: %f"), CrossProduct);
-	if(bDebugDrawRaycastCalculation) DrawDebugSphere(GetWorld(), HitResult.Location, SphereRadius, 12, FColor::Red,
-		false, -1, 0, LineThickness);
 	if(FMath::Abs(CrossProduct) > HitThreshold) {
 		// We hit something else than the edge.
-		if(bDebugDrawRaycastCalculation) {
-			// Draw line from Origin to Edge.
-			DrawDebugLine(GetWorld(), FVector(Origin.X, Origin.Y, RaycastHeight),
-                HitResult.Location, FColor::Red, false, -1, 0, LineThickness);
-		}
-		return false;
+		return;
 	}
-	if(bDebugDrawRaycastCalculation) {
-		// Draw line from Origin to Edge.
-		DrawDebugLine(GetWorld(), FVector(Origin.X, Origin.Y, DisplayHeight),
-            HitResult.Location, FColor::Green, false, -1, 0, LineThickness);
-	}
+	// Store the full PathLength.
+	float PathLength = HitResult.Distance;
 
 	// Do raycast from the target and check if it hit the edge.
 	Params.ClearIgnoredActors();
@@ -229,24 +219,21 @@ bool ARicochetAimer::RaycastFilter(const FObstacleEdge Edge, const FVector2D Ori
 	HitLocation = FVector2D(HitResult.Location.X, HitResult.Location.Y);
 	CrossProduct = FVector2D::CrossProduct(EdgeDirection, (HitLocation - Edge.Start));
 	//if(bDebugLog) UE_LOG(LogTemp, Warning, TEXT("CrossProduct2: %f"), CrossProduct);
-	if(bDebugDrawRaycastCalculation) DrawDebugSphere(GetWorld(), HitResult.Location, SphereRadius, 12, FColor::Red,
-        false, -1, 0, LineThickness);
 	if(FMath::Abs(CrossProduct) > HitThreshold) {
 		// We hit something else than the edge.
-		if(bDebugDrawRaycastCalculation) {
-			// Draw line from Origin to Edge.
-			DrawDebugLine(GetWorld(), FVector(Target.X, Target.Y, RaycastHeight),
-                HitResult.Location, FColor::Red, false, -1, 0, LineThickness);
-		}
-		return false; 
-	}
-	if(bDebugDrawRaycastCalculation) {
-		// Draw line from Origin to Edge.
-		DrawDebugLine(GetWorld(), FVector(Target.X, Target.Y, DisplayHeight),
-            HitResult.Location, FColor::Green, false, -1, 0, LineThickness);
+		return; 
 	}
 
-	// TODO: Store the total distance and return it as well.
+	UE_LOG(LogTemp, Warning, TEXT("Hit both edges."));
 	// We hit both edges.
-	return true;
+	PathLength += HitResult.Distance;
+	BulletPaths.Add(FBulletPath(FVector(MirroredTarget.X, MirroredTarget.Y, 0) , PathLength));
+}
+
+void ARicochetAimer::ShowBulletPaths(TArray<FBulletPath> BulletPaths) const {
+	for(FBulletPath Path : BulletPaths) {
+		FVector From = TankPawn->GetActorLocation();
+		FVector To = From + (Path.Target - From) / 2;
+		DrawDebugLine(GetWorld(), From, To, FColor::Green, false, -1, 0, LineThickness);
+	}
 }
