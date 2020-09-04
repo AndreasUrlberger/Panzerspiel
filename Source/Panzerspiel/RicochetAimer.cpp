@@ -29,8 +29,6 @@ void ARicochetAimer::BeginPlay() {
 // Called every frame
 void ARicochetAimer::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
-
-
 	const double Start = FPlatformTime::Seconds();
 
 	// TODO: Doing the gathering and intersecting of the edges both in the same loop could improve the performance, the downside is that we then cant use the potentially visible edges for comparison with other tanks.
@@ -59,6 +57,7 @@ void ARicochetAimer::Tick(float DeltaTime) {
 				FilteredEdges.Add(Edge);
 		// Make sure its empty.
 		IntersectedEdges.Empty();
+		IntersectedEdges = FilteredEdges;
 		if(bDebugDraw) ShowEdges(FilteredEdges);
 		
 		for(FObstacleEdge Edge : FilteredEdges)
@@ -110,9 +109,8 @@ bool ARicochetAimer::CanBulletEverHitTarget(const FObstacleEdge& Edge, FVector2D
 	const FVector2D MirroredStartDirection = MirrorVector(StartDirection, EdgeMiddle, EdgeNormal);
 	const FVector2D MirroredEndDirection = MirrorVector(EndDirection, EdgeMiddle, EdgeNormal);
 	// Create vector from middle of edge to target.
-	const FVector2D TargetDirection = Target - EdgeMiddle;
-	// Rotate that vector by 90 degree.
-	const FVector2D RotatedTargetDirection = FVector2D(TargetDirection.Y, - TargetDirection.X);
+	const FVector2D StartTargetDirection = Target - Edge.Start;
+	const FVector2D EndTargetDirection = Target - Edge.End;
 	
 	if(bDebugDrawEdgeCalculation) {
 		// StartDirection and MirroredStartDirection in blue.
@@ -131,14 +129,16 @@ bool ARicochetAimer::CanBulletEverHitTarget(const FObstacleEdge& Edge, FVector2D
             FVector(Edge.End.X + MirroredEndDirection.X, Edge.End.Y + MirroredEndDirection.Y,
                 DisplayHeight), FColor::Purple, false, -1, 0, LineThickness);
 
-		// MirrorDirection in cyan.
-		DrawDebugLine(GetWorld(), FVector(EdgeMiddle.X, EdgeMiddle.Y, DisplayHeight),
-            FVector(EdgeMiddle.X + EdgeNormal.X, EdgeMiddle.Y + EdgeNormal.Y,
-                DisplayHeight), FColor::Cyan, false, -1, 0, LineThickness);
+		// StartTargetDirection and EndTargetDirection in Green.
+		DrawDebugLine(GetWorld(), FVector(Edge.Start.X, Edge.Start.Y, DisplayHeight), FVector(Target.X,
+			Target.Y, DisplayHeight), FColor::Green, false, -1, 0, LineThickness);// TargetDirection in Green.
+		DrawDebugLine(GetWorld(), FVector(Edge.End.X, Edge.End.Y, DisplayHeight), FVector(Target.X,
+			Target.Y, DisplayHeight), FColor::Green, false, -1, 0, LineThickness);
 	}
 	
-	// Calculate dot product of both and check the sign of the product.
-	return (RotatedTargetDirection | MirroredStartDirection) * (RotatedTargetDirection | MirroredEndDirection) < 0;
+	// If the sign from the cross products of both the left with the middle and the right and the middle have a different
+	// sign then the target could possibly get hit.
+	return (StartTargetDirection ^ MirroredStartDirection) * (EndTargetDirection ^ MirroredEndDirection) < 0;
 }
 
 FVector2D ARicochetAimer::MirrorVector(const FVector2D ToMirror, const FVector2D MirrorOrigin, const FVector2D MirrorDirection) {
@@ -187,7 +187,6 @@ bool ARicochetAimer::RaycastFilter(const FObstacleEdge Edge, const FVector2D Ori
 	UWorld *World = GetWorld();
 	if(!World)
 		return false;
-	UE_LOG(LogTemp, Warning, TEXT("RaycastFilter: Edge: %s"), *Edge.ToString());
 	// Mirror target at the edge.
 	const FVector2D EdgeNormal = FVector2D(Edge.End.Y - Edge.Start.Y, -(Edge.End.X - Edge.Start.X));
 	FVector2D MirroredTarget = MirrorPoint(Target, Edge.Start, Edge.End - Edge.Start);
@@ -201,7 +200,7 @@ bool ARicochetAimer::RaycastFilter(const FObstacleEdge Edge, const FVector2D Ori
 	const FVector2D EdgeDirection = Edge.End - Edge.Start;
 	FVector2D HitLocation = FVector2D(HitResult.Location.X, HitResult.Location.Y);
 	float CrossProduct = FVector2D::CrossProduct(EdgeDirection, (HitLocation - Edge.Start));
-	if(bDebugLog) UE_LOG(LogTemp, Warning, TEXT("CrossProduct1: %f"), CrossProduct);
+	//if(bDebugLog) UE_LOG(LogTemp, Warning, TEXT("CrossProduct1: %f"), CrossProduct);
 	if(bDebugDrawRaycastCalculation) DrawDebugSphere(GetWorld(), HitResult.Location, SphereRadius, 12, FColor::Red,
 		false, -1, 0, LineThickness);
 	if(FMath::Abs(CrossProduct) > HitThreshold) {
@@ -229,7 +228,7 @@ bool ARicochetAimer::RaycastFilter(const FObstacleEdge Edge, const FVector2D Ori
         RaycastTarget, ECollisionChannel::ECC_Camera, Params);
 	HitLocation = FVector2D(HitResult.Location.X, HitResult.Location.Y);
 	CrossProduct = FVector2D::CrossProduct(EdgeDirection, (HitLocation - Edge.Start));
-	if(bDebugLog) UE_LOG(LogTemp, Warning, TEXT("CrossProduct2: %f"), CrossProduct);
+	//if(bDebugLog) UE_LOG(LogTemp, Warning, TEXT("CrossProduct2: %f"), CrossProduct);
 	if(bDebugDrawRaycastCalculation) DrawDebugSphere(GetWorld(), HitResult.Location, SphereRadius, 12, FColor::Red,
         false, -1, 0, LineThickness);
 	if(FMath::Abs(CrossProduct) > HitThreshold) {
