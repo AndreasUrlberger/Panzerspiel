@@ -38,31 +38,31 @@ private:
 	UPROPERTY(EditAnywhere, Category="Debug")
 	float LineThickness = 15;
 
-	UPROPERTY(VisibleAnywhere, Category="Debug")
+	UPROPERTY()
 	TArray<FObstacleEdge> TargetEdges;
 	
-	UPROPERTY(VisibleAnywhere, Category="Debug")
+	UPROPERTY()
 	TArray<FObstacleEdge> ShooterEdges;
 
 	UPROPERTY(EditAnywhere, Category="Debug")
 	bool bDebugDrawCombinations = false;
-	
-	UPROPERTY(EditAnywhere, Category="Debug")
-	int32 FirstEdgeToShow = 0;
-
-	UPROPERTY(EditAnywhere, Category="Debug")
-	int32 LastEdgeToShow = 0;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-	void DrawEdge(FObstacleEdge Edge, FColor Color) const;
+	void DrawEdge(const FObstacleEdge &Edge, const FColor Color) const;
 	
 	UFUNCTION()
-    void DrawLine(FVector2D Start, FVector2D End, FColor Color) const;
+    void DrawLine(const FVector2D &Start, const FVector2D &End, const FColor Color) const;
 
 	UFUNCTION()
-	static FVector2D CalculateIntersect(const FVector2D Edge1Start, const FVector2D Edge1Dir, const FVector2D Edge2Start, const FVector2D Edge2Dir);
+	static bool AreFacingAway(const FObstacleEdge &Edge1, const FObstacleEdge &Edge2, const FVector2D &Edge1Normal);
+	
+	UFUNCTION()
+	static bool IsReflectionGonnaHit(const FObstacleEdge &ShooterEdge, const FObstacleEdge &TargetEdge, const FVector2D &ShooterEdgeNormal, const FVector2D &ShooterLocation, const FVector2D &ShootDirection);
+
+	UFUNCTION()
+	static FVector2D CalculateIntersect(const FVector2D &Edge1Start, const FVector2D &Edge1Dir, const FVector2D &Edge2Start, const FVector2D &Edge2Dir);
 };

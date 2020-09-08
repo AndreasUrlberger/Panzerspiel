@@ -2,6 +2,7 @@
 
 
 #include "DoubleRicochetAimer.h"
+
 #include "CubeObstacle.h"
 #include "Kismet/GameplayStatics.h"
 #include "TankPawn.h"
@@ -37,7 +38,6 @@ void ADoubleRicochetAimer::Tick(float DeltaTime)
 	TargetEdges.Empty();
 	ShooterEdges.Empty();
 	int32 FoundCounter = 0;
-	int32 FoundCounter2 = 0;
 	
 	if(!(TankPawn && TankPawn2))
 		return;
@@ -68,50 +68,51 @@ void ADoubleRicochetAimer::Tick(float DeltaTime)
 				const FVector2D ShooterEdgeNormal = FVector2D(ShooterEdge.End.Y - ShooterEdge.Start.Y, -(ShooterEdge.End.X - ShooterEdge.Start.X));
 				const FVector2D MirroredShootDirection = ARicochetAimer::MirrorVector(ShootDirection, ShooterEdge.Start, ShooterEdgeNormal);
 				if((MirroredShootDirection | TargetEdgeNormal) > 0) {
-					// This is a possible edge combination.
+					// Check whether the TargetEdge and the ShooterEdge are not facing away from each other and thus can reflect a bullet properly.
+					if(AreFacingAway(TargetEdge, ShooterEdge, TargetEdgeNormal))
+						continue;
+					if(!IsReflectionGonnaHit(ShooterEdge, TargetEdge, ShooterEdgeNormal, ShooterLocation, ShootDirection))
+						continue;
+					// If we reach this point this is a possible edge combination.
 					++FoundCounter;
-					FVector2D TargetEdgeMiddle = TargetEdge.Start + (TargetEdge.End - TargetEdge.Start)/2;
-					FVector2D ShooterEdgeMiddle = ShooterEdge.Start + (ShooterEdge.End - ShooterEdge.Start)/2;
-					FVector2D ShooterToTargetEdge = TargetEdgeMiddle - ShooterEdgeMiddle;
-					if((TargetEdgeNormal | ShooterToTargetEdge) < 0) {
-						const FVector2D ShooterEdgeIntersect = CalculateIntersect(ShooterEdge.Start, ShooterEdge.End - ShooterEdge.Start, ShooterLocation, ShootDirection);
-						const FVector2D ShooterMirroredShootDirection = ARicochetAimer::MirrorPoint(ShooterLocation, ShooterEdgeIntersect, ShooterEdgeNormal) - ShooterEdgeIntersect;
-						const FVector2D StartDirection = TargetEdge.Start - ShooterEdgeIntersect;
-						const FVector2D EndDirection = TargetEdge.End - ShooterEdgeIntersect;
-						if((ShooterMirroredShootDirection ^ StartDirection) * (ShooterMirroredShootDirection ^ EndDirection) < 0) {
-							// DebugHelpers.
-							++FoundCounter2;
-							/*if(FoundCounter >= FirstEdgeToShow && FoundCounter < LastEdgeToShow) {
-								if(bDebugDrawCombinations) DrawEdge(TargetEdge, FColor::Red);
-								if(bDebugDrawCombinations) DrawEdge(ShooterEdge, FColor::Green);
-								if(bDebugDrawCombinations) DrawLine(ShooterLocation, ShooterEdgeIntersect, FColor::Orange);
-								if(bDebugDrawCombinations) DrawLine(ShooterEdgeIntersect, ShooterEdgeIntersect + 100 * ShooterMirroredShootDirection, FColor::Orange);
-								if(bDebugDrawCombinations) DrawLine(ShooterEdgeIntersect, ShooterEdgeIntersect + 100 * StartDirection, FColor::Blue);
-								if(bDebugDrawCombinations) DrawLine(ShooterEdgeIntersect, ShooterEdgeIntersect + 100 * EndDirection, FColor::Purple);
-							}*/
-						}
-					}
 				}
 			}
 		}
 	}
 
 	const double End = FPlatformTime::Seconds();
-	UE_LOG(LogTemp, Warning, TEXT("code executed in %f seconds, found %d edges, then %d edges."), End-Start, FoundCounter, FoundCounter2);
+	UE_LOG(LogTemp, Warning, TEXT("code executed in %f seconds, found %d edges."), End-Start, FoundCounter);
 }
 
-void ADoubleRicochetAimer::DrawEdge(const FObstacleEdge Edge, const FColor Color) const {
+void ADoubleRicochetAimer::DrawEdge(const FObstacleEdge &Edge, const FColor Color) const {
 	const FVector From = FVector(Edge.Start.X, Edge.Start.Y, DisplayHeight);
 	const FVector To = FVector(Edge.End.X, Edge.End.Y, DisplayHeight);
 	DrawDebugLine(GetWorld(), From, To, Color, false, -1, 0, LineThickness);
 }
 
-void ADoubleRicochetAimer::DrawLine(FVector2D Start, FVector2D End, FColor Color) const {
+void ADoubleRicochetAimer::DrawLine(const FVector2D &Start, const FVector2D &End, const FColor Color) const {
 	DrawDebugLine(GetWorld(), FVector(Start.X, Start.Y, DisplayHeight), FVector(End.X, End.Y, DisplayHeight), Color, false, -1, 0, LineThickness);
 }
 
-FVector2D ADoubleRicochetAimer::CalculateIntersect(const FVector2D Edge1Start, const FVector2D Edge1Dir,
-                                                   const FVector2D Edge2Start, const FVector2D Edge2Dir) {
+// Return true if there is no way a bullet reflected from one edge could ever hit the other edge.
+bool ADoubleRicochetAimer::AreFacingAway(const FObstacleEdge &Edge1, const FObstacleEdge &Edge2, const FVector2D &Edge1Normal) {
+	const FVector2D Edge1Middle = Edge1.Start + (Edge1.End - Edge1.Start)/2;
+	const FVector2D Edge2Middle = Edge2.Start + (Edge2.End - Edge2.Start)/2;
+	const FVector2D Edge2ToEdge1Direction = Edge1Middle - Edge2Middle;
+	return (Edge1Normal | Edge2ToEdge1Direction) >= 0;
+}
+
+// Tells whether the bullet can, once reflected at the edge, hit the other edge, judging by direction and origin only.
+bool ADoubleRicochetAimer::IsReflectionGonnaHit(const FObstacleEdge &ShooterEdge, const FObstacleEdge &TargetEdge, const FVector2D &ShooterEdgeNormal, const FVector2D &ShooterLocation, const FVector2D &ShootDirection) {
+	const FVector2D ShooterEdgeIntersect = CalculateIntersect(ShooterEdge.Start, ShooterEdge.End - ShooterEdge.Start, ShooterLocation, ShootDirection);
+	const FVector2D ShooterMirroredShootDirection = ARicochetAimer::MirrorPoint(ShooterLocation, ShooterEdgeIntersect, ShooterEdgeNormal) - ShooterEdgeIntersect;
+	const FVector2D StartDirection = TargetEdge.Start - ShooterEdgeIntersect;
+	const FVector2D EndDirection = TargetEdge.End - ShooterEdgeIntersect;
+	return (ShooterMirroredShootDirection ^ StartDirection) * (ShooterMirroredShootDirection ^ EndDirection) < 0;
+}
+
+FVector2D ADoubleRicochetAimer::CalculateIntersect(const FVector2D &Edge1Start, const FVector2D &Edge1Dir,
+                                                   const FVector2D &Edge2Start, const FVector2D &Edge2Dir) {
 
 	const FVector2D OriginNew = Edge1Start - Edge2Start;
 	const FVector2D Pi = Edge1Dir;
