@@ -46,6 +46,9 @@ class PANZERSPIEL_API AWorldObstacle : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AWorldObstacle();
+	
+	UFUNCTION()
+	TArray<USceneComponent*> GetCornerMarkers();
 
 protected:
 	UPROPERTY(EditAnywhere, Category="Corners")
@@ -53,9 +56,6 @@ protected:
 
 	UPROPERTY()
 	USceneComponent *RootSceneComp;
-
-	UFUNCTION()
-	TArray<USceneComponent*> GetCornerMarkers();
 
 	UFUNCTION()
 	virtual TArray<FObstacleEdge> GetPossibleEdges(FVector2D BulletOrigin);
