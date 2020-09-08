@@ -74,11 +74,21 @@ void ADoubleRicochetAimer::Tick(float DeltaTime)
 					FVector2D ShooterEdgeMiddle = ShooterEdge.Start + (ShooterEdge.End - ShooterEdge.Start)/2;
 					FVector2D ShooterToTargetEdge = TargetEdgeMiddle - ShooterEdgeMiddle;
 					if((TargetEdgeNormal | ShooterToTargetEdge) < 0) {
-						
-						++FoundCounter2;
-						if(FoundCounter >= FirstEdgeToShow && FoundCounter < LastEdgeToShow) {
-							if(bDebugDrawCombinations) DrawEdge(TargetEdge, FColor::Red);
-							if(bDebugDrawCombinations) DrawEdge(ShooterEdge, FColor::Green);
+						const FVector2D ShooterEdgeIntersect = CalculateIntersect(ShooterEdge.Start, ShooterEdge.End - ShooterEdge.Start, ShooterLocation, ShootDirection);
+						const FVector2D ShooterMirroredShootDirection = ARicochetAimer::MirrorPoint(ShooterLocation, ShooterEdgeIntersect, ShooterEdgeNormal) - ShooterEdgeIntersect;
+						const FVector2D StartDirection = TargetEdge.Start - ShooterEdgeIntersect;
+						const FVector2D EndDirection = TargetEdge.End - ShooterEdgeIntersect;
+						if((ShooterMirroredShootDirection ^ StartDirection) * (ShooterMirroredShootDirection ^ EndDirection) < 0) {
+							// DebugHelpers.
+							++FoundCounter2;
+							/*if(FoundCounter >= FirstEdgeToShow && FoundCounter < LastEdgeToShow) {
+								if(bDebugDrawCombinations) DrawEdge(TargetEdge, FColor::Red);
+								if(bDebugDrawCombinations) DrawEdge(ShooterEdge, FColor::Green);
+								if(bDebugDrawCombinations) DrawLine(ShooterLocation, ShooterEdgeIntersect, FColor::Orange);
+								if(bDebugDrawCombinations) DrawLine(ShooterEdgeIntersect, ShooterEdgeIntersect + 100 * ShooterMirroredShootDirection, FColor::Orange);
+								if(bDebugDrawCombinations) DrawLine(ShooterEdgeIntersect, ShooterEdgeIntersect + 100 * StartDirection, FColor::Blue);
+								if(bDebugDrawCombinations) DrawLine(ShooterEdgeIntersect, ShooterEdgeIntersect + 100 * EndDirection, FColor::Purple);
+							}*/
 						}
 					}
 				}
@@ -96,8 +106,12 @@ void ADoubleRicochetAimer::DrawEdge(const FObstacleEdge Edge, const FColor Color
 	DrawDebugLine(GetWorld(), From, To, Color, false, -1, 0, LineThickness);
 }
 
-FVector2D ADoubleRicochetAimer::CalculateIntercept(const FVector2D Edge1Start, const FVector2D Edge1Dir,
-	const FVector2D Edge2Start, const FVector2D Edge2Dir) {
+void ADoubleRicochetAimer::DrawLine(FVector2D Start, FVector2D End, FColor Color) const {
+	DrawDebugLine(GetWorld(), FVector(Start.X, Start.Y, DisplayHeight), FVector(End.X, End.Y, DisplayHeight), Color, false, -1, 0, LineThickness);
+}
+
+FVector2D ADoubleRicochetAimer::CalculateIntersect(const FVector2D Edge1Start, const FVector2D Edge1Dir,
+                                                   const FVector2D Edge2Start, const FVector2D Edge2Dir) {
 
 	const FVector2D OriginNew = Edge1Start - Edge2Start;
 	const FVector2D Pi = Edge1Dir;

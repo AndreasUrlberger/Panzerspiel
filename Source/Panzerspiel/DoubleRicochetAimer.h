@@ -59,7 +59,10 @@ public:
 
 	UFUNCTION()
 	void DrawEdge(FObstacleEdge Edge, FColor Color) const;
+	
+	UFUNCTION()
+    void DrawLine(FVector2D Start, FVector2D End, FColor Color) const;
 
 	UFUNCTION()
-	FVector2D CalculateIntercept(const FVector2D Edge1Start, const FVector2D Edge1Dir, const FVector2D Edge2Start, const FVector2D Edge2Dir);
+	static FVector2D CalculateIntersect(const FVector2D Edge1Start, const FVector2D Edge1Dir, const FVector2D Edge2Start, const FVector2D Edge2Dir);
 };
