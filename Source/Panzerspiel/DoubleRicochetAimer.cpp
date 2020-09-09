@@ -57,6 +57,11 @@ void ADoubleRicochetAimer::Tick(float DeltaTime)
 		for(FObstacleEdge &ShooterEdge : ShooterEdges) {
 			const FVector2D TwiceMirroredTarget = ARicochetAimer::MirrorPoint(MirroredTarget, ShooterEdge.Start, ShooterEdge.End - ShooterEdge.Start);
 			const FVector2D ShootDirection = TwiceMirroredTarget - ShooterLocation;
+			// Interestingly this test is not obsolete by to the following test. This is the case since it does not
+			// detect when the shooting direction points in the exact opposite.
+			const FVector2D ShooterEdgeMiddle = ShooterEdge.Start + (ShooterEdge.End - ShooterEdge.Start)/2;
+			if((ShootDirection | (ShooterEdgeMiddle - ShooterLocation)) < 0)
+				continue;
 			const FVector2D ShootersEdgeStart = ShooterEdge.Start - ShooterLocation;
 			const FVector2D ShootersEdgeEnd = ShooterEdge.End - ShooterLocation;
 			// Check whether ShootDirection lies between ShootersEdgeStart and ShootersEdgeEnd.
@@ -84,7 +89,7 @@ void ADoubleRicochetAimer::Tick(float DeltaTime)
 	}
 
 	const double End = FPlatformTime::Seconds();
-	UE_LOG(LogTemp, Warning, TEXT("code executed in %f seconds, found %d edges in %d possible."), End-Start, FoundCounter, TargetEdges.Num() * ShooterEdges.Num());
+	if(bDebugLog) UE_LOG(LogTemp, Warning, TEXT("code executed in %f seconds, found %d edges in %d possible."), End-Start, FoundCounter, TargetEdges.Num() * ShooterEdges.Num());
 }
 
 void ADoubleRicochetAimer::DrawEdge(const FObstacleEdge &Edge, const FColor Color) const {
@@ -132,7 +137,8 @@ FVector2D ADoubleRicochetAimer::CalculateIntersect(const FVector2D &Edge1Start, 
 	return Edge2Start + ThetaErg * Edge2Dir;
 }
 
-bool ADoubleRicochetAimer::HasLineOfSight(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge, const AActor *Shooter, const AActor *Target, const FVector2D &ShootDirection) {
+bool ADoubleRicochetAimer::HasLineOfSight(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge,
+	const AActor *Shooter, const AActor *Target, const FVector2D &ShootDirection) const {
 	UWorld *World = GetWorld();
 	if(!World)
 		return false;
@@ -153,6 +159,8 @@ bool ADoubleRicochetAimer::HasLineOfSight(const FObstacleEdge& ShooterEdge, cons
 	// threshold since raycasts are not that precise and we're using floats.
 	if(FVector::DistSquaredXY(To, HitResult.Location) > RaycastDistanceThreshold)
 		return false;
+	//Debug:
+	FObstacleEdge HitBackup1 = FObstacleEdge(FVector2D(From), FVector2D(HitResult.Location));
 
 	// Setup second raycast (ShooterEdge -> TargetEdge).
 	Params.ClearIgnoredActors();
@@ -166,6 +174,8 @@ bool ADoubleRicochetAimer::HasLineOfSight(const FObstacleEdge& ShooterEdge, cons
 	// Value second raycast.
 	if(FVector::DistSquaredXY(To, HitResult.Location) > RaycastDistanceThreshold)
 		return false;
+	// Debug: 
+	FObstacleEdge HitBackup2 = FObstacleEdge(FVector2D(From), FVector2D(HitResult.Location));
 
 	// Setup third raycast (Target -> TargetEdge).
 	Params.ClearIgnoredActors();
@@ -179,6 +189,9 @@ bool ADoubleRicochetAimer::HasLineOfSight(const FObstacleEdge& ShooterEdge, cons
 		return false;
 
 	// There is a clear path from the Shooter to the Target via all edges.
+	if(bDebugDrawPaths) DrawLine(FVector2D(From), FVector2D(HitResult.Location), FColor::Orange);
+	if(bDebugDrawPaths) DrawLine(HitBackup1.Start, HitBackup1.End, FColor::Orange);
+	if(bDebugDrawPaths) DrawLine(HitBackup2.Start, HitBackup2.End, FColor::Orange);
 	return true;
 }
 

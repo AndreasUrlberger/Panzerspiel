@@ -40,6 +40,12 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category="Debug")
 	bool bDebugDrawCombinations = false;
+	
+	UPROPERTY(EditAnywhere, Category="Debug")
+	bool bDebugDrawPaths = false;
+
+	UPROPERTY(EditAnywhere, Category="Debug")
+	bool bDebugLog = false;
 
 	UPROPERTY(EditAnywhere, Category="Debug")
 	int32 FirstEdgeToShow = 0;
@@ -72,6 +78,6 @@ public:
 	static FVector2D CalculateIntersect(const FVector2D &Edge1Start, const FVector2D &Edge1Dir, const FVector2D &Edge2Start, const FVector2D &Edge2Dir);
 
 	UFUNCTION()
-	bool HasLineOfSight(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge, const AActor *Shooter, const AActor *Target, const FVector2D &ShootDirection);
+	bool HasLineOfSight(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge, const AActor *Shooter, const AActor *Target, const FVector2D &ShootDirection) const;
 };
 
