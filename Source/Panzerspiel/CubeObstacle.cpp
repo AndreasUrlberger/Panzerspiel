@@ -69,10 +69,10 @@ TArray<FObstacleEdge> ACubeObstacle::GetPossibleEdges(FVector2D BulletOrigin) {
 	const FVector2D RotatedBorder = FVector2D(BorderVector.Y, -BorderVector.X);
 	// Add all possible edges.
 	TArray<FObstacleEdge> PossibleEdges;
-	PossibleEdges.Add(FObstacleEdge(Corners[0], Corners[1]));
-	PossibleEdges.Add(FObstacleEdge(Corners[1], Corners[2]));
-	PossibleEdges.Add(FObstacleEdge(Corners[2], Corners[3]));
-	PossibleEdges.Add(FObstacleEdge(Corners[3], Corners[0]));
+	PossibleEdges.Add(FObstacleEdge(Corners[0], Corners[1], this));
+	PossibleEdges.Add(FObstacleEdge(Corners[1], Corners[2], this));
+	PossibleEdges.Add(FObstacleEdge(Corners[2], Corners[3], this));
+	PossibleEdges.Add(FObstacleEdge(Corners[3], Corners[0], this));
 
 	// Find which corners are not visible and thus are to be removed.
 	for(int32 Index = 0; Index < 4; ++Index) {
@@ -87,7 +87,7 @@ TArray<FObstacleEdge> ACubeObstacle::GetPossibleEdges(FVector2D BulletOrigin) {
 	return PossibleEdges;
 }
 
-TArray<FObstacleEdge> ACubeObstacle::GetPossibleEdges2(FVector2D BulletOrigin) {
+TArray<FObstacleEdge> ACubeObstacle::GetPossibleEdges2(const FVector2D &BulletOrigin) {
 	TArray<FObstacleEdge> PossibleEdges;
 	// First Edge.
 	FVector2D Edge = CornersLocations[1] - CornersLocations[0];
@@ -95,7 +95,7 @@ TArray<FObstacleEdge> ACubeObstacle::GetPossibleEdges2(FVector2D BulletOrigin) {
 	FVector2D EdgeNormal = FVector2D(Edge.Y, -Edge.X);
 	FVector2D TankDirection = BulletOrigin - EdgeLocation;
 	if(FVector2D::DotProduct(TankDirection, EdgeNormal) > 0)
-		PossibleEdges.Add(FObstacleEdge(CornersLocations[0], CornersLocations[1]));
+		PossibleEdges.Add(FObstacleEdge(CornersLocations[0], CornersLocations[1], this));
 
 	// Second Edge.
 	Edge = CornersLocations[2] - CornersLocations[1];
@@ -103,7 +103,7 @@ TArray<FObstacleEdge> ACubeObstacle::GetPossibleEdges2(FVector2D BulletOrigin) {
 	EdgeNormal = FVector2D(Edge.Y, -Edge.X);
 	TankDirection = BulletOrigin - EdgeLocation;
 	if(FVector2D::DotProduct(TankDirection, EdgeNormal) > 0)
-		PossibleEdges.Add(FObstacleEdge(CornersLocations[1], CornersLocations[2]));
+		PossibleEdges.Add(FObstacleEdge(CornersLocations[1], CornersLocations[2], this));
 
 	// Third Edge.
 	Edge = CornersLocations[3] - CornersLocations[2];
@@ -111,7 +111,7 @@ TArray<FObstacleEdge> ACubeObstacle::GetPossibleEdges2(FVector2D BulletOrigin) {
 	EdgeNormal = FVector2D(Edge.Y, -Edge.X);
 	TankDirection = BulletOrigin - EdgeLocation;
 	if(FVector2D::DotProduct(TankDirection, EdgeNormal) > 0)
-		PossibleEdges.Add(FObstacleEdge(CornersLocations[2], CornersLocations[3]));
+		PossibleEdges.Add(FObstacleEdge(CornersLocations[2], CornersLocations[3], this));
 
 	// Fourth Edge.
 	Edge = CornersLocations[0] - CornersLocations[3];
@@ -119,7 +119,7 @@ TArray<FObstacleEdge> ACubeObstacle::GetPossibleEdges2(FVector2D BulletOrigin) {
 	EdgeNormal = FVector2D(Edge.Y, -Edge.X);
 	TankDirection = BulletOrigin - EdgeLocation;
 	if(FVector2D::DotProduct(TankDirection, EdgeNormal) > 0)
-		PossibleEdges.Add(FObstacleEdge(CornersLocations[3], CornersLocations[0]));
+		PossibleEdges.Add(FObstacleEdge(CornersLocations[3], CornersLocations[0], this));
 
 	return PossibleEdges;
 }

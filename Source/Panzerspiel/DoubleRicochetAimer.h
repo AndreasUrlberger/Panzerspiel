@@ -37,16 +37,21 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Debug")
 	float LineThickness = 15;
-
-	UPROPERTY()
-	TArray<FObstacleEdge> TargetEdges;
 	
-	UPROPERTY()
-	TArray<FObstacleEdge> ShooterEdges;
-
 	UPROPERTY(EditAnywhere, Category="Debug")
 	bool bDebugDrawCombinations = false;
 
+	UPROPERTY(EditAnywhere, Category="Debug")
+	int32 FirstEdgeToShow = 0;
+
+	UPROPERTY(EditAnywhere, Category="Debug")
+	int32 LastEdgeToShow = 0;
+	
+	UPROPERTY(EditAnywhere)
+	float RaycastDistanceThreshold = 5;
+	
+	UPROPERTY(EditAnywhere)
+	float RaycastHeight = 100;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -65,4 +70,8 @@ public:
 
 	UFUNCTION()
 	static FVector2D CalculateIntersect(const FVector2D &Edge1Start, const FVector2D &Edge1Dir, const FVector2D &Edge2Start, const FVector2D &Edge2Dir);
+
+	UFUNCTION()
+	bool HasLineOfSight(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge, const AActor *Shooter, const AActor *Target, const FVector2D &ShootDirection);
 };
+

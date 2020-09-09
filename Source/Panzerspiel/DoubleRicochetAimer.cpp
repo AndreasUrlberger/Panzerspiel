@@ -35,53 +35,56 @@ void ADoubleRicochetAimer::Tick(float DeltaTime)
 	
 	// Debug
 	const double Start = FPlatformTime::Seconds();
-	TargetEdges.Empty();
-	ShooterEdges.Empty();
 	int32 FoundCounter = 0;
 	
 	if(!(TankPawn && TankPawn2))
 		return;
 	// Get some variables that we'll need.
-	const FVector2D ShooterLocation = FVector2D(TankPawn->GetActorLocation().X, TankPawn->GetActorLocation().Y);
-	const FVector2D TargetLocation = FVector2D(TankPawn2->GetActorLocation().X, TankPawn2->GetActorLocation().Y);
+	const FVector2D ShooterLocation = FVector2D(TankPawn->GetActorLocation());
+	const FVector2D TargetLocation = FVector2D(TankPawn2->GetActorLocation());
 
 	// Get all edges that are visible from the shooter and all that are visible from the target.
-	/*TArray<FObstacleEdge> ShooterEdges;
-	TArray<FObstacleEdge> TargetEdges;*/
+	TArray<FObstacleEdge> ShooterEdges;
+	TArray<FObstacleEdge> TargetEdges;
 	for(ACubeObstacle *Cube : Cubes) {
 		ShooterEdges.Append(Cube->GetPossibleEdges2(ShooterLocation));
 		TargetEdges.Append(Cube->GetPossibleEdges2(TargetLocation));
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Max. possible combinations: %d"), TargetEdges.Num() * ShooterEdges.Num());
-
-	for(FObstacleEdge TargetEdge : TargetEdges) {
-		// Check whether the other edge can be seen by this one (not implemented yet).
+	
+	for(FObstacleEdge &TargetEdge : TargetEdges) {
+		// Check whether the other edge can be seen by this one (kinda implemented in a later step).
 		const FVector2D MirroredTarget = ARicochetAimer::MirrorPoint(TargetLocation, TargetEdge.Start, TargetEdge.End - TargetEdge.Start);
-		for(FObstacleEdge ShooterEdge : ShooterEdges) {
+		for(FObstacleEdge &ShooterEdge : ShooterEdges) {
 			const FVector2D TwiceMirroredTarget = ARicochetAimer::MirrorPoint(MirroredTarget, ShooterEdge.Start, ShooterEdge.End - ShooterEdge.Start);
 			const FVector2D ShootDirection = TwiceMirroredTarget - ShooterLocation;
 			const FVector2D ShootersEdgeStart = ShooterEdge.Start - ShooterLocation;
 			const FVector2D ShootersEdgeEnd = ShooterEdge.End - ShooterLocation;
 			// Check whether ShootDirection lies between ShootersEdgeStart and ShootersEdgeEnd.
-			if((ShootDirection ^ ShootersEdgeStart) * (ShootDirection ^ ShootersEdgeEnd) < 0) {
-				const FVector2D TargetEdgeNormal = FVector2D(TargetEdge.End.Y - TargetEdge.Start.Y, -(TargetEdge.End.X - TargetEdge.Start.X));
-				const FVector2D ShooterEdgeNormal = FVector2D(ShooterEdge.End.Y - ShooterEdge.Start.Y, -(ShooterEdge.End.X - ShooterEdge.Start.X));
-				const FVector2D MirroredShootDirection = ARicochetAimer::MirrorVector(ShootDirection, ShooterEdge.Start, ShooterEdgeNormal);
-				if((MirroredShootDirection | TargetEdgeNormal) > 0) {
-					// Check whether the TargetEdge and the ShooterEdge are not facing away from each other and thus can reflect a bullet properly.
-					if(AreFacingAway(TargetEdge, ShooterEdge, TargetEdgeNormal))
-						continue;
-					if(!IsReflectionGonnaHit(ShooterEdge, TargetEdge, ShooterEdgeNormal, ShooterLocation, ShootDirection))
-						continue;
-					// If we reach this point this is a possible edge combination.
-					++FoundCounter;
-				}
+			if((ShootDirection ^ ShootersEdgeStart) * (ShootDirection ^ ShootersEdgeEnd) >= 0)
+				continue;
+			const FVector2D TargetEdgeNormal = FVector2D(TargetEdge.End.Y - TargetEdge.Start.Y, -(TargetEdge.End.X - TargetEdge.Start.X));
+			const FVector2D ShooterEdgeNormal = FVector2D(ShooterEdge.End.Y - ShooterEdge.Start.Y, -(ShooterEdge.End.X - ShooterEdge.Start.X));
+			const FVector2D MirroredShootDirection = ARicochetAimer::MirrorVector(ShootDirection, ShooterEdge.Start, ShooterEdgeNormal);
+			if((MirroredShootDirection | TargetEdgeNormal) <= 0)
+				continue;
+			// Check whether the TargetEdge and the ShooterEdge are not facing away from each other and thus can reflect a bullet properly.
+			if(AreFacingAway(TargetEdge, ShooterEdge, TargetEdgeNormal))
+				continue;
+			if(!IsReflectionGonnaHit(ShooterEdge, TargetEdge, ShooterEdgeNormal, ShooterLocation, ShootDirection))
+				continue;
+			// If we reach this point this is a possible edge combination.
+			if(!HasLineOfSight(ShooterEdge, TargetEdge, TankPawn, TankPawn2, ShootDirection))
+				continue;
+			++FoundCounter;
+			if(FoundCounter >= FirstEdgeToShow && FoundCounter <= LastEdgeToShow) {
+				if(bDebugDrawCombinations) DrawEdge(TargetEdge, FColor::Red);
+				if(bDebugDrawCombinations) DrawEdge(ShooterEdge, FColor::Green);
 			}
 		}
 	}
 
 	const double End = FPlatformTime::Seconds();
-	UE_LOG(LogTemp, Warning, TEXT("code executed in %f seconds, found %d edges."), End-Start, FoundCounter);
+	UE_LOG(LogTemp, Warning, TEXT("code executed in %f seconds, found %d edges in %d possible."), End-Start, FoundCounter, TargetEdges.Num() * ShooterEdges.Num());
 }
 
 void ADoubleRicochetAimer::DrawEdge(const FObstacleEdge &Edge, const FColor Color) const {
@@ -127,5 +130,55 @@ FVector2D ADoubleRicochetAimer::CalculateIntersect(const FVector2D &Edge1Start, 
 	const float ThetaErg = (OriginNew.X + InsetNumbers) / -InsetTheta;
 
 	return Edge2Start + ThetaErg * Edge2Dir;
+}
+
+bool ADoubleRicochetAimer::HasLineOfSight(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge, const AActor *Shooter, const AActor *Target, const FVector2D &ShootDirection) {
+	UWorld *World = GetWorld();
+	if(!World)
+		return false;
+	// Setup first raycast (Shooter -> ShooterEdge).
+	FVector From = Shooter->GetActorLocation();
+	FVector2D ShooterLocation = FVector2D(From.X, From.Y);
+	// TODO: These calculations are already done in IsReflectionGonnaHit, it might be better to safe them somewhere for later use.
+	const FVector2D ShooterEdgeIntersect = CalculateIntersect(ShooterEdge.Start, ShooterEdge.End - ShooterEdge.Start, ShooterLocation, ShootDirection);
+	FHitResult HitResult;
+	From.Z = RaycastHeight;
+	FVector To = FVector(ShooterEdgeIntersect.X, ShooterEdgeIntersect.Y, RaycastHeight);
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(Shooter);
+	// TODO: I guess another collision channel could be less expensive.
+	// We do the trace further than we might need to make sure we'll definitely hit the edge.
+	World->LineTraceSingleByChannel(HitResult, From, From + 2 * (To - From), ECollisionChannel::ECC_Camera, Params);
+	// Value the first raycast, we return false if the ray hit to far away from the supposed hit but we give it a small
+	// threshold since raycasts are not that precise and we're using floats.
+	if(FVector::DistSquaredXY(To, HitResult.Location) > RaycastDistanceThreshold)
+		return false;
+
+	// Setup second raycast (ShooterEdge -> TargetEdge).
+	Params.ClearIgnoredActors();
+	Params.AddIgnoredActor(ShooterEdge.Parent);
+	From = FVector(ShooterEdgeIntersect.X, ShooterEdgeIntersect.Y, RaycastHeight);
+	FVector2D ShooterEdgeNormal = FVector2D(ShooterEdge.End.Y - ShooterEdge.Start.Y, -(ShooterEdge.End.X - ShooterEdge.Start.X));
+	FVector2D MirroredShootDirection = ARicochetAimer::MirrorVector(ShootDirection, ShooterEdgeIntersect, ShooterEdgeNormal);
+	const FVector2D TargetEdgeIntersect = CalculateIntersect(TargetEdge.Start, TargetEdge.End - TargetEdge.Start, ShooterEdgeIntersect, MirroredShootDirection);
+	To = FVector(TargetEdgeIntersect.X, TargetEdgeIntersect.Y, RaycastHeight);
+	World->LineTraceSingleByChannel(HitResult, From, From + 2 * (To - From), ECollisionChannel::ECC_Camera, Params);
+	// Value second raycast.
+	if(FVector::DistSquaredXY(To, HitResult.Location) > RaycastDistanceThreshold)
+		return false;
+
+	// Setup third raycast (Target -> TargetEdge).
+	Params.ClearIgnoredActors();
+	Params.AddIgnoredActor(Target);
+	From = Target->GetActorLocation();
+	From.Z = RaycastHeight;
+	// To stays the same since where shooting at the same TargetEdge.
+	World->LineTraceSingleByChannel(HitResult, From, From + 2  *(To - From), ECollisionChannel::ECC_Camera, Params);
+	// Value third raycast.
+	if(FVector::DistSquaredXY(To, HitResult.Location) > RaycastDistanceThreshold)
+		return false;
+
+	// There is a clear path from the Shooter to the Target via all edges.
+	return true;
 }
 

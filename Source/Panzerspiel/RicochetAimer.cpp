@@ -53,14 +53,14 @@ void ARicochetAimer::Tick(float DeltaTime) {
 
 		// Only keep edges that can reflect the bullet to the target according to their rotation.
 		TArray<FObstacleEdge> FilteredEdges;
-		for(FObstacleEdge Edge : IntersectedEdges)
+		for(FObstacleEdge &Edge : IntersectedEdges)
 			if(CanBulletEverHitTarget(Edge, Tank1Location, Tank2Location))
 				FilteredEdges.Add(Edge);
 		// Make sure its empty.
 		IntersectedEdges.Empty();
 
 		TArray<FBulletPath> BulletPaths;
-		for(const FObstacleEdge Edge : FilteredEdges)
+		for(const FObstacleEdge &Edge : FilteredEdges)
 			RaycastFilter(Edge, Tank1Location, Tank2Location, BulletPaths);
 
 		if(bDebugDrawRaycastCalculation) ShowBulletPaths(BulletPaths);
@@ -71,7 +71,7 @@ void ARicochetAimer::Tick(float DeltaTime) {
 }
 
 void ARicochetAimer::ShowEdges(TArray<FObstacleEdge> &EdgesToShow) const {
-	for (const FObstacleEdge Edge : EdgesToShow) {
+	for (const FObstacleEdge &Edge : EdgesToShow) {
 		FVector From = FVector(Edge.Start.X, Edge.Start.Y, DisplayHeight);
 		FVector To = FVector(Edge.End.X, Edge.End.Y, DisplayHeight);
 		DrawDebugLine(GetWorld(), From, To, FColor::Green, false, -1, 0, LineThickness);
@@ -98,7 +98,7 @@ TArray<FObstacleEdge> ARicochetAimer::IntersectArrays(TArray<FObstacleEdge> &Fir
 	return Intersection;
 }
 
-bool ARicochetAimer::CanBulletEverHitTarget(const FObstacleEdge& Edge, FVector2D BulletOrigin, FVector2D Target) {
+bool ARicochetAimer::CanBulletEverHitTarget(const FObstacleEdge &Edge, const FVector2D &BulletOrigin, const FVector2D &Target) const {
 	const FVector2D EdgeMiddle = Edge.Start + (Edge.End - Edge.Start) / 2;
 	const FVector2D EdgeDirection = Edge.End - Edge.Start;
 	const FVector2D EdgeNormal = FVector2D(EdgeDirection.Y, -EdgeDirection.X);
@@ -183,7 +183,7 @@ FVector2D ARicochetAimer::MirrorPoint(const FVector2D ToMirror, const FVector2D 
 	return MirroredPoint;
 }
 
-void ARicochetAimer::RaycastFilter(const FObstacleEdge Edge, const FVector2D Origin, const FVector2D Target, TArray<FBulletPath> &BulletPaths) const {
+void ARicochetAimer::RaycastFilter(const FObstacleEdge &Edge, const FVector2D &Origin, const FVector2D &Target, TArray<FBulletPath> &BulletPaths) const {
 	UWorld *World = GetWorld();
 	if(!World)
 		return;
