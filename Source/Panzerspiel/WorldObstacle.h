@@ -60,6 +60,7 @@ protected:
 	UPROPERTY()
 	USceneComponent *RootSceneComp;
 
+public:
 	UFUNCTION()
 	virtual TArray<FObstacleEdge> GetPossibleEdges(FVector2D BulletOrigin);
 

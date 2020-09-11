@@ -142,6 +142,7 @@ bool ARicochetAimer::CanBulletEverHitTarget(const FObstacleEdge &Edge, const FVe
 }
 
 FVector2D ARicochetAimer::MirrorVector(const FVector2D ToMirror, const FVector2D MirrorOrigin, const FVector2D MirrorDirection) {
+	// TODO: Maybe it would be faster to change this to use the same method as FVector::MirrorByVector which uses one square root but simplifies the rest of the calculation dramatically.
 	// U = MirrorOrigin; d = ToMirror; n = MirrorDirection; D = D;
 	const FVector2D PointToMirror = MirrorOrigin + ToMirror;
 	// 1. Step.

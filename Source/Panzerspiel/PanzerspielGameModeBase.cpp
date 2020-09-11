@@ -13,7 +13,7 @@ TArray<ATankPawn*> APanzerspielGameModeBase::GetTankPawns() const {
 	return PlayerPawns;
 }
 
-TArray<ATankPawn*> APanzerspielGameModeBase::GetTankPawnsByTeam(int32 TeamIndex) {
+TArray<ATankPawn*> APanzerspielGameModeBase::GetTankPawnsByTeam(int32 TeamIndex){
 	TArray<ATankPawn*> FilteredPawns;
 	for(ATankPawn *Pawn: PlayerPawns) {
 		if(Pawn->GetTeam() == TeamIndex)
@@ -52,13 +52,37 @@ void APanzerspielGameModeBase::ClearTankPawns() {
 	PlayerPawns.Empty();
 }
 
+// Collects all players possibly visible edges.
+void APanzerspielGameModeBase::GetAllPlayerEdges() {
+	for(ATankPawn *TankPawn : PlayerPawns) {
+		// Only really need this the first time.
+		TArray<FObstacleEdge> Edges;
+		FVector2D TankLocation = FVector2D(TankPawn->GetActorLocation());
+		for(AWorldObstacle *Obstacle : Obstacles)
+			Edges.Append(Obstacle->GetPossibleEdges2(TankLocation));
+		PlayersEdges.Add(TankPawn, Edges);
+	}
+}
+
+// Gets all Obstacles in the game and adds them to the array Obstacles.
+void APanzerspielGameModeBase::PopulateObstacles() {
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(this, AWorldObstacle::StaticClass(), FoundActors);
+	for(AActor *Actor : FoundActors)
+		Obstacles.Add(Cast<AWorldObstacle>(Actor));
+}
+
 
 void APanzerspielGameModeBase::BeginPlay() {
 	Super::BeginPlay();
+	
 	// TODO: Theres a third crosshair in the game when we have two players.
 	/*if(PlayerControllers.Num() < MaxPlayers) {
 		// Create New Player.
 		APlayerController *Controller = UGameplayStatics::CreatePlayer(this);
 		PlayerControllers.Init(Controller, 0);
 	}*/
+
+	PopulateObstacles();
+	GetAllPlayerEdges();
 }
