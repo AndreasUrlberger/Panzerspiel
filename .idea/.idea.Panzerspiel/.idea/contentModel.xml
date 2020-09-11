@@ -43520,6 +43520,8 @@
           <e p="TankPawn.h" t="Include" />
           <e p="TankPlayerController.cpp" t="Include" />
           <e p="TankPlayerController.h" t="Include" />
+          <e p="Utility.cpp" t="Include" />
+          <e p="Utility.h" t="Include" />
           <e p="WorldObstacle.cpp" t="Include" />
           <e p="WorldObstacle.h" t="Include" />
         </e>

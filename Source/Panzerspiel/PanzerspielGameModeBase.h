@@ -4,6 +4,8 @@
 
 
 #include "CoreMinimal.h"
+
+#include "WorldObstacle.h"
 #include "GameFramework/GameModeBase.h"
 
 #include "PanzerspielGameModeBase.generated.h"
@@ -26,6 +28,12 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly, Category="Players")
 	TArray<class ATankPawn*> PlayerPawns;
+
+	UPROPERTY(VisibleInstanceOnly, Category="Shooting Calculation")
+	TMap<ATankPawn*, TArray<FObstacleEdge>> PlayersEdges;
+
+	UPROPERTY(VisibleInstanceOnly, Category="Shooting Calculation")
+	TArray<AWorldObstacle*> Obstacles;
 
 	/*UPROPERTY(EditAnywhere, Category="Players")
 	int8 MaxPlayers = 1;*/
@@ -59,4 +67,10 @@ public:
 	// Must be called before a LevelStream to remove the old TankPawn references.
 	UFUNCTION(BlueprintCallable)
 	void ClearTankPawns();
+
+	UFUNCTION()
+	void GetAllPlayerEdges();
+
+	UFUNCTION()
+	void PopulateObstacles();
 };
