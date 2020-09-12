@@ -87,7 +87,7 @@ TArray<FObstacleEdge> ACubeObstacle::GetPossibleEdges(FVector2D BulletOrigin) {
 	return PossibleEdges;
 }
 
-TArray<FObstacleEdge> ACubeObstacle::GetPossibleEdges2(const FVector2D &BulletOrigin) {
+TArray<FObstacleEdge> ACubeObstacle::GetPossibleEdges2(const FVector2D &BulletOrigin) const {
 	TArray<FObstacleEdge> PossibleEdges;
 	// First Edge.
 	FVector2D Edge = CornersLocations[1] - CornersLocations[0];

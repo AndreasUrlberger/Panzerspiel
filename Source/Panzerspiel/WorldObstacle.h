@@ -11,7 +11,7 @@ struct PANZERSPIEL_API FObstacleEdge {
 
 	GENERATED_USTRUCT_BODY()
 public:
-    FObstacleEdge(FVector2D NewStart = FVector2D::ZeroVector, FVector2D NewEnd = FVector2D::ZeroVector, AActor *NewParent = nullptr)
+    FObstacleEdge(FVector2D NewStart = FVector2D::ZeroVector, FVector2D NewEnd = FVector2D::ZeroVector, const AActor *NewParent = nullptr)
 	: Start(NewStart), End(NewEnd), Parent(NewParent) { }
 
 	UPROPERTY(VisibleAnywhere)
@@ -21,7 +21,7 @@ public:
 	FVector2D End;
 
 	UPROPERTY(VisibleAnywhere)
-	AActor *Parent;
+	const AActor *Parent;
 
 	bool Equals(const FObstacleEdge& OtherEdge) const;
 
@@ -65,6 +65,6 @@ public:
 	virtual TArray<FObstacleEdge> GetPossibleEdges(FVector2D BulletOrigin);
 
 	UFUNCTION()
-	virtual TArray<FObstacleEdge> GetPossibleEdges2(const FVector2D &BulletOrigin);
+	virtual TArray<FObstacleEdge> GetPossibleEdges2(const FVector2D &BulletOrigin) const;
 
 };

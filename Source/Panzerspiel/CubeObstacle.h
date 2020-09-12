@@ -45,5 +45,5 @@ protected:
 public:
 	virtual TArray<FObstacleEdge> GetPossibleEdges(FVector2D BulletOrigin) override;
 	
-	virtual TArray<FObstacleEdge> GetPossibleEdges2(const FVector2D &BulletOrigin) override;
+	virtual TArray<FObstacleEdge> GetPossibleEdges2(const FVector2D &BulletOrigin) const override;
 };

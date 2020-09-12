@@ -105,7 +105,7 @@ TArray<FObstacleEdge> AWorldObstacle::GetPossibleEdges(FVector2D BulletOrigin) {
 	return Empty;
 }
 
-TArray<FObstacleEdge> AWorldObstacle::GetPossibleEdges2(const FVector2D &BulletOrigin) {
+TArray<FObstacleEdge> AWorldObstacle::GetPossibleEdges2(const FVector2D &BulletOrigin) const {
 	TArray<FObstacleEdge> Empty;
 	return Empty;
 }

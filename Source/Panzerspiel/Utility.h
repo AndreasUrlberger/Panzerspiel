@@ -7,7 +7,7 @@ private:
 	FUtility();
 public:
 	// Arrays must be sorted for this function to work.
-    static TArray<FObstacleEdge> IntersectArrays(TArray<FObstacleEdge> &First, TArray<FObstacleEdge> &Second);
+    static TArray<FObstacleEdge> IntersectArrays(const TArray<FObstacleEdge> &First, const TArray<FObstacleEdge> &Second);
 
 	// Mirrors a given FVector2D (ToMirror) at a given Axis (MirrorDirection).
     static FVector2D MirrorVector(const FVector2D ToMirror, const FVector2D MirrorOrigin, const FVector2D MirrorDirection);
@@ -16,7 +16,7 @@ public:
     static FVector2D MirrorPoint(const FVector2D ToMirror, const FVector2D MirrorOrigin, const FVector2D MirrorDirection);
 
 	// Returns true if the Edge could reflect the bullet to the target according to their rotation.
-	static bool CanBulletEverHitTarget(const FObstacleEdge &Edge, const FVector2D &BulletOrigin, const FVector2D &Target);
+	static bool CanBulletEverHitTarget(const FObstacleEdge& Edge, const FVector2D &BulletOrigin, const FVector2D &Target);
 
 	// Only returns those edges which create, when considered as mirrors, a line of sight from the Origin to the Target.
 	// Warning: This function makes use of up to three line traces and thus should only be used as the last option.
@@ -37,5 +37,5 @@ public:
 	// Only returns true if the edges, considered as mirrors, create a line of sight from the Origin to the Target.
 	// Warning: This function makes use of up to three line traces and thus should only be used as the last option.
 	static bool HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge, const AActor *Shooter,
-		const AActor *Target, const FVector2D &ShootDirection, const float RaycastHeight, const float DistanceThreshold);
+		const AActor *Target, const FVector2D &ShootDirection, const float RaycastHeight, const float DistanceThreshold, FBulletPath &BulletPath);
 };

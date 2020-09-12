@@ -3,7 +3,7 @@
 
 FUtility::FUtility() {}
 
-TArray<FObstacleEdge> FUtility::IntersectArrays(TArray<FObstacleEdge> &First, TArray<FObstacleEdge> &Second) {
+TArray<FObstacleEdge> FUtility::IntersectArrays(const TArray<FObstacleEdge> &First, const TArray<FObstacleEdge> &Second) {
 	TArray<FObstacleEdge> Intersection;
 	const int32 LengthFirst = First.Num();
 	const int32 LengthSecond = Second.Num();
@@ -65,7 +65,7 @@ FVector2D FUtility::MirrorPoint(const FVector2D ToMirror, const FVector2D Mirror
 	return MirroredPoint;
 }
 
-bool FUtility::CanBulletEverHitTarget(const FObstacleEdge& Edge, const FVector2D& BulletOrigin, const FVector2D& Target) {
+bool FUtility::CanBulletEverHitTarget(const FObstacleEdge& Edge, const FVector2D &BulletOrigin, const FVector2D &Target) {
 	const FVector2D EdgeMiddle = Edge.Start + (Edge.End - Edge.Start) / 2;
 	const FVector2D EdgeDirection = Edge.End - Edge.Start;
 	const FVector2D EdgeNormal = FVector2D(EdgeDirection.Y, -EdgeDirection.X);
@@ -109,7 +109,7 @@ bool FUtility::CanBulletEverHitTarget(const FObstacleEdge& Edge, const FVector2D
 }
 
 void FUtility::FilterSingleRicochetLOS(const FObstacleEdge& Edge, const AActor *Origin, const AActor *Target,
-	float RaycastHeight, float HitThreshold, TArray<FBulletPath>& BulletPaths){
+	float RaycastHeight, float HitThreshold, TArray<FBulletPath> &BulletPaths){
 
 	UWorld *World = Target->GetWorld();
 	if(!World)
@@ -153,7 +153,9 @@ void FUtility::FilterSingleRicochetLOS(const FObstacleEdge& Edge, const AActor *
 
 	// We hit both edges.
 	PathLength += HitResult.Distance;
-	BulletPaths.Add(FBulletPath(FVector(MirroredTarget.X, MirroredTarget.Y, 0) , PathLength));
+	// TODO: If weird bug appear this might be the reason.
+	FBulletPath Path = FBulletPath(FVector(MirroredTarget.X, MirroredTarget.Y, 0) , PathLength);
+	BulletPaths.Add(Path);
 }
 
 bool FUtility::AreFacingAway(const FObstacleEdge& Edge1, const FObstacleEdge& Edge2, const FVector2D& Edge1Normal) {
@@ -191,7 +193,7 @@ FVector2D FUtility::CalculateIntersect(const FVector2D& Edge1Start, const FVecto
 }
 
 bool FUtility::HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge, const AActor* Shooter,
-	const AActor* Target, const FVector2D& ShootDirection, const float RaycastHeight, const float DistanceThreshold) {
+	const AActor* Target, const FVector2D& ShootDirection, const float RaycastHeight, const float DistanceThreshold, FBulletPath &BulletPath) {
 
 	UWorld *World = Shooter->GetWorld();
 	if(!World)
@@ -208,7 +210,7 @@ bool FUtility::HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObs
 	Params.AddIgnoredActor(Shooter);
 	// TODO: I guess another collision channel could be less expensive.
 	// We do the trace further than we might need to make sure we'll definitely hit the edge.
-	World->LineTraceSingleByChannel(HitResult, From, From + 2 * (To - From), ECollisionChannel::ECC_Camera, Params);
+	World->LineTraceSingleByChannel(HitResult, From, From + 2 * (To - From), ECC_Camera, Params);
 	// Value the first raycast, we return false if the ray hit to far away from the supposed hit but we give it a small
 	// threshold since raycasts are not that precise and we're using floats.
 	if(FVector::DistSquaredXY(To, HitResult.Location) > DistanceThreshold)
@@ -216,6 +218,9 @@ bool FUtility::HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObs
 	//Debug:
 	//FObstacleEdge HitBackup1 = FObstacleEdge(FVector2D(From), FVector2D(HitResult.Location));
 
+	// Make a copy since we're changing it below.
+	BulletPath.Target = FVector(To);
+	BulletPath.PathLength = HitResult.Distance;
 	// Setup second raycast (ShooterEdge -> TargetEdge).
 	Params.ClearIgnoredActors();
 	Params.AddIgnoredActor(ShooterEdge.Parent);
@@ -231,6 +236,7 @@ bool FUtility::HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObs
 	// Debug: 
 	//FObstacleEdge HitBackup2 = FObstacleEdge(FVector2D(From), FVector2D(HitResult.Location));
 
+	BulletPath.PathLength += HitResult.Distance;
 	// Setup third raycast (Target -> TargetEdge).
 	Params.ClearIgnoredActors();
 	Params.AddIgnoredActor(Target);
@@ -246,6 +252,7 @@ bool FUtility::HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObs
 	/*if(bDebugDrawPaths) DrawLine(FVector2D(From), FVector2D(HitResult.Location), FColor::Orange);
 	if(bDebugDrawPaths) DrawLine(HitBackup1.Start, HitBackup1.End, FColor::Orange);
 	if(bDebugDrawPaths) DrawLine(HitBackup2.Start, HitBackup2.End, FColor::Orange);*/
+	BulletPath.PathLength += HitResult.Distance;
 	return true;
 }
 
