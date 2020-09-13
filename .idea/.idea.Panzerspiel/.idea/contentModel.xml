@@ -43499,10 +43499,6 @@
           <e p="BulletPath.h" t="Include" />
           <e p="CubeObstacle.cpp" t="Include" />
           <e p="CubeObstacle.h" t="Include" />
-          <e p="DoubleRicochetAimer.cpp" t="Include" />
-          <e p="DoubleRicochetAimer.h" t="Include" />
-          <e p="DoubleRicochetTest.cpp" t="Include" />
-          <e p="DoubleRicochetTest.h" t="Include" />
           <e p="Mine.cpp" t="Include" />
           <e p="Mine.h" t="Include" />
           <e p="Panzerspiel.Build.cs" t="Include" />
@@ -43510,8 +43506,6 @@
           <e p="Panzerspiel.h" t="Include" />
           <e p="PanzerspielGameModeBase.cpp" t="Include" />
           <e p="PanzerspielGameModeBase.h" t="Include" />
-          <e p="RicochetAimer.cpp" t="Include" />
-          <e p="RicochetAimer.h" t="Include" />
           <e p="SimpleAITankPawn.cpp" t="Include" />
           <e p="SimpleAITankPawn.h" t="Include" />
           <e p="SplineTestVisualizer.cpp" t="Include" />

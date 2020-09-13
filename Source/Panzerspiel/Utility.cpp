@@ -1,5 +1,7 @@
 ﻿#include "Utility.h"
 #include "BulletPath.h"
+#include "DrawDebugHelpers.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 FUtility::FUtility() {}
 
@@ -254,5 +256,34 @@ bool FUtility::HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObs
 	if(bDebugDrawPaths) DrawLine(HitBackup2.Start, HitBackup2.End, FColor::Orange);*/
 	BulletPath.PathLength += HitResult.Distance;
 	return true;
+}
+
+void FUtility::ShowBulletPaths(const TArray<FBulletPath>& BulletPaths, const AActor *Origin, const float LineThickness) {
+	UWorld *World = Origin->GetWorld();
+	if(!World)
+		return;
+	
+	for(FBulletPath Path : BulletPaths) {
+		FVector From = Origin->GetActorLocation();
+		FVector To = From + (Path.Target - From) / 2;
+		DrawDebugLine(World, From, To, FColor::Green, false, -1, 0, LineThickness);
+	}
+}
+
+void FUtility::ShowEdges(const TArray<FObstacleEdge> &EdgesToShow, const AActor *WorldReference, const float DisplayHeight, const float LineThickness) {
+	for (const FObstacleEdge &Edge : EdgesToShow)
+		DrawEdge(Edge, FColor::Green, WorldReference, LineThickness, DisplayHeight);
+}
+
+void FUtility::DrawEdge(const FObstacleEdge &Edge, const FColor Color, const AActor *WorldReference, const float LineThickness, const float DisplayHeight) {
+	DrawLine(Edge.Start, Edge.End, Color, WorldReference, LineThickness, DisplayHeight);
+}
+
+void FUtility::DrawLine(const FVector2D &Start, const FVector2D &End, const FColor Color, const AActor *WorldReference, const float LineThickness, const float DisplayHeight) {
+	UWorld *World = WorldReference->GetWorld();
+	if(!World)
+		return;
+	
+	DrawDebugLine(World, FVector(Start.X, Start.Y, DisplayHeight), FVector(End.X, End.Y, DisplayHeight), Color, false, -1, 0, LineThickness);
 }
 

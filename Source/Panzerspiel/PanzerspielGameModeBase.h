@@ -57,10 +57,23 @@ private:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaSeconds) override;
+
 private:
 	APanzerspielGameModeBase();
 
+	UFUNCTION()
+	void InvalidateEdges();
+	
+	UFUNCTION()
+    void GetAllPlayerEdges();
+
+	UFUNCTION()
+    void PopulateObstacles();
+
 public:
+	
+	
 	UFUNCTION(BlueprintCallable, Category="PlayerPawns")
 	TArray<ATankPawn*> GetTankPawns() const;
 
@@ -84,12 +97,6 @@ public:
 	void ClearTankPawns();
 
 	UFUNCTION()
-	void GetAllPlayerEdges();
-
-	UFUNCTION()
-	void PopulateObstacles();
-
-	UFUNCTION()
 	static bool FindDirectPath(FBulletPath &BulletPath, const AActor *Origin, const AActor *Target);
 
 	UFUNCTION()
@@ -99,4 +106,13 @@ public:
 	UFUNCTION()
 	bool FindDoubleRicochetPath(const AActor *Origin, const TArray<FObstacleEdge> &OriginEdges,
     const AActor *Target, const TArray<FObstacleEdge> &TargetEdges, TArray<FBulletPath> &BulletPaths);
+
+	UFUNCTION(BlueprintCallable)
+	bool GetDirectPath(const ATankPawn* Origin, const ATankPawn* Target, FVector &OutTargetLocation);
+
+	UFUNCTION(BlueprintCallable)
+	bool GetShortestSingleRicochet(const ATankPawn* Origin, const ATankPawn* Target, FVector &OutTargetLocation);
+
+	UFUNCTION(BlueprintCallable)
+	bool GetShortestDoubleRicochet(const ATankPawn* Origin, const ATankPawn* Target, FVector &OutTargetLocation);
 };

@@ -38,4 +38,16 @@ public:
 	// Warning: This function makes use of up to three line traces and thus should only be used as the last option.
 	static bool HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge, const AActor *Shooter,
 		const AActor *Target, const FVector2D &ShootDirection, const float RaycastHeight, const float DistanceThreshold, FBulletPath &BulletPath);
+
+	// Draws debug lines for one frame to show where the BulletPaths go.
+	static void ShowBulletPaths(const TArray<FBulletPath>& BulletPaths, const AActor *Origin, const float LineThickness = 15);
+
+	// Draws debug lines for one frame to show each edge in the given array.
+	static void ShowEdges(const TArray<FObstacleEdge> &EdgesToShow, const AActor *WorldReference, const float DisplayHeight = 205, const float LineThickness = 15);
+
+	// Draws a debug line for one frame to show a single edge.
+	static void DrawEdge(const FObstacleEdge &Edge, const FColor Color, const AActor *WorldReference, const float LineThickness = 15, const float DisplayHeight = 205);
+
+	// Draws a debug line to one frame to show the given line.
+    static void DrawLine(const FVector2D &Start, const FVector2D &End, const FColor Color, const AActor *WorldReference, const float LineThickness = 15, const float DisplayHeight = 205);
 };

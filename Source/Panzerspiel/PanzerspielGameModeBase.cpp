@@ -193,6 +193,50 @@ bool APanzerspielGameModeBase::FindDoubleRicochetPath(const AActor *Origin, cons
 	return true;
 }
 
+bool APanzerspielGameModeBase::GetDirectPath(const ATankPawn* Origin, const ATankPawn* Target, FVector &OutTargetLocation) {
+	FBulletPath BulletPath;
+	FindDirectPath(BulletPath, Origin, Target);
+	if(BulletPath.PathLength <= 1)
+		return false;
+	OutTargetLocation = BulletPath.Target;
+	return true;
+}
+
+bool APanzerspielGameModeBase::GetShortestSingleRicochet(const ATankPawn* Origin, const ATankPawn* Target, FVector &OutTargetLocation) {
+	TArray<FBulletPath> BulletPaths;
+	FindSingleRicochetPath(BulletPaths, Origin, *PlayersEdges.Find(Origin), Target, *PlayersEdges.Find(Target));
+
+	if(BulletPaths.Num() <= 0)
+		return false;
+	
+	float ShortestPath = std::numeric_limits<float>::max();
+	for(FBulletPath &Path : BulletPaths) {
+		if(Path.PathLength < ShortestPath) {
+			ShortestPath = Path.PathLength;
+			OutTargetLocation = Path.Target;
+		}
+	}
+
+	return true;
+}
+
+bool APanzerspielGameModeBase::GetShortestDoubleRicochet(const ATankPawn* Origin, const ATankPawn* Target, FVector &OutTargetLocation) {
+	TArray<FBulletPath> BulletPaths;
+	FindDoubleRicochetPath(Origin, *PlayersEdges.Find(Origin), Target, *PlayersEdges.Find(Target), BulletPaths);
+	
+	if(BulletPaths.Num() <= 0)
+		return false;
+	
+	float ShortestPath = std::numeric_limits<float>::max();
+	for(FBulletPath &Path : BulletPaths) {
+		if(Path.PathLength < ShortestPath) {
+			ShortestPath = Path.PathLength;
+			OutTargetLocation = Path.Target;
+		}
+	}
+	return true;
+}
+
 
 void APanzerspielGameModeBase::BeginPlay() {
 	Super::BeginPlay();
@@ -207,3 +251,12 @@ void APanzerspielGameModeBase::BeginPlay() {
 	PopulateObstacles();
 	GetAllPlayerEdges();
 }
+
+void APanzerspielGameModeBase::Tick(float DeltaSeconds) {
+	InvalidateEdges();
+}
+
+void APanzerspielGameModeBase::InvalidateEdges() {
+	PlayersEdges.Empty();
+}
+
