@@ -31,10 +31,10 @@ private:
 	TArray<class ATankPawn*> PlayerPawns;
 
 	// All Edges must be sorted. No UPROPERTY because it is not allowed for nested containers.
-	TMap<ATankPawn*, TArray<FObstacleEdge>> PlayersEdges;
+	TMap<const ATankPawn*, TArray<FObstacleEdge>> PlayersEdges;
 
 	UPROPERTY(VisibleInstanceOnly, Category="Shooting Calculation")
-	TArray<AWorldObstacle*> Obstacles;
+	TArray<const AWorldObstacle*> Obstacles;
 
 	/*UPROPERTY(EditAnywhere, Category="Players")
 	int8 MaxPlayers = 1;*/
@@ -71,8 +71,16 @@ private:
 	UFUNCTION()
     void PopulateObstacles();
 
+	UFUNCTION()
+	TArray<FObstacleEdge>* GetPlayersEdges(const ATankPawn *TankPawn);
+
 public:
-	
+
+	UFUNCTION()
+	void AddWorldObstacle(const AWorldObstacle *Obstacle);
+
+	UFUNCTION()
+	void RemoveWorldObstacle(const AWorldObstacle *Obstacle);
 	
 	UFUNCTION(BlueprintCallable, Category="PlayerPawns")
 	TArray<ATankPawn*> GetTankPawns() const;

@@ -60,7 +60,7 @@ void APanzerspielGameModeBase::GetAllPlayerEdges() {
 	for(ATankPawn *TankPawn : PlayerPawns) {
 		// Only really need this the first time.
 		TArray<FObstacleEdge> Edges;
-		FVector2D TankLocation = FVector2D(TankPawn->GetActorLocation());
+		const FVector2D TankLocation = FVector2D(TankPawn->GetActorLocation());
 		for(const AWorldObstacle *Obstacle : Obstacles)
 			Edges.Append(Obstacle->GetPossibleEdges2(TankLocation));
 		PlayersEdges.Add(TankPawn, Edges);
@@ -75,6 +75,30 @@ void APanzerspielGameModeBase::PopulateObstacles() {
 	UGameplayStatics::GetAllActorsOfClass(this, AWorldObstacle::StaticClass(), FoundActors);
 	for(AActor *Actor : FoundActors)
 		Obstacles.Add(Cast<AWorldObstacle>(Actor));
+}
+
+TArray<FObstacleEdge>* APanzerspielGameModeBase::GetPlayersEdges(const ATankPawn* TankPawn) {
+	// We might already calculated the edges that are visible from this tankPawn.
+	if(!PlayersEdges.Contains(TankPawn)) {
+		// The edges visible from this tank have not been calculated yet.
+		TArray<FObstacleEdge> Edges;
+		const FVector2D TankLocation = FVector2D(TankPawn->GetActorLocation());
+		for(const AWorldObstacle *Obstacle : Obstacles)
+			Edges.Append(Obstacle->GetPossibleEdges2(TankLocation));
+		PlayersEdges.Add(TankPawn, Edges);
+		// Probably increases performance.
+		Edges.Sort();
+	}
+
+	return PlayersEdges.Find(TankPawn);
+}
+
+void APanzerspielGameModeBase::AddWorldObstacle(const AWorldObstacle* Obstacle) {
+	Obstacles.Add(Obstacle);
+}
+
+void APanzerspielGameModeBase::RemoveWorldObstacle(const AWorldObstacle* Obstacle) {
+	Obstacles.Remove(Obstacle);
 }
 
 bool APanzerspielGameModeBase::FindDirectPath(FBulletPath& BulletPath, const AActor* Origin, const AActor* Target) {
@@ -204,7 +228,9 @@ bool APanzerspielGameModeBase::GetDirectPath(const ATankPawn* Origin, const ATan
 
 bool APanzerspielGameModeBase::GetShortestSingleRicochet(const ATankPawn* Origin, const ATankPawn* Target, FVector &OutTargetLocation) {
 	TArray<FBulletPath> BulletPaths;
-	FindSingleRicochetPath(BulletPaths, Origin, *PlayersEdges.Find(Origin), Target, *PlayersEdges.Find(Target));
+	TArray<FObstacleEdge> *OriginEdges = GetPlayersEdges(Origin);
+	TArray<FObstacleEdge> *TargetEdges = GetPlayersEdges(Target);
+	FindSingleRicochetPath(BulletPaths, Origin, *OriginEdges, Target, *TargetEdges);
 
 	if(BulletPaths.Num() <= 0)
 		return false;
@@ -222,7 +248,9 @@ bool APanzerspielGameModeBase::GetShortestSingleRicochet(const ATankPawn* Origin
 
 bool APanzerspielGameModeBase::GetShortestDoubleRicochet(const ATankPawn* Origin, const ATankPawn* Target, FVector &OutTargetLocation) {
 	TArray<FBulletPath> BulletPaths;
-	FindDoubleRicochetPath(Origin, *PlayersEdges.Find(Origin), Target, *PlayersEdges.Find(Target), BulletPaths);
+	TArray<FObstacleEdge> *OriginEdges = GetPlayersEdges(Origin);
+	TArray<FObstacleEdge> *TargetEdges = GetPlayersEdges(Target);
+	FindDoubleRicochetPath(Origin, *OriginEdges, Target, *TargetEdges, BulletPaths);
 	
 	if(BulletPaths.Num() <= 0)
 		return false;
@@ -249,14 +277,13 @@ void APanzerspielGameModeBase::BeginPlay() {
 	}*/
 
 	PopulateObstacles();
-	GetAllPlayerEdges();
 }
 
 void APanzerspielGameModeBase::Tick(float DeltaSeconds) {
+	Super::Tick(DeltaSeconds);
 	InvalidateEdges();
 }
 
 void APanzerspielGameModeBase::InvalidateEdges() {
 	PlayersEdges.Empty();
 }
-
