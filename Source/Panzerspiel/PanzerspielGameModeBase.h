@@ -31,7 +31,7 @@ private:
 	TArray<class ATankPawn*> PlayerPawns;
 
 	// All Edges must be sorted. No UPROPERTY because it is not allowed for nested containers.
-	TMap<const ATankPawn*, TArray<FObstacleEdge>> PlayersEdges;
+	TMap<const AActor*, TArray<FObstacleEdge>> PlayersEdges;
 
 	UPROPERTY(VisibleInstanceOnly, Category="Shooting Calculation")
 	TArray<const AWorldObstacle*> Obstacles;
@@ -72,7 +72,7 @@ private:
     void PopulateObstacles();
 
 	UFUNCTION()
-	TArray<FObstacleEdge>& GetPlayersEdges(const ATankPawn *TankPawn);
+	TArray<FObstacleEdge>& GetPlayersEdges(const AActor *TankPawn);
 
 public:
 
@@ -116,11 +116,19 @@ public:
     const AActor *Target, const TArray<FObstacleEdge> &TargetEdges, TArray<FBulletPath> &BulletPaths);
 
 	UFUNCTION(BlueprintCallable)
-	bool GetDirectPath(const ATankPawn* Origin, const ATankPawn* Target, FVector &OutTargetLocation);
+	bool GetDirectPath(const AActor* Origin, const AActor* Target, FVector &OutTargetLocation);
 
 	UFUNCTION(BlueprintCallable)
-	bool GetShortestSingleRicochet(const ATankPawn* Origin, const ATankPawn* Target, FVector &OutTargetLocation);
+	bool GetShortestSingleRicochet(const AActor* Origin, const AActor* Target, FVector &OutTargetLocation);
 
 	UFUNCTION(BlueprintCallable)
-	bool GetShortestDoubleRicochet(const ATankPawn* Origin, const ATankPawn* Target, FVector &OutTargetLocation);
+	bool GetShortestDoubleRicochet(const AActor* Origin, const AActor* Target, FVector &OutTargetLocation);
+
+	// This gets called whenever a level unloading occurs so that the GameMode can act accordingly.
+	UFUNCTION(BlueprintCallable)
+	void LevelStreamingBegan();
+
+	// This gets called whenever a level loading finished so that the GameMode can act accordingly.
+	UFUNCTION(BlueprintCallable)
+    void LevelStreamingEnded();
 };

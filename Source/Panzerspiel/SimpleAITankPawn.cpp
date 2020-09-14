@@ -8,6 +8,7 @@
 #include "Containers/Array.h"
 #include "BTTask_SimpleTankMoveTo.h"
 #include "GameFramework/FloatingPawnMovement.h"
+#include "PanzerspielGameModeBase.h"
 #include "Kismet/KismetMathLibrary.h"
 
 void ASimpleAITankPawn::MoveRight(float AxisValue) {
@@ -40,7 +41,7 @@ ASimpleAITankPawn::ASimpleAITankPawn() {
     Sensors.Add(SensorRight);
 }
 
-void ASimpleAITankPawn::NavigationTrace() {
+void ASimpleAITankPawn::DoNavigationTrace() {
     if(UWorld *World = GetWorld()) {
         int8 Length = Sensors.Num();
         FHitResult HitResult;
@@ -66,77 +67,93 @@ void ASimpleAITankPawn::NavigationTrace() {
 
 void ASimpleAITankPawn::Tick(float DeltaTime) {
     Super::Tick(DeltaTime);
-    NavigationTrace();
-    
-    if(FollowingPathPoints) {
-        const float Distance = FVector::Dist(PathPoints[CurrentPathPoint], GetActorLocation());
-        if(Distance < ReachRadius) {
-            if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("Reached Point"));
-            ++CurrentPathPoint;
-            if(CurrentPathPoint >= PathPoints.Num()) {
-                // Reached end of path.
-                FollowingPathPoints = false;
-                CallingTask->Finish();    
-            }
-        }else {
-            // Calculate in which direction to move to avoid collisions.
-            // TODO: Might want to save Sensor data over multiple frames and add them to smoothen the response a bit.
-            // TODO: Each Sensor should have its own AvoidDistance and maybe some weight.
-            const FVector AvoidVector = GetAvoidVector();
-
-            // Follow Path.
-            const FVector Target = PathPoints[CurrentPathPoint];
-            const FVector Desired =  (Target - GetActorLocation()).GetUnsafeNormal();
-            FVector DeltaMove = ((Desired + AvoidVector)/2 + FakeVelocity * VelocityImpact).GetUnsafeNormal();
-            //UE_LOG(LogTemp, Warning, TEXT("DeltaMove before: %s"), *DeltaMove.ToString());
-            // Updates the DeltaMove to follow the tanks movement rules.
-            DeltaMove = UpdateMovement(DeltaTime, DeltaMove);
-            //UE_LOG(LogTemp, Warning, TEXT("DeltaMove after: %s"), *DeltaMove.ToString());
-
-            // We dont need to calculate DeltaMove.Size() since its always 1 as it gets normalized just a few lines above.
-            const float DeltaSize = MovementComp->MaxSpeed * DeltaTime;
-            // Dont move farther than the target.
-            if(DeltaSize > Distance)
-                DeltaMove *= Distance / DeltaSize;
-            
-            //UE_LOG(LogTemp, Warning, TEXT("Desired: %s, DeltaMove: %s, FakeVelocity: %s"), *Desired.ToString(), *DeltaMove.ToString(), *FakeVelocity.ToString())
-            MovementComp->AddInputVector(DeltaMove);
-
-            FakeVelocity = DeltaMove;
-            FakeVelocity.Z = 0;
-
-            SetActorRotation((DeltaMove * Direction).Rotation());
-            
-        }
-    }
-    NavigationTrace();
-
+    DoNavigationTrace();   
+    if(FollowingPathPoints)
+        FollowPath(DeltaTime);
     // Lock on aim.
     if(IsValid(LockOnActor))
         AlignTower(LockOnActor->GetActorLocation());
-
-    // Always update the TimeTillNextShoot.
+    // Always update the TimeTillNextShot before calling ShootIfPossible.
     TimeTillNextShot -= DeltaTime;
-    // Only shoot when a target is selected.
-    if(IsValid(LockOnActor) && FireMode) {
-        UWorld *World = GetWorld();
-        if(World && TimeTillNextShot <= 0) {
-            FHitResult HitResult;
-            FCollisionQueryParams Params;
-            Params.AddIgnoredActor(this);
-            FVector StartLoc = GetBulletSpawnPoint();
-            FVector EndLoc = LockOnActor->GetActorLocation();
-            World->LineTraceSingleByChannel(HitResult, StartLoc, EndLoc, ECollisionChannel::ECC_Camera, Params);
-            // Only shoot when the target can be seen.
-            if(HitResult.Actor == LockOnActor) {
-                bool ShotFired = Shoot();
-                // Renew TimeTillNextShot.
-                if(ShotFired) {
-                    TimeTillNextShot = FMath::RandRange(MinShootDelay, RandomShootDelay);
-                }
-            }
+    ShootIfPossible();
+}
+
+void ASimpleAITankPawn::FollowPath(float DeltaTime) {
+    const float Distance = FVector::Dist(PathPoints[CurrentPathPoint], GetActorLocation());
+    if (Distance < ReachRadius) {
+        //if (DebugLog) UE_LOG(LogTemp, Warning, TEXT("Reached Point"));
+        ++CurrentPathPoint;
+        if (CurrentPathPoint >= PathPoints.Num()) {
+            // Reached end of path.
+            FollowingPathPoints = false;
+            CallingTask->Finish();
         }
+    } else {
+        // Calculate in which direction to move to avoid collisions.
+        // TODO: Might want to save Sensor data over multiple frames and add them to smoothen the response a bit.
+        // TODO: Each Sensor should have its own AvoidDistance and maybe some weight.
+        const FVector AvoidVector = GetAvoidVector();
+
+        // Follow Path.
+        const FVector Target = PathPoints[CurrentPathPoint];
+        const FVector Desired = (Target - GetActorLocation()).GetUnsafeNormal();
+        FVector DeltaMove = ((Desired + AvoidVector) / 2 + FakeVelocity * VelocityImpact).GetUnsafeNormal();
+        //UE_LOG(LogTemp, Warning, TEXT("DeltaMove before: %s"), *DeltaMove.ToString());
+        // Updates the DeltaMove to follow the tanks movement rules.
+        DeltaMove = UpdateMovement(DeltaTime, DeltaMove);
+        //UE_LOG(LogTemp, Warning, TEXT("DeltaMove after: %s"), *DeltaMove.ToString());
+
+        // We dont need to calculate DeltaMove.Size() since its always 1 as it gets normalized just a few lines above.
+        const float DeltaSize = MovementComp->MaxSpeed * DeltaTime;
+        // Dont move farther than the target.
+        if (DeltaSize > Distance)
+            DeltaMove *= Distance / DeltaSize;
+
+        //UE_LOG(LogTemp, Warning, TEXT("Desired: %s, DeltaMove: %s, FakeVelocity: %s"), *Desired.ToString(), *DeltaMove.ToString(), *FakeVelocity.ToString())
+        MovementComp->AddInputVector(DeltaMove);
+
+        FakeVelocity = DeltaMove;
+        FakeVelocity.Z = 0;
+
+        SetActorRotation((DeltaMove * Direction).Rotation());
+
     }
+}
+
+bool ASimpleAITankPawn::ShootIfPossible() {
+    // Only shoot if a target is selected, we're in fire mode and we're ready to shoot.
+    if (!(IsValid(LockOnActor) && FireMode && TimeTillNextShot <= 0))
+        return false;
+    
+    UWorld* World = GetWorld();
+    if (!World)
+        return false;
+
+    FVector TargetLocation;
+    if(!GameMode->GetDirectPath(this, LockOnActor, TargetLocation)) {
+        if(!GameMode->GetShortestSingleRicochet(this, LockOnActor, TargetLocation)) {
+            if(!GameMode->GetShortestDoubleRicochet(this, LockOnActor, TargetLocation)) {
+                if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("Could not find any Path"));
+                return false;
+            }else {
+                if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("Found double ricochet Path"));
+            }
+        }else {
+            if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("Found single ricochet Path"));
+        }
+    }else {
+        if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("Found direct Path"));
+    }
+                
+
+    // Found valid path.
+    AlignTower(TargetLocation);
+    if(!Shoot())
+        return false;
+    // Successfully fired bullet.
+    // Renew TimeTillNextShot.
+    TimeTillNextShot = FMath::RandRange(MinShootDelay, RandomShootDelay);
+    return true;
 }
 
 bool ASimpleAITankPawn::FollowPathPoints(UBTTask_SimpleTankMoveTo *Task, TArray<FVector> Points) {
@@ -189,7 +206,7 @@ FVector ASimpleAITankPawn::UpdateMovement(float DeltaTime, const FVector Desired
         SensorsRoot->AddRelativeRotation(FRotator(0, 180, 0));
     }
     const FVector NewForward = FMath::VInterpNormalRotationTo(Forward, DesiredDirection, DeltaTime, RotationSpeed);
-    if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("New Forward Vector: %s"), *NewForward.ToString());
+    //if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("New Forward Vector: %s"), *NewForward.ToString());
     SetActorRotation(NewForward.Rotation());
 
     FVector CurrentLoc = GetActorLocation();

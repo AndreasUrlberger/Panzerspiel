@@ -39,7 +39,9 @@ protected:
 
     UPROPERTY(EditAnywhere, Category="Debug")
     bool DebugLog = false;
-
+    
+    UPROPERTY()
+    class APanzerspielGameModeBase *GameMode;
 
 private:
     
@@ -90,9 +92,6 @@ private:
     // Index of the TankPawns team. (Index 0 equals no team)
     UPROPERTY(EditAnywhere, Category="Combat")
     int32 Team = 0;
-    
-    UPROPERTY()
-    class APanzerspielGameModeBase *GameMode;
 
     // Functions
 public:
@@ -165,4 +164,6 @@ protected:
 
     UFUNCTION()
     FVector GetBulletSpawnPoint() const;
+
+    void TriggerBreakpoint();
 };

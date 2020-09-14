@@ -41,7 +41,7 @@ void ATankPawn::BeginPlay() {
 // Called every frame
 void ATankPawn::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
-	if (DebugLog) UE_LOG(LogTemp, Warning, TEXT("Forward: %f, Right: %f"), MoveForwardAxisValue, MoveRightAxisValue);
+	//if (DebugLog) UE_LOG(LogTemp, Warning, TEXT("Forward: %f, Right: %f"), MoveForwardAxisValue, MoveRightAxisValue);
 	if (ControllerInput) {
 		ControllerMove(DeltaTime);
 	} else {
@@ -207,6 +207,11 @@ void ATankPawn::PlaceMine() {
 FVector ATankPawn::GetBulletSpawnPoint() const {
 	return TurretMesh->GetComponentLocation() + FVector(0, 0, BarrelHeight) + TurretMesh->GetComponentRotation().
 		Vector() * BarrelLength;
+}
+
+void ATankPawn::TriggerBreakpoint() {
+	FVector Z = FVector(9, 3, 4);
+	Z *= 25;
 }
 
 void ATankPawn::BulletDestroyed() {

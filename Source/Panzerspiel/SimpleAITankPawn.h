@@ -89,6 +89,7 @@ private:
 	float TimeTillNextShot = 0;
 
 	// Functions
+private:
 	virtual void MoveRight(float AxisValue) override;
 
 	UFUNCTION()
@@ -97,11 +98,18 @@ private:
 	UFUNCTION()
 	FVector UpdateMovement(float DeltaTime, const FVector DesiredDeltaMove);
 
+	// Called each tick to update the tanks position on the to follow path.
+	UFUNCTION()
+	void FollowPath(float DeltaTime);
+
+	UFUNCTION()
+	bool ShootIfPossible();
+
 public:
 	ASimpleAITankPawn();
 
 	UFUNCTION()
-	void NavigationTrace();
+	void DoNavigationTrace();
 
 	// Called every frame.
 	virtual void Tick(float DeltaTime) override;
