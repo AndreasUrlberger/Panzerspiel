@@ -77,7 +77,7 @@ void APanzerspielGameModeBase::PopulateObstacles() {
 		Obstacles.Add(Cast<AWorldObstacle>(Actor));
 }
 
-TArray<FObstacleEdge>* APanzerspielGameModeBase::GetPlayersEdges(const ATankPawn* TankPawn) {
+TArray<FObstacleEdge>& APanzerspielGameModeBase::GetPlayersEdges(const ATankPawn* TankPawn) {
 	// We might already calculated the edges that are visible from this tankPawn.
 	if(!PlayersEdges.Contains(TankPawn)) {
 		// The edges visible from this tank have not been calculated yet.
@@ -90,7 +90,7 @@ TArray<FObstacleEdge>* APanzerspielGameModeBase::GetPlayersEdges(const ATankPawn
 		Edges.Sort();
 	}
 
-	return PlayersEdges.Find(TankPawn);
+	return *PlayersEdges.Find(TankPawn);
 }
 
 void APanzerspielGameModeBase::AddWorldObstacle(const AWorldObstacle* Obstacle) {
@@ -228,9 +228,9 @@ bool APanzerspielGameModeBase::GetDirectPath(const ATankPawn* Origin, const ATan
 
 bool APanzerspielGameModeBase::GetShortestSingleRicochet(const ATankPawn* Origin, const ATankPawn* Target, FVector &OutTargetLocation) {
 	TArray<FBulletPath> BulletPaths;
-	TArray<FObstacleEdge> *OriginEdges = GetPlayersEdges(Origin);
-	TArray<FObstacleEdge> *TargetEdges = GetPlayersEdges(Target);
-	FindSingleRicochetPath(BulletPaths, Origin, *OriginEdges, Target, *TargetEdges);
+	TArray<FObstacleEdge> &OriginEdges = GetPlayersEdges(Origin);
+	TArray<FObstacleEdge> &TargetEdges = GetPlayersEdges(Target);
+	FindSingleRicochetPath(BulletPaths, Origin, OriginEdges, Target, TargetEdges);
 
 	if(BulletPaths.Num() <= 0)
 		return false;
@@ -248,9 +248,9 @@ bool APanzerspielGameModeBase::GetShortestSingleRicochet(const ATankPawn* Origin
 
 bool APanzerspielGameModeBase::GetShortestDoubleRicochet(const ATankPawn* Origin, const ATankPawn* Target, FVector &OutTargetLocation) {
 	TArray<FBulletPath> BulletPaths;
-	TArray<FObstacleEdge> *OriginEdges = GetPlayersEdges(Origin);
-	TArray<FObstacleEdge> *TargetEdges = GetPlayersEdges(Target);
-	FindDoubleRicochetPath(Origin, *OriginEdges, Target, *TargetEdges, BulletPaths);
+	TArray<FObstacleEdge> &OriginEdges = GetPlayersEdges(Origin);
+	TArray<FObstacleEdge> &TargetEdges = GetPlayersEdges(Target);
+	FindDoubleRicochetPath(Origin, OriginEdges, Target, TargetEdges, BulletPaths);
 	
 	if(BulletPaths.Num() <= 0)
 		return false;

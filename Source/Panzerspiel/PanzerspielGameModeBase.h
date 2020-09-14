@@ -72,7 +72,7 @@ private:
     void PopulateObstacles();
 
 	UFUNCTION()
-	TArray<FObstacleEdge>* GetPlayersEdges(const ATankPawn *TankPawn);
+	TArray<FObstacleEdge>& GetPlayersEdges(const ATankPawn *TankPawn);
 
 public:
 
