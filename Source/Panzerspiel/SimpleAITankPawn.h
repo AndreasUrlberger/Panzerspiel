@@ -72,6 +72,12 @@ private:
 	float AvoidStrength = 1;
 
 	UPROPERTY()
+	FVector LastAvoidVector = FVector::ZeroVector;
+
+	UPROPERTY(EditAnywhere, Category="CollisionAvoidance")
+	bool bSmoothAvoidVector = false;
+
+	UPROPERTY()
 	AActor *LockOnActor;
 
 	// Measured in seconds.

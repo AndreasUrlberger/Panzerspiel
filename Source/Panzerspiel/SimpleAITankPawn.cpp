@@ -183,6 +183,11 @@ FVector ASimpleAITankPawn::GetAvoidVector() {
     for(int32 Index = 0; Index < Distances.Num(); ++Index) {
         AvoidVector -= Sensors[Index]->GetForwardVector() * FMath::Square(AvoidDistances[Index]/Distances[Index]);
     }
+    // Get the middle of the current and last avoidVector to achieve a smoothing effect.
+    if(bSmoothAvoidVector) {
+        AvoidVector = (AvoidVector + LastAvoidVector) / 2;
+        LastAvoidVector = AvoidVector;
+    }
     AvoidVector = (AvoidVector * AvoidStrength);
     //UE_LOG(LogTemp, Warning, TEXT("Avoidance Vector: %s"), *AvoidVector.ToString());
     return AvoidVector;
