@@ -90,7 +90,7 @@ TArray<FObstacleEdge>& APanzerspielGameModeBase::GetPlayersEdges(const AActor* T
 		Edges.Sort();
 	}
 
-	return *PlayersEdges.Find(TankPawn);
+	return PlayersEdges.Find(TankPawn)->Edges;
 }
 
 void APanzerspielGameModeBase::AddWorldObstacle(const AWorldObstacle* Obstacle) {
@@ -129,20 +129,20 @@ bool APanzerspielGameModeBase::FindSingleRicochetPath(TArray<FBulletPath> &Bulle
 		return false;
 	// TODO: Doing the gathering and intersecting of the edges both in the same loop could improve the performance, the downside is that we then cant use the potentially visible edges for comparison with other tanks.
 	// Only keep edges that are visible from both locations.
-	TArray<FObstacleEdge> IntersectedEdges = FUtility::IntersectArrays(OriginEdges, TargetEdges);
+	TArray<FObstacleEdge> IntersectedEdges = UUtility::IntersectArrays(OriginEdges, TargetEdges);
 
 	// Only keep edges that can reflect the bullet to the target according to their rotation.
 	const FVector2D OriginLocation = FVector2D(Origin->GetActorLocation());
 	const FVector2D TargetLocation = FVector2D(Target->GetActorLocation());
 	TArray<FObstacleEdge> FilteredEdges;
 	for(const FObstacleEdge &Edge : IntersectedEdges)
-		if(FUtility::CanBulletEverHitTarget(Edge, OriginLocation, TargetLocation))
+		if(UUtility::CanBulletEverHitTarget(Edge, OriginLocation, TargetLocation))
 			FilteredEdges.Add(Edge);
 	// Make sure its empty.
 	IntersectedEdges.Empty();
 
 	for(const FObstacleEdge &Edge : FilteredEdges)
-		FUtility::FilterSingleRicochetLOS(Edge, Origin, Target, RaycastHeight, HitThreshold, BulletPaths);
+		UUtility::FilterSingleRicochetLOS(Edge, Origin, Target, RaycastHeight, HitThreshold, BulletPaths);
 
 	//if(bDebugDrawRaycastCalculation) ShowBulletPaths(BulletPaths);
 
@@ -170,9 +170,9 @@ bool APanzerspielGameModeBase::FindDoubleRicochetPath(const AActor *Origin, cons
 	// Get all edges that are visible from the shooter and all that are visible from the target.
 	for(const FObstacleEdge &TargetEdge : TargetEdges) {
 		// Check whether the other edge can be seen by this one (kinda implemented in a later step).
-		const FVector2D MirroredTarget = FUtility::MirrorPoint(TargetLocation, TargetEdge.Start, TargetEdge.End - TargetEdge.Start);
+		const FVector2D MirroredTarget = UUtility::MirrorPoint(TargetLocation, TargetEdge.Start, TargetEdge.End - TargetEdge.Start);
 		for(const FObstacleEdge &ShooterEdge : OriginEdges) {
-			const FVector2D TwiceMirroredTarget = FUtility::MirrorPoint(MirroredTarget, ShooterEdge.Start, ShooterEdge.End - ShooterEdge.Start);
+			const FVector2D TwiceMirroredTarget = UUtility::MirrorPoint(MirroredTarget, ShooterEdge.Start, ShooterEdge.End - ShooterEdge.Start);
 			const FVector2D ShootDirection = TwiceMirroredTarget - ShooterLocation;
 			// Interestingly this test is not obsolete by to the following test. This is the case since it does not
 			// detect when the shooting direction points in the exact opposite.
@@ -186,17 +186,17 @@ bool APanzerspielGameModeBase::FindDoubleRicochetPath(const AActor *Origin, cons
 				continue;
 			const FVector2D TargetEdgeNormal = FVector2D(TargetEdge.End.Y - TargetEdge.Start.Y, -(TargetEdge.End.X - TargetEdge.Start.X));
 			const FVector2D ShooterEdgeNormal = FVector2D(ShooterEdge.End.Y - ShooterEdge.Start.Y, -(ShooterEdge.End.X - ShooterEdge.Start.X));
-			const FVector2D MirroredShootDirection = FUtility::MirrorVector(ShootDirection, ShooterEdge.Start, ShooterEdgeNormal);
+			const FVector2D MirroredShootDirection = UUtility::MirrorVector(ShootDirection, ShooterEdge.Start, ShooterEdgeNormal);
 			if((MirroredShootDirection | TargetEdgeNormal) <= 0)
 				continue;
 			// Check whether the TargetEdge and the ShooterEdge are not facing away from each other and thus can reflect a bullet properly.
-			if(FUtility::AreFacingAway(TargetEdge, ShooterEdge, TargetEdgeNormal))
+			if(UUtility::AreFacingAway(TargetEdge, ShooterEdge, TargetEdgeNormal))
 				continue;
-			if(!FUtility::IsReflectionGonnaHit(ShooterEdge, TargetEdge, ShooterEdgeNormal, ShooterLocation, ShootDirection))
+			if(!UUtility::IsReflectionGonnaHit(ShooterEdge, TargetEdge, ShooterEdgeNormal, ShooterLocation, ShootDirection))
 				continue;
 			// If we reach this point this is a possible edge combination.
 			FBulletPath BulletPath;
-			if(!FUtility::HasDoubleRicochetLOS(ShooterEdge, TargetEdge, Origin, Target, ShootDirection, RaycastHeight, DistanceThreshold, BulletPath))
+			if(!UUtility::HasDoubleRicochetLOS(ShooterEdge, TargetEdge, Origin, Target, ShootDirection, RaycastHeight, DistanceThreshold, BulletPath))
 				continue;
 			// If we reach this point this is most likely a valid edge combination.
 			++FoundCounter;

@@ -14,19 +14,19 @@ public:
     FObstacleEdge(FVector2D NewStart = FVector2D::ZeroVector, FVector2D NewEnd = FVector2D::ZeroVector, const AActor *NewParent = nullptr)
 	: Start(NewStart), End(NewEnd), Parent(NewParent) { }
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	FVector2D Start;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	FVector2D End;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	const AActor *Parent;
 
 	bool Equals(const FObstacleEdge& OtherEdge) const;
 
 	bool operator<(const FObstacleEdge& Other) const;
-	
+		
 	bool operator<=(const FObstacleEdge& Other) const;
 	
 	bool operator>(const FObstacleEdge& Other) const;

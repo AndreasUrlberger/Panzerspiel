@@ -11,6 +11,18 @@
 
 #include "PanzerspielGameModeBase.generated.h"
 
+
+USTRUCT(Immutable)
+struct PANZERSPIEL_API FEdgeArray {
+
+	GENERATED_USTRUCT_BODY()
+public:
+	FEdgeArray(TArray<FObstacleEdge> NewEdges = TArray<FObstacleEdge>()) : Edges(NewEdges) { }
+
+	UPROPERTY()
+	TArray<FObstacleEdge> Edges;
+};
+
 /**
  * 
  */
@@ -31,7 +43,8 @@ private:
 	TArray<class ATankPawn*> PlayerPawns;
 
 	// All Edges must be sorted. No UPROPERTY because it is not allowed for nested containers.
-	TMap<const AActor*, TArray<FObstacleEdge>> PlayersEdges;
+	UPROPERTY()
+	TMap<const AActor*, FEdgeArray> PlayersEdges;
 
 	UPROPERTY(VisibleInstanceOnly, Category="Shooting Calculation")
 	TArray<const AWorldObstacle*> Obstacles;

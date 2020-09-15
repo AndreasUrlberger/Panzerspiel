@@ -1,11 +1,21 @@
-﻿#pragma once
-#include "WorldObstacle.h"
+// All rights reserved @Apfelstrudel Games.
 
-class FUtility {
-private:
-	// Should never be created.
-	FUtility();
-public:
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/NoExportTypes.h"
+#include "WorldObstacle.h"
+#include "Utility.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class PANZERSPIEL_API UUtility : public UObject
+{
+	GENERATED_BODY()
+	
+	public:
 	// Arrays must be sorted for this function to work.
     static TArray<FObstacleEdge> IntersectArrays(const TArray<FObstacleEdge> &First, const TArray<FObstacleEdge> &Second);
 
@@ -43,7 +53,7 @@ public:
 	static void ShowBulletPaths(const TArray<FBulletPath>& BulletPaths, const AActor *Origin, const float LineThickness = 15);
 
 	// Draws debug lines for one frame to show each edge in the given array.
-	static void ShowEdges(const TArray<FObstacleEdge> &EdgesToShow, const AActor *WorldReference, const float DisplayHeight = 205, const float LineThickness = 15);
+	static void ShowEdges(const TArray<const FObstacleEdge> &EdgesToShow, const AActor *WorldReference, const float DisplayHeight = 205, const float LineThickness = 15);
 
 	// Draws a debug line for one frame to show a single edge.
 	static void DrawEdge(const FObstacleEdge &Edge, const FColor Color, const AActor *WorldReference, const float LineThickness = 15, const float DisplayHeight = 205);

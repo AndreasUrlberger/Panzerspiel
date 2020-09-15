@@ -4,11 +4,11 @@
 #include "WorldObstacle.h"
 
 // FObstacleEdge operators.
-FORCEINLINE bool FObstacleEdge::Equals(const FObstacleEdge& OtherEdge) const {
+bool FObstacleEdge::Equals(const FObstacleEdge& OtherEdge) const {
 	return this->Start.Equals(OtherEdge.Start) && this->End.Equals(OtherEdge.End);
 }
 
-FORCEINLINE bool FObstacleEdge::operator<(const FObstacleEdge& Other) const {
+bool FObstacleEdge::operator<(const FObstacleEdge& Other) const {
 	if(Start.X < Other.Start.X)
 		return true;
 	else if (Start.X > Other.Start.X)
@@ -36,7 +36,7 @@ FORCEINLINE bool FObstacleEdge::operator<(const FObstacleEdge& Other) const {
 /**
  *	Currently now working as intended, use with care.
  */
-FORCEINLINE bool FObstacleEdge::operator<=(const FObstacleEdge& Other) const {
+bool FObstacleEdge::operator<=(const FObstacleEdge& Other) const {
 	if(this->Start <= Other.Start) {
 		return true;
 	}else if(this->Start > Other.Start){
@@ -49,7 +49,7 @@ FORCEINLINE bool FObstacleEdge::operator<=(const FObstacleEdge& Other) const {
 /**
 *	Currently now working as intended, use with care.
 */
-FORCEINLINE bool FObstacleEdge::operator>(const FObstacleEdge& Other) const {
+bool FObstacleEdge::operator>(const FObstacleEdge& Other) const {
 	if(this->Start > Other.Start) {
 		return true;
 	}else if(this->Start < Other.Start){
@@ -62,7 +62,7 @@ FORCEINLINE bool FObstacleEdge::operator>(const FObstacleEdge& Other) const {
 /**
 *	Currently now working as intended, use with care.
 */
-FORCEINLINE bool FObstacleEdge::operator>=(const FObstacleEdge& Other) const {
+bool FObstacleEdge::operator>=(const FObstacleEdge& Other) const {
 	if(this->Start >= Other.Start) {
 		return true;
 	}else if(this->Start < Other.Start){
@@ -72,17 +72,17 @@ FORCEINLINE bool FObstacleEdge::operator>=(const FObstacleEdge& Other) const {
 	}
 }
 
-FORCEINLINE bool FObstacleEdge::operator==(const FObstacleEdge& Other) const
+bool FObstacleEdge::operator==(const FObstacleEdge& Other) const
 {
 	return this->Start==Other.Start && this->End==Other.End;
 }
 
-FORCEINLINE bool FObstacleEdge::operator!=(const FObstacleEdge& Other) const
+bool FObstacleEdge::operator!=(const FObstacleEdge& Other) const
 {
 	return this->Start!=Other.Start && this->End!=Other.End;
 }
 
-FORCEINLINE FString FObstacleEdge::ToString() const
+FString FObstacleEdge::ToString() const
 {
 	return FString::Printf(TEXT("{Start=%s End=%s}"), *Start.ToString(), *End.ToString());
 }

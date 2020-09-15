@@ -1,11 +1,12 @@
-﻿#include "Utility.h"
+// All rights reserved @Apfelstrudel Games.
+
+
+#include "Utility.h"
 #include "BulletPath.h"
 #include "DrawDebugHelpers.h"
-#include "Kismet/KismetSystemLibrary.h"
 
-FUtility::FUtility() {}
 
-TArray<FObstacleEdge> FUtility::IntersectArrays(const TArray<FObstacleEdge> &First, const TArray<FObstacleEdge> &Second) {
+TArray<FObstacleEdge> UUtility::IntersectArrays(const TArray<FObstacleEdge> &First, const TArray<FObstacleEdge> &Second) {
 	TArray<FObstacleEdge> Intersection;
 	const int32 LengthFirst = First.Num();
 	const int32 LengthSecond = Second.Num();
@@ -25,7 +26,7 @@ TArray<FObstacleEdge> FUtility::IntersectArrays(const TArray<FObstacleEdge> &Fir
 	return Intersection;
 }
 
-FVector2D FUtility::MirrorVector(const FVector2D ToMirror, const FVector2D MirrorOrigin, const FVector2D MirrorDirection) {
+FVector2D UUtility::MirrorVector(const FVector2D ToMirror, const FVector2D MirrorOrigin, const FVector2D MirrorDirection) {
 	// TODO: Maybe it would be faster to change this to use the same method as FVector::MirrorByVector which uses one square root but simplifies the rest of the calculation dramatically.
 	// U = MirrorOrigin; d = ToMirror; n = MirrorDirection; D = D;
 	const FVector2D PointToMirror = MirrorOrigin + ToMirror;
@@ -48,7 +49,7 @@ FVector2D FUtility::MirrorVector(const FVector2D ToMirror, const FVector2D Mirro
 	return MirroredVector;
 }
 
-FVector2D FUtility::MirrorPoint(const FVector2D ToMirror, const FVector2D MirrorOrigin, const FVector2D MirrorDirection) {
+FVector2D UUtility::MirrorPoint(const FVector2D ToMirror, const FVector2D MirrorOrigin, const FVector2D MirrorDirection) {
 	// U = MirrorOrigin; d = ToMirror; n = MirrorDirection;
 	// 1. Step.
 	const FVector2D Tmp = MirrorOrigin - ToMirror;
@@ -67,7 +68,7 @@ FVector2D FUtility::MirrorPoint(const FVector2D ToMirror, const FVector2D Mirror
 	return MirroredPoint;
 }
 
-bool FUtility::CanBulletEverHitTarget(const FObstacleEdge& Edge, const FVector2D &BulletOrigin, const FVector2D &Target) {
+bool UUtility::CanBulletEverHitTarget(const FObstacleEdge& Edge, const FVector2D &BulletOrigin, const FVector2D &Target) {
 	const FVector2D EdgeMiddle = Edge.Start + (Edge.End - Edge.Start) / 2;
 	const FVector2D EdgeDirection = Edge.End - Edge.Start;
 	const FVector2D EdgeNormal = FVector2D(EdgeDirection.Y, -EdgeDirection.X);
@@ -110,7 +111,7 @@ bool FUtility::CanBulletEverHitTarget(const FObstacleEdge& Edge, const FVector2D
 	return (StartTargetDirection ^ MirroredStartDirection) * (EndTargetDirection ^ MirroredEndDirection) < 0;
 }
 
-void FUtility::FilterSingleRicochetLOS(const FObstacleEdge& Edge, const AActor *Origin, const AActor *Target,
+void UUtility::FilterSingleRicochetLOS(const FObstacleEdge& Edge, const AActor *Origin, const AActor *Target,
 	float RaycastHeight, float HitThreshold, TArray<FBulletPath> &BulletPaths){
 
 	UWorld *World = Target->GetWorld();
@@ -119,7 +120,6 @@ void FUtility::FilterSingleRicochetLOS(const FObstacleEdge& Edge, const AActor *
 	// Mirror target at the edge.
 	const FVector2D TargetLocation = FVector2D(Target->GetActorLocation());
 	const FVector2D OriginLocation = FVector2D(Origin->GetActorLocation());
-	const FVector2D EdgeNormal = FVector2D(Edge.End.Y - Edge.Start.Y, -(Edge.End.X - Edge.Start.X));
 	FVector2D MirroredTarget = MirrorPoint(TargetLocation, Edge.Start, Edge.End - Edge.Start);
 	// Do raycast from the origin and check if it hit the edge.
 	FHitResult HitResult;
@@ -160,14 +160,14 @@ void FUtility::FilterSingleRicochetLOS(const FObstacleEdge& Edge, const AActor *
 	BulletPaths.Add(Path);
 }
 
-bool FUtility::AreFacingAway(const FObstacleEdge& Edge1, const FObstacleEdge& Edge2, const FVector2D& Edge1Normal) {
+bool UUtility::AreFacingAway(const FObstacleEdge& Edge1, const FObstacleEdge& Edge2, const FVector2D& Edge1Normal) {
 	const FVector2D Edge1Middle = Edge1.Start + (Edge1.End - Edge1.Start)/2;
 	const FVector2D Edge2Middle = Edge2.Start + (Edge2.End - Edge2.Start)/2;
 	const FVector2D Edge2ToEdge1Direction = Edge1Middle - Edge2Middle;
 	return (Edge1Normal | Edge2ToEdge1Direction) >= 0;
 }
 
-bool FUtility::IsReflectionGonnaHit(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge,
+bool UUtility::IsReflectionGonnaHit(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge,
 	const FVector2D& ShooterEdgeNormal, const FVector2D& ShooterLocation, const FVector2D& ShootDirection) {
 	const FVector2D ShooterEdgeIntersect = CalculateIntersect(ShooterEdge.Start, ShooterEdge.End - ShooterEdge.Start, ShooterLocation, ShootDirection);
 	const FVector2D ShooterMirroredShootDirection = MirrorPoint(ShooterLocation, ShooterEdgeIntersect, ShooterEdgeNormal) - ShooterEdgeIntersect;
@@ -176,7 +176,7 @@ bool FUtility::IsReflectionGonnaHit(const FObstacleEdge& ShooterEdge, const FObs
 	return (ShooterMirroredShootDirection ^ StartDirection) * (ShooterMirroredShootDirection ^ EndDirection) < 0;
 }
 
-FVector2D FUtility::CalculateIntersect(const FVector2D& Edge1Start, const FVector2D& Edge1Dir,
+FVector2D UUtility::CalculateIntersect(const FVector2D& Edge1Start, const FVector2D& Edge1Dir,
 	const FVector2D& Edge2Start, const FVector2D& Edge2Dir) {
 	
 	const FVector2D OriginNew = Edge1Start - Edge2Start;
@@ -194,7 +194,7 @@ FVector2D FUtility::CalculateIntersect(const FVector2D& Edge1Start, const FVecto
 	return Edge2Start + ThetaErg * Edge2Dir;
 }
 
-bool FUtility::HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge, const AActor* Shooter,
+bool UUtility::HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge, const AActor* Shooter,
 	const AActor* Target, const FVector2D& ShootDirection, const float RaycastHeight, const float DistanceThreshold, FBulletPath &BulletPath) {
 
 	UWorld *World = Shooter->GetWorld();
@@ -258,7 +258,7 @@ bool FUtility::HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObs
 	return true;
 }
 
-void FUtility::ShowBulletPaths(const TArray<FBulletPath>& BulletPaths, const AActor *Origin, const float LineThickness) {
+void UUtility::ShowBulletPaths(const TArray<FBulletPath>& BulletPaths, const AActor *Origin, const float LineThickness) {
 	UWorld *World = Origin->GetWorld();
 	if(!World)
 		return;
@@ -270,20 +270,19 @@ void FUtility::ShowBulletPaths(const TArray<FBulletPath>& BulletPaths, const AAc
 	}
 }
 
-void FUtility::ShowEdges(const TArray<FObstacleEdge> &EdgesToShow, const AActor *WorldReference, const float DisplayHeight, const float LineThickness) {
+void UUtility::ShowEdges(const TArray<const FObstacleEdge> &EdgesToShow, const AActor *WorldReference, const float DisplayHeight, const float LineThickness) {
 	for (const FObstacleEdge &Edge : EdgesToShow)
 		DrawEdge(Edge, FColor::Green, WorldReference, LineThickness, DisplayHeight);
 }
 
-void FUtility::DrawEdge(const FObstacleEdge &Edge, const FColor Color, const AActor *WorldReference, const float LineThickness, const float DisplayHeight) {
+void UUtility::DrawEdge(const FObstacleEdge &Edge, const FColor Color, const AActor *WorldReference, const float LineThickness, const float DisplayHeight) {
 	DrawLine(Edge.Start, Edge.End, Color, WorldReference, LineThickness, DisplayHeight);
 }
 
-void FUtility::DrawLine(const FVector2D &Start, const FVector2D &End, const FColor Color, const AActor *WorldReference, const float LineThickness, const float DisplayHeight) {
+void UUtility::DrawLine(const FVector2D &Start, const FVector2D &End, const FColor Color, const AActor *WorldReference, const float LineThickness, const float DisplayHeight) {
 	UWorld *World = WorldReference->GetWorld();
 	if(!World)
 		return;
 	
 	DrawDebugLine(World, FVector(Start.X, Start.Y, DisplayHeight), FVector(End.X, End.Y, DisplayHeight), Color, false, -1, 0, LineThickness);
 }
-
