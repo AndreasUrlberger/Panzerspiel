@@ -6,13 +6,19 @@
 #include "GameFramework/Actor.h"
 #include "WorldObstacle.generated.h"
 
-USTRUCT(Immutable)
-struct PANZERSPIEL_API FObstacleEdge {
+UCLASS()
+class PANZERSPIEL_API UObstacleEdge : public UObject{
 
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 public:
-    FObstacleEdge(FVector2D NewStart = FVector2D::ZeroVector, FVector2D NewEnd = FVector2D::ZeroVector, const AActor *NewParent = nullptr)
-	: Start(NewStart), End(NewEnd), Parent(NewParent) { }
+	UObstacleEdge();
+	
+    /*UObstacleEdge(FVector2D NewStart = FVector2D::ZeroVector, FVector2D NewEnd = FVector2D::ZeroVector, const AActor *NewParent = nullptr)
+	: Start(NewStart), End(NewEnd), Parent(NewParent) { }*/
+
+	UObstacleEdge* Init(FVector2D NewStart = FVector2D::ZeroVector, FVector2D NewEnd = FVector2D::ZeroVector, const AActor *NewParent = nullptr);
+
+	UObstacleEdge* Init(const UObstacleEdge* Other);
 
 	UPROPERTY()
 	FVector2D Start;
@@ -23,19 +29,19 @@ public:
 	UPROPERTY()
 	const AActor *Parent;
 
-	bool Equals(const FObstacleEdge& OtherEdge) const;
+	bool Equals(const UObstacleEdge& OtherEdge) const;
 
-	bool operator<(const FObstacleEdge& Other) const;
+	bool operator<(const UObstacleEdge& Other) const;
 		
-	bool operator<=(const FObstacleEdge& Other) const;
+	bool operator<=(const UObstacleEdge& Other) const;
 	
-	bool operator>(const FObstacleEdge& Other) const;
+	bool operator>(const UObstacleEdge& Other) const;
 	
-	bool operator>=(const FObstacleEdge& Other) const;
+	bool operator>=(const UObstacleEdge& Other) const;
 	
-	bool operator==(const FObstacleEdge& Other) const;
+	bool operator==(const UObstacleEdge& Other) const;
 	
-	bool operator!=(const FObstacleEdge& Other) const;
+	bool operator!=(const UObstacleEdge& Other) const;
 
 	FString ToString() const;
 };
@@ -62,9 +68,9 @@ protected:
 
 public:
 	UFUNCTION()
-	virtual TArray<FObstacleEdge> GetPossibleEdges(FVector2D BulletOrigin);
+	virtual TArray<UObstacleEdge*> GetPossibleEdges(FVector2D BulletOrigin);
 
 	UFUNCTION()
-	virtual TArray<FObstacleEdge> GetPossibleEdges2(const FVector2D &BulletOrigin) const;
+	virtual TArray<UObstacleEdge*> GetPossibleEdges2(const FVector2D &BulletOrigin) const;
 
 };

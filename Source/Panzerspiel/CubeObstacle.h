@@ -43,7 +43,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual TArray<FObstacleEdge> GetPossibleEdges(FVector2D BulletOrigin) override;
+	virtual TArray<UObstacleEdge*> GetPossibleEdges(FVector2D BulletOrigin) override;
 	
-	virtual TArray<FObstacleEdge> GetPossibleEdges2(const FVector2D &BulletOrigin) const override;
+	virtual TArray<UObstacleEdge*> GetPossibleEdges2(const FVector2D &BulletOrigin) const override;
 };

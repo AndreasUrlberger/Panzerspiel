@@ -3,12 +3,29 @@
 
 #include "WorldObstacle.h"
 
+UObstacleEdge::UObstacleEdge() {
+}
+
+UObstacleEdge* UObstacleEdge::Init(FVector2D NewStart, FVector2D NewEnd, const AActor* NewParent) {
+	Start = NewStart;
+	End = NewEnd;
+	Parent = NewParent;
+	return this;
+}
+
+UObstacleEdge* UObstacleEdge::Init(const UObstacleEdge* Other) {
+	Start = Other->Start;
+	End = Other->End;
+	Parent = Other->Parent;
+	return this;
+}
+
 // FObstacleEdge operators.
-bool FObstacleEdge::Equals(const FObstacleEdge& OtherEdge) const {
+bool UObstacleEdge::Equals(const UObstacleEdge& OtherEdge) const {
 	return this->Start.Equals(OtherEdge.Start) && this->End.Equals(OtherEdge.End);
 }
 
-bool FObstacleEdge::operator<(const FObstacleEdge& Other) const {
+bool UObstacleEdge::operator<(const UObstacleEdge& Other) const {
 	if(Start.X < Other.Start.X)
 		return true;
 	else if (Start.X > Other.Start.X)
@@ -36,7 +53,7 @@ bool FObstacleEdge::operator<(const FObstacleEdge& Other) const {
 /**
  *	Currently now working as intended, use with care.
  */
-bool FObstacleEdge::operator<=(const FObstacleEdge& Other) const {
+bool UObstacleEdge::operator<=(const UObstacleEdge& Other) const {
 	if(this->Start <= Other.Start) {
 		return true;
 	}else if(this->Start > Other.Start){
@@ -49,7 +66,7 @@ bool FObstacleEdge::operator<=(const FObstacleEdge& Other) const {
 /**
 *	Currently now working as intended, use with care.
 */
-bool FObstacleEdge::operator>(const FObstacleEdge& Other) const {
+bool UObstacleEdge::operator>(const UObstacleEdge& Other) const {
 	if(this->Start > Other.Start) {
 		return true;
 	}else if(this->Start < Other.Start){
@@ -62,7 +79,7 @@ bool FObstacleEdge::operator>(const FObstacleEdge& Other) const {
 /**
 *	Currently now working as intended, use with care.
 */
-bool FObstacleEdge::operator>=(const FObstacleEdge& Other) const {
+bool UObstacleEdge::operator>=(const UObstacleEdge& Other) const {
 	if(this->Start >= Other.Start) {
 		return true;
 	}else if(this->Start < Other.Start){
@@ -72,17 +89,17 @@ bool FObstacleEdge::operator>=(const FObstacleEdge& Other) const {
 	}
 }
 
-bool FObstacleEdge::operator==(const FObstacleEdge& Other) const
+bool UObstacleEdge::operator==(const UObstacleEdge& Other) const
 {
 	return this->Start==Other.Start && this->End==Other.End;
 }
 
-bool FObstacleEdge::operator!=(const FObstacleEdge& Other) const
+bool UObstacleEdge::operator!=(const UObstacleEdge& Other) const
 {
 	return this->Start!=Other.Start && this->End!=Other.End;
 }
 
-FString FObstacleEdge::ToString() const
+FString UObstacleEdge::ToString() const
 {
 	return FString::Printf(TEXT("{Start=%s End=%s}"), *Start.ToString(), *End.ToString());
 }
@@ -100,12 +117,12 @@ TArray<USceneComponent*> AWorldObstacle::GetCornerMarkers() {
 	return CornerMarkers;
 }
 
-TArray<FObstacleEdge> AWorldObstacle::GetPossibleEdges(FVector2D BulletOrigin) {
-	TArray<FObstacleEdge> Empty;
+TArray<UObstacleEdge*> AWorldObstacle::GetPossibleEdges(FVector2D BulletOrigin) {
+	TArray<UObstacleEdge*> Empty;
 	return Empty;
 }
 
-TArray<FObstacleEdge> AWorldObstacle::GetPossibleEdges2(const FVector2D &BulletOrigin) const {
-	TArray<FObstacleEdge> Empty;
+TArray<UObstacleEdge*> AWorldObstacle::GetPossibleEdges2(const FVector2D &BulletOrigin) const {
+	TArray<UObstacleEdge*> Empty;
 	return Empty;
 }

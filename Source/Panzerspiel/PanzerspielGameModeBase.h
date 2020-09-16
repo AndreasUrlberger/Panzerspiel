@@ -17,10 +17,10 @@ struct PANZERSPIEL_API FEdgeArray {
 
 	GENERATED_USTRUCT_BODY()
 public:
-	FEdgeArray(TArray<FObstacleEdge> NewEdges = TArray<FObstacleEdge>()) : Edges(NewEdges) { }
+	FEdgeArray(TArray<UObstacleEdge*> NewEdges = TArray<UObstacleEdge*>()) : Edges(NewEdges) { }
 
 	UPROPERTY()
-	TArray<FObstacleEdge> Edges;
+	TArray<UObstacleEdge*> Edges;
 };
 
 /**
@@ -88,7 +88,7 @@ private:
     void PopulateObstacles();
 
 	UFUNCTION()
-	TArray<FObstacleEdge>& GetPlayersEdges(const AActor *TankPawn);
+	TArray<UObstacleEdge*>& GetPlayersEdges(const AActor *TankPawn);
 
 public:
 
@@ -125,11 +125,11 @@ public:
 
 	UFUNCTION()
 	bool FindSingleRicochetPath(TArray<struct FBulletPath> &BulletPath, const AActor *Origin, const FVector& OriginLocation,
-		const TArray<FObstacleEdge> &OriginEdges, const AActor *Target, const TArray<FObstacleEdge> &TargetEdges);
+		const TArray<UObstacleEdge*> &OriginEdges, const AActor *Target, const TArray<UObstacleEdge*> &TargetEdges);
 
 	UFUNCTION()
-	bool FindDoubleRicochetPath(const AActor *Origin, const FVector& OriginLocation, const TArray<FObstacleEdge> &OriginEdges,
-    const AActor *Target, const TArray<FObstacleEdge> &TargetEdges, TArray<FBulletPath> &BulletPaths);
+	bool FindDoubleRicochetPath(const AActor *Origin, const FVector& OriginLocation, const TArray<UObstacleEdge*> &OriginEdges,
+    const AActor *Target, const TArray<UObstacleEdge*> &TargetEdges, TArray<FBulletPath> &BulletPaths);
 
 	UFUNCTION(BlueprintCallable)
 	bool GetDirectPath(const AActor* Origin, const FVector &OriginLocation, const AActor* Target, FVector &OutTargetLocation);
