@@ -138,7 +138,7 @@ void ATankPawn::UseControllerMovement(bool UseController) {
 // -------------------- Combat -------------------- //
 
 void ATankPawn::AlignTower(const FVector Target) {
-	FVector Rotation = Target - GetActorLocation();
+	FVector Rotation = Target - TurretMesh->GetComponentLocation();
 	Rotation.Z = 0;
 
 	TurretMesh->SetWorldRotation(Rotation.ToOrientationRotator(), true);

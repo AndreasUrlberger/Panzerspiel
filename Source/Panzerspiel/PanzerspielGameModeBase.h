@@ -67,6 +67,9 @@ private:
 	UPROPERTY(EditAnywhere, Category="Shooting Calculation")
 	float DistanceThreshold = 5;
 
+	UPROPERTY(EditAnywhere, Category="Shooting Calculation")
+	float BulletRadius = 5;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -118,24 +121,24 @@ public:
 	void ClearTankPawns();
 
 	UFUNCTION()
-	static bool FindDirectPath(FBulletPath &BulletPath, const AActor *Origin, const AActor *Target);
+	bool FindDirectPath(FBulletPath &BulletPath, const AActor *Origin, const FVector& OriginLocation, const AActor *Target);
 
 	UFUNCTION()
-	bool FindSingleRicochetPath(TArray<struct FBulletPath> &BulletPath, const AActor *Origin, const TArray<FObstacleEdge> &OriginEdges,
-    const AActor *Target, const TArray<FObstacleEdge> &TargetEdges);
+	bool FindSingleRicochetPath(TArray<struct FBulletPath> &BulletPath, const AActor *Origin, const FVector& OriginLocation,
+		const TArray<FObstacleEdge> &OriginEdges, const AActor *Target, const TArray<FObstacleEdge> &TargetEdges);
 
 	UFUNCTION()
-	bool FindDoubleRicochetPath(const AActor *Origin, const TArray<FObstacleEdge> &OriginEdges,
+	bool FindDoubleRicochetPath(const AActor *Origin, const FVector& OriginLocation, const TArray<FObstacleEdge> &OriginEdges,
     const AActor *Target, const TArray<FObstacleEdge> &TargetEdges, TArray<FBulletPath> &BulletPaths);
 
 	UFUNCTION(BlueprintCallable)
-	bool GetDirectPath(const AActor* Origin, const AActor* Target, FVector &OutTargetLocation);
+	bool GetDirectPath(const AActor* Origin, const FVector &OriginLocation, const AActor* Target, FVector &OutTargetLocation);
 
 	UFUNCTION(BlueprintCallable)
-	bool GetShortestSingleRicochet(const AActor* Origin, const AActor* Target, FVector &OutTargetLocation);
+	bool GetShortestSingleRicochet(const AActor* Origin, const FVector &OriginLocation, const AActor* Target, FVector &OutTargetLocation);
 
 	UFUNCTION(BlueprintCallable)
-	bool GetShortestDoubleRicochet(const AActor* Origin, const AActor* Target, FVector &OutTargetLocation);
+	bool GetShortestDoubleRicochet(const AActor* Origin, const FVector &OriginLocation, const AActor* Target, FVector &OutTargetLocation);
 
 	// This gets called whenever a level unloading occurs so that the GameMode can act accordingly.
 	UFUNCTION(BlueprintCallable)

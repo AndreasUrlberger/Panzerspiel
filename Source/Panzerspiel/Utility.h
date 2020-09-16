@@ -30,8 +30,8 @@ class PANZERSPIEL_API UUtility : public UObject
 
 	// Only returns those edges which create, when considered as mirrors, a line of sight from the Origin to the Target.
 	// Warning: This function makes use of up to three line traces and thus should only be used as the last option.
-	static void FilterSingleRicochetLOS(const FObstacleEdge &Edge, const AActor *Origin, const AActor *Target,
-		float RaycastHeight, float HitThreshold, TArray<struct FBulletPath> &BulletPaths);
+	static void FilterSingleRicochetLOS(const FObstacleEdge &Edge, const AActor *Origin, const FVector& OriginLocation,
+		const AActor *Target, float RaycastHeight, float HitThreshold, TArray<struct FBulletPath> &BulletPaths);
 
 	// Return true if there is no way a bullet reflected from one edge could ever hit the other edge.
 	static bool AreFacingAway(const FObstacleEdge &Edge1, const FObstacleEdge &Edge2, const FVector2D &Edge1Normal);
@@ -46,7 +46,7 @@ class PANZERSPIEL_API UUtility : public UObject
 
 	// Only returns true if the edges, considered as mirrors, create a line of sight from the Origin to the Target.
 	// Warning: This function makes use of up to three line traces and thus should only be used as the last option.
-	static bool HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge, const AActor *Shooter,
+	static bool HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge, const AActor *Shooter, const FVector& ShooterLocation,
 		const AActor *Target, const FVector2D &ShootDirection, const float RaycastHeight, const float DistanceThreshold, FBulletPath &BulletPath);
 
 	// Draws debug lines for one frame to show where the BulletPaths go.

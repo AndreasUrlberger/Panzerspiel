@@ -111,15 +111,14 @@ bool UUtility::CanBulletEverHitTarget(const FObstacleEdge& Edge, const FVector2D
 	return (StartTargetDirection ^ MirroredStartDirection) * (EndTargetDirection ^ MirroredEndDirection) < 0;
 }
 
-void UUtility::FilterSingleRicochetLOS(const FObstacleEdge& Edge, const AActor *Origin, const AActor *Target,
-	float RaycastHeight, float HitThreshold, TArray<FBulletPath> &BulletPaths){
+void UUtility::FilterSingleRicochetLOS(const FObstacleEdge& Edge, const AActor *Origin, const FVector& OriginLocation,
+	const AActor *Target, float RaycastHeight, float HitThreshold, TArray<FBulletPath> &BulletPaths){
 
 	UWorld *World = Target->GetWorld();
 	if(!World)
 		return;
 	// Mirror target at the edge.
 	const FVector2D TargetLocation = FVector2D(Target->GetActorLocation());
-	const FVector2D OriginLocation = FVector2D(Origin->GetActorLocation());
 	FVector2D MirroredTarget = MirrorPoint(TargetLocation, Edge.Start, Edge.End - Edge.Start);
 	// Do raycast from the origin and check if it hit the edge.
 	FHitResult HitResult;
@@ -194,17 +193,16 @@ FVector2D UUtility::CalculateIntersect(const FVector2D& Edge1Start, const FVecto
 	return Edge2Start + ThetaErg * Edge2Dir;
 }
 
-bool UUtility::HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge, const AActor* Shooter,
+bool UUtility::HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObstacleEdge& TargetEdge, const AActor* Shooter, const FVector& ShooterLocation,
 	const AActor* Target, const FVector2D& ShootDirection, const float RaycastHeight, const float DistanceThreshold, FBulletPath &BulletPath) {
 
 	UWorld *World = Shooter->GetWorld();
 	if(!World)
 		return false;
 	// Setup first raycast (Shooter -> ShooterEdge).
-	FVector From = Shooter->GetActorLocation();
-	FVector2D ShooterLocation = FVector2D(From.X, From.Y);
+	FVector From = ShooterLocation;
 	// TODO: These calculations are already done in IsReflectionGonnaHit, it might be better to safe them somewhere for later use.
-	const FVector2D ShooterEdgeIntersect = CalculateIntersect(ShooterEdge.Start, ShooterEdge.End - ShooterEdge.Start, ShooterLocation, ShootDirection);
+	const FVector2D ShooterEdgeIntersect = CalculateIntersect(ShooterEdge.Start, ShooterEdge.End - ShooterEdge.Start, FVector2D(From), ShootDirection);
 	FHitResult HitResult;
 	From.Z = RaycastHeight;
 	FVector To = FVector(ShooterEdgeIntersect.X, ShooterEdgeIntersect.Y, RaycastHeight);
@@ -231,7 +229,7 @@ bool UUtility::HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObs
 	FVector2D MirroredShootDirection = MirrorVector(ShootDirection, ShooterEdgeIntersect, ShooterEdgeNormal);
 	const FVector2D TargetEdgeIntersect = CalculateIntersect(TargetEdge.Start, TargetEdge.End - TargetEdge.Start, ShooterEdgeIntersect, MirroredShootDirection);
 	To = FVector(TargetEdgeIntersect.X, TargetEdgeIntersect.Y, RaycastHeight);
-	World->LineTraceSingleByChannel(HitResult, From, From + 2 * (To - From), ECollisionChannel::ECC_Camera, Params);
+	World->LineTraceSingleByChannel(HitResult, From, From + 2 * (To - From), ECC_Camera, Params);
 	// Value second raycast.
 	if(FVector::DistSquaredXY(To, HitResult.Location) > DistanceThreshold)
 		return false;
@@ -245,7 +243,7 @@ bool UUtility::HasDoubleRicochetLOS(const FObstacleEdge& ShooterEdge, const FObs
 	From = Target->GetActorLocation();
 	From.Z = RaycastHeight;
 	// To stays the same since where shooting at the same TargetEdge.
-	World->LineTraceSingleByChannel(HitResult, From, From + 2  *(To - From), ECollisionChannel::ECC_Camera, Params);
+	World->LineTraceSingleByChannel(HitResult, From, From + 2  *(To - From), ECC_Camera, Params);
 	// Value third raycast.
 	if(FVector::DistSquaredXY(To, HitResult.Location) > DistanceThreshold)
 		return false;

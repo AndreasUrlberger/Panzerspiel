@@ -9,7 +9,6 @@
 #include "BTTask_SimpleTankMoveTo.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "PanzerspielGameModeBase.h"
-#include "Kismet/KismetMathLibrary.h"
 
 void ASimpleAITankPawn::MoveRight(float AxisValue) {
     // Do nothing.
@@ -121,6 +120,7 @@ void ASimpleAITankPawn::FollowPath(float DeltaTime) {
 }
 
 bool ASimpleAITankPawn::ShootIfPossible() {
+    // TODO: Make the turret slowly move back to aiming at the target after firing to avoid a second jump.
     // Only shoot if a target is selected, we're in fire mode and we're ready to shoot.
     if (!(IsValid(LockOnActor) && FireMode && TimeTillNextShot <= 0))
         return false;
@@ -130,9 +130,10 @@ bool ASimpleAITankPawn::ShootIfPossible() {
         return false;
 
     FVector TargetLocation;
-    if(!GameMode->GetDirectPath(this, LockOnActor, TargetLocation)) {
-        if(!GameMode->GetShortestSingleRicochet(this, LockOnActor, TargetLocation)) {
-            if(!GameMode->GetShortestDoubleRicochet(this, LockOnActor, TargetLocation)) {
+    const FVector FiringLocation = TurretMesh->GetComponentLocation();
+    if(!GameMode->GetDirectPath(this, FiringLocation, LockOnActor, TargetLocation)) {
+        if(!GameMode->GetShortestSingleRicochet(this, FiringLocation, LockOnActor, TargetLocation)) {
+            if(!GameMode->GetShortestDoubleRicochet(this, FiringLocation, LockOnActor, TargetLocation)) {
                 if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("Could not find any Path"));
                 return false;
             }else {
@@ -174,7 +175,6 @@ void ASimpleAITankPawn::LockOntoTarget(AActor* LockOnTarget) {
 void ASimpleAITankPawn::SetFireMode(bool DoesFire) {
     FireMode = DoesFire;
 }
-
 
 FVector ASimpleAITankPawn::GetAvoidVector() {
     // Following loop would break if we dont have at least as many AvoidDistances as we have sensors.

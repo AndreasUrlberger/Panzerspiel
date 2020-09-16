@@ -6,6 +6,7 @@
 #include "TankPawn.h"
 #include "Utility.h"
 #include "BulletPath.h"
+#include "DrawDebugHelpers.h"
 
 
 APanzerspielGameModeBase::APanzerspielGameModeBase() {
@@ -101,7 +102,7 @@ void APanzerspielGameModeBase::RemoveWorldObstacle(const AWorldObstacle* Obstacl
 	Obstacles.Remove(Obstacle);
 }
 
-bool APanzerspielGameModeBase::FindDirectPath(FBulletPath& BulletPath, const AActor* Origin, const AActor* Target) {
+bool APanzerspielGameModeBase::FindDirectPath(FBulletPath& BulletPath, const AActor* Origin, const FVector& OriginLocation, const AActor* Target) {
 	UWorld *World = Origin->GetWorld();
 	if(!World)
 		return false;
@@ -109,18 +110,46 @@ bool APanzerspielGameModeBase::FindDirectPath(FBulletPath& BulletPath, const AAc
 	FHitResult HitResult;
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(Origin);
-	World->LineTraceSingleByChannel(HitResult, Origin->GetActorLocation(), Target->GetActorLocation(), ECC_Camera, Params);
+	World->LineTraceSingleByChannel(HitResult, OriginLocation, Target->GetActorLocation(), ECC_Camera, Params);
+	if(bDebugLog) DrawDebugLine(World, OriginLocation, HitResult.Location, FColor::Orange);
+	// Middle trace did not reach the target edge.
+	if(HitResult.Actor != Target)
+		return false;
+	// Do right trace.
+	float HitDistance = HitResult.Distance;
+	const FVector2D OriginLoc2D = FVector2D(OriginLocation);
+	const FVector2D ShootingDirection = FVector2D(Target->GetActorLocation() - OriginLocation).GetSafeNormal();
+	const FVector2D OrthogonalNormal = FVector2D(ShootingDirection.Y, -ShootingDirection.X); // Already normalized.
+	const FVector2D RightStartLoc = OriginLoc2D + OrthogonalNormal * BulletRadius;
+	const FVector2D RightEndLoc = RightStartLoc + 32 * HitDistance * ShootingDirection; // I chose 32 just to make sure its long enough.
+	World->LineTraceSingleByChannel(HitResult, FVector(RightStartLoc.X, RightStartLoc.Y, RaycastHeight), FVector(RightEndLoc.X, RightEndLoc.Y, RaycastHeight), ECC_Camera, Params);
+	if(bDebugLog) DrawDebugLine(World, FVector(RightStartLoc.X, RightStartLoc.Y, RaycastHeight), HitResult.Location, FColor::Blue);
+	
+	const bool RightIsLonger = HitResult.Distance > HitDistance;
+	const bool RightHitTarget = HitResult.Actor == Target;
+	// One of both has to be true, otherwise the bullet will definitely not reach the target.
+	if(!RightIsLonger && !RightHitTarget)
+		return false;
 
-	if(HitResult.Actor == Target) {
-		BulletPath.Target = Target->GetActorLocation();
-		BulletPath.PathLength = HitResult.Distance;
-		return true;
-	}
+	// Do left trace.
+	const FVector2D LeftStartLoc = OriginLoc2D - OrthogonalNormal * BulletRadius;
+	const FVector2D LeftEndLoc = LeftEndLoc + 32 * HitDistance * ShootingDirection;
+	World->LineTraceSingleByChannel(HitResult, FVector(LeftStartLoc.X, LeftStartLoc.Y, RaycastHeight), FVector(LeftEndLoc.X, LeftEndLoc.Y, RaycastHeight), ECC_Camera, Params);
+	if(bDebugLog) DrawDebugLine(World, FVector(LeftStartLoc.X, LeftStartLoc.Y, RaycastHeight), HitResult.Location, FColor::Blue);
 
-	return false;
+	const bool LeftIsLonger = HitResult.Distance > HitDistance;
+	const bool LeftHitTarget = HitResult.Actor == Target;
+	// Again one of both must be true.
+	if(!LeftIsLonger && !LeftHitTarget)
+		return false;
+
+	// Everything was successful.
+	BulletPath.Target = Target->GetActorLocation();
+	BulletPath.PathLength = HitResult.Distance;
+	return true;
 }
 
-bool APanzerspielGameModeBase::FindSingleRicochetPath(TArray<FBulletPath> &BulletPaths, const AActor *Origin, const TArray<FObstacleEdge> &OriginEdges,
+bool APanzerspielGameModeBase::FindSingleRicochetPath(TArray<FBulletPath> &BulletPaths, const AActor *Origin, const FVector& OriginLocation, const TArray<FObstacleEdge> &OriginEdges,
 	const AActor *Target, const TArray<FObstacleEdge> &TargetEdges) {
 	
 	const double Start = FPlatformTime::Seconds();
@@ -132,17 +161,16 @@ bool APanzerspielGameModeBase::FindSingleRicochetPath(TArray<FBulletPath> &Bulle
 	TArray<FObstacleEdge> IntersectedEdges = UUtility::IntersectArrays(OriginEdges, TargetEdges);
 
 	// Only keep edges that can reflect the bullet to the target according to their rotation.
-	const FVector2D OriginLocation = FVector2D(Origin->GetActorLocation());
 	const FVector2D TargetLocation = FVector2D(Target->GetActorLocation());
 	TArray<FObstacleEdge> FilteredEdges;
 	for(const FObstacleEdge &Edge : IntersectedEdges)
-		if(UUtility::CanBulletEverHitTarget(Edge, OriginLocation, TargetLocation))
+		if(UUtility::CanBulletEverHitTarget(Edge, FVector2D(OriginLocation), TargetLocation))
 			FilteredEdges.Add(Edge);
 	// Make sure its empty.
 	IntersectedEdges.Empty();
 
 	for(const FObstacleEdge &Edge : FilteredEdges)
-		UUtility::FilterSingleRicochetLOS(Edge, Origin, Target, RaycastHeight, HitThreshold, BulletPaths);
+		UUtility::FilterSingleRicochetLOS(Edge, Origin, OriginLocation, Target, RaycastHeight, HitThreshold, BulletPaths);
 
 	//if(bDebugDrawRaycastCalculation) ShowBulletPaths(BulletPaths);
 
@@ -155,7 +183,7 @@ bool APanzerspielGameModeBase::FindSingleRicochetPath(TArray<FBulletPath> &Bulle
 		return true;
 }
 
-bool APanzerspielGameModeBase::FindDoubleRicochetPath(const AActor *Origin, const TArray<FObstacleEdge> &OriginEdges,
+bool APanzerspielGameModeBase::FindDoubleRicochetPath(const AActor *Origin, const FVector& OriginLocation, const TArray<FObstacleEdge> &OriginEdges,
 	const AActor *Target, const TArray<FObstacleEdge> &TargetEdges, TArray<FBulletPath> &BulletPaths) {
 	// Debug
 	const double Start = FPlatformTime::Seconds();
@@ -164,7 +192,7 @@ bool APanzerspielGameModeBase::FindDoubleRicochetPath(const AActor *Origin, cons
 	if(!(Origin && Target))
 		return false;
 	// Get some variables that we'll need.
-	const FVector2D ShooterLocation = FVector2D(Origin->GetActorLocation());
+	const FVector2D ShooterLocation = FVector2D(OriginLocation);
 	const FVector2D TargetLocation = FVector2D(Target->GetActorLocation());
 
 	// Get all edges that are visible from the shooter and all that are visible from the target.
@@ -196,7 +224,7 @@ bool APanzerspielGameModeBase::FindDoubleRicochetPath(const AActor *Origin, cons
 				continue;
 			// If we reach this point this is a possible edge combination.
 			FBulletPath BulletPath;
-			if(!UUtility::HasDoubleRicochetLOS(ShooterEdge, TargetEdge, Origin, Target, ShootDirection, RaycastHeight, DistanceThreshold, BulletPath))
+			if(!UUtility::HasDoubleRicochetLOS(ShooterEdge, TargetEdge, Origin, OriginLocation, Target, ShootDirection, RaycastHeight, DistanceThreshold, BulletPath))
 				continue;
 			// If we reach this point this is most likely a valid edge combination.
 			++FoundCounter;
@@ -217,20 +245,20 @@ bool APanzerspielGameModeBase::FindDoubleRicochetPath(const AActor *Origin, cons
 	return true;
 }
 
-bool APanzerspielGameModeBase::GetDirectPath(const AActor* Origin, const AActor* Target, FVector &OutTargetLocation) {
+bool APanzerspielGameModeBase::GetDirectPath(const AActor* Origin, const FVector &OriginLocation, const AActor* Target, FVector &OutTargetLocation) {
 	FBulletPath BulletPath;
-	FindDirectPath(BulletPath, Origin, Target);
+	FindDirectPath(BulletPath, Origin, OriginLocation, Target);
 	if(BulletPath.PathLength <= 1)
 		return false;
 	OutTargetLocation = BulletPath.Target;
 	return true;
 }
 
-bool APanzerspielGameModeBase::GetShortestSingleRicochet(const AActor* Origin, const AActor* Target, FVector &OutTargetLocation) {
+bool APanzerspielGameModeBase::GetShortestSingleRicochet(const AActor* Origin, const FVector &OriginLocation, const AActor* Target, FVector &OutTargetLocation) {
 	TArray<FBulletPath> BulletPaths;
 	TArray<FObstacleEdge> &OriginEdges = GetPlayersEdges(Origin);
 	TArray<FObstacleEdge> &TargetEdges = GetPlayersEdges(Target);
-	FindSingleRicochetPath(BulletPaths, Origin, OriginEdges, Target, TargetEdges);
+	FindSingleRicochetPath(BulletPaths, Origin, OriginLocation, OriginEdges, Target, TargetEdges);
 
 	if(BulletPaths.Num() <= 0)
 		return false;
@@ -246,11 +274,11 @@ bool APanzerspielGameModeBase::GetShortestSingleRicochet(const AActor* Origin, c
 	return true;
 }
 
-bool APanzerspielGameModeBase::GetShortestDoubleRicochet(const AActor* Origin, const AActor* Target, FVector &OutTargetLocation) {
+bool APanzerspielGameModeBase::GetShortestDoubleRicochet(const AActor* Origin, const FVector &OriginLocation, const AActor* Target, FVector &OutTargetLocation) {
 	TArray<FBulletPath> BulletPaths;
 	TArray<FObstacleEdge> &OriginEdges = GetPlayersEdges(Origin);
 	TArray<FObstacleEdge> &TargetEdges = GetPlayersEdges(Target);
-	FindDoubleRicochetPath(Origin, OriginEdges, Target, TargetEdges, BulletPaths);
+	FindDoubleRicochetPath(Origin, OriginLocation, OriginEdges, Target, TargetEdges, BulletPaths);
 	
 	if(BulletPaths.Num() <= 0)
 		return false;

@@ -15,6 +15,9 @@ class PANZERSPIEL_API ATankPawn : public APawn
 protected:
     UPROPERTY(VisibleAnywhere)
     class UStaticMeshComponent* BaseMesh;
+    
+    UPROPERTY(VisibleAnywhere)
+    class UStaticMeshComponent* TurretMesh;
 
     UPROPERTY(EditDefaultsOnly)
     class UFloatingPawnMovement *MovementComp;
@@ -44,10 +47,6 @@ protected:
     class APanzerspielGameModeBase *GameMode;
 
 private:
-    
-
-    UPROPERTY(VisibleAnywhere)
-    class UStaticMeshComponent* TurretMesh;
 
     // The bullet that will be spawned when the tank shoots.
     UPROPERTY(EditAnywhere, Category="Spawn")
