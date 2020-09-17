@@ -13,7 +13,7 @@ UObstacleEdge* UObstacleEdge::Init(FVector2D NewStart, FVector2D NewEnd, const A
 	return this;
 }
 
-UObstacleEdge* UObstacleEdge::Init(const UObstacleEdge* Other) {
+UObstacleEdge* UObstacleEdge::Copy(const UObstacleEdge* Other) {
 	Start = Other->Start;
 	End = Other->End;
 	Parent = Other->Parent;

@@ -63,9 +63,9 @@ private:
 	UPROPERTY(EditAnywhere, Category="Shooting Calculation")
 	float HitThreshold = 25;
 
-	// For double ricochet. Actually uses the squared value to compare.
+	// For IsPointOnLine comparision.
 	UPROPERTY(EditAnywhere, Category="Shooting Calculation")
-	float DistanceThreshold = 5;
+	float OnLineThreshold = 1;
 
 	UPROPERTY(EditAnywhere, Category="Shooting Calculation")
 	float BulletRadius = 5;

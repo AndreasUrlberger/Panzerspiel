@@ -18,7 +18,7 @@ public:
 
 	UObstacleEdge* Init(FVector2D NewStart = FVector2D::ZeroVector, FVector2D NewEnd = FVector2D::ZeroVector, const AActor *NewParent = nullptr);
 
-	UObstacleEdge* Init(const UObstacleEdge* Other);
+	UObstacleEdge* Copy(const UObstacleEdge* Other);
 
 	UPROPERTY()
 	FVector2D Start;

@@ -44,7 +44,7 @@ public:
 	float TraceHeight;
 
 	UPROPERTY()
-	float DistanceThreshold;
+	float OnLineThreshold;
 };
 
 UCLASS()
@@ -60,7 +60,7 @@ public:
 	UBroadLineTraceTargetParams();
 
 	UBroadLineTraceTargetParams* Init(float NRadius, FVector2D NShotDir, const AActor* NTarget, const AActor* NIgnoreActor,
-        FVector2D NOriginLoc, float NTraceDistance, float NTraceHeight, float NDistanceThreshold);
+        FVector2D NOriginLoc, float NTraceDistance, float NTraceHeight);
 
 	UPROPERTY()
 	float Radius = 0;
@@ -82,9 +82,6 @@ public:
 
 	UPROPERTY()
 	float TraceHeight;
-
-	UPROPERTY()
-	float DistanceThreshold;
 };
 
 /**
@@ -94,6 +91,8 @@ UCLASS()
 class PANZERSPIEL_API UUtility : public UObject
 {
 	GENERATED_BODY()
+
+	static constexpr float LineStrength = 3.f;
 	
 	public:
 	// Arrays must be sorted for this function to work.
@@ -146,12 +145,12 @@ class PANZERSPIEL_API UUtility : public UObject
 	static bool HasLOSToTarget(FVector& From, const FVector& Target, const AActor* IgnoreActor, FHitResult& HitResult,
     float RaycastHeight, float DistanceThreshold);
 
-	static bool IsPointOnLine(const FVector2D &Point, const UObstacleEdge* Edge, const float DistanceThreshold);
+	static bool IsPointOnLine(const FVector2D &Point, const UObstacleEdge* Edge, const float Threshold);
 
 	static float BroadLineTraceEdge(UBroadLineTraceEdgeParams* P);
 	
 	static float BroadLineTraceTarget(UBroadLineTraceTargetParams* P);
 	
 	static bool HasDoubleRicochetLOS2(const UObstacleEdge* ShooterEdge, const UObstacleEdge* TargetEdge, const AActor *Shooter, const FVector& ShooterLoc,
-        const AActor *Target, const FVector2D &ShotDir, const float TraceHeight, const float DistanceThreshold, FBulletPath &BulletPath);
+        const AActor *Target, const FVector2D &ShotDir, const float TraceHeight, const float OnLineThreshold, FBulletPath &BulletPath);
 };

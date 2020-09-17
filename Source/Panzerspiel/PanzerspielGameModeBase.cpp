@@ -221,7 +221,7 @@ bool APanzerspielGameModeBase::FindDoubleRicochetPath(const AActor *Origin, cons
 				continue;
 			// If we reach this point this is a possible edge combination.
 			FBulletPath BulletPath;
-			if(!UUtility::HasDoubleRicochetLOS2(ShooterEdge, TargetEdge, Origin, OriginLocation, Target, ShootDirection.GetSafeNormal(), RaycastHeight, DistanceThreshold, BulletPath))
+			if(!UUtility::HasDoubleRicochetLOS2(ShooterEdge, TargetEdge, Origin, OriginLocation, Target, ShootDirection.GetSafeNormal(), RaycastHeight, OnLineThreshold, BulletPath))
 				continue;
 			// If we reach this point this is most likely a valid edge combination.
 			++FoundCounter;

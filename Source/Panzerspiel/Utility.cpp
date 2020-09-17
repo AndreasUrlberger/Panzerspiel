@@ -20,7 +20,7 @@ UBroadLineTraceEdgeParams* UBroadLineTraceEdgeParams::Init(float NRadius, FVecto
 	OriginLoc = NOriginLoc;
 	TraceDistance = NTraceDistance;
 	TraceHeight = NTraceHeight;
-	DistanceThreshold = NDistanceThreshold;
+	OnLineThreshold = NDistanceThreshold;
 	return this;
 }
 
@@ -28,7 +28,7 @@ UBroadLineTraceTargetParams::UBroadLineTraceTargetParams() {
 }
 
 UBroadLineTraceTargetParams* UBroadLineTraceTargetParams::Init(float NRadius, FVector2D NShotDir, const AActor* NTarget,
-	const AActor* NIgnoreActor, FVector2D NOriginLoc, float NTraceDistance, float NTraceHeight, float NDistanceThreshold) {
+	const AActor* NIgnoreActor, FVector2D NOriginLoc, float NTraceDistance, float NTraceHeight) {
 
 	Radius = NRadius;
 	ShotDir = NShotDir;
@@ -37,7 +37,6 @@ UBroadLineTraceTargetParams* UBroadLineTraceTargetParams::Init(float NRadius, FV
 	OriginLoc = NOriginLoc;
 	TraceDistance = NTraceDistance;
 	TraceHeight = NTraceHeight;
-	DistanceThreshold = NDistanceThreshold;
 	return this;
 }
 
@@ -339,11 +338,11 @@ bool UUtility::HasLOSToTarget(FVector& From, const FVector& Target, const AActor
 	return FVector::DistSquaredXY(To, HitResult.Location) <= DistanceThreshold;
 }
 
-bool UUtility::IsPointOnLine(const FVector2D& Point, const UObstacleEdge* Edge, const float DistanceThreshold) {
+bool UUtility::IsPointOnLine(const FVector2D& Point, const UObstacleEdge* Edge, const float Threshold) {
 	const FVector2D PointFromOrigin = Point - Edge->Start;
 	const FVector2D LineDirection = (Edge->End - Edge->Start).GetSafeNormal();
 	const FVector2D ProjectedPoint = LineDirection * (PointFromOrigin | LineDirection);
-	return FVector2D::DistSquared(ProjectedPoint, PointFromOrigin) <= DistanceThreshold;
+	return FVector2D::DistSquared(ProjectedPoint, PointFromOrigin) <= Threshold;
 }
 
 float UUtility::BroadLineTraceEdge(UBroadLineTraceEdgeParams* P) {
@@ -358,8 +357,10 @@ float UUtility::BroadLineTraceEdge(UBroadLineTraceEdgeParams* P) {
 	const FVector TraceEnd = FVector(P->OriginLoc.X + P->TraceDistance * P->ShotDir.X, P->OriginLoc.Y + P->TraceDistance * P->ShotDir.Y, P->TraceHeight);
 	const FVector OriginLoc3D = FVector(P->OriginLoc.X, P->OriginLoc.Y, P->TraceHeight);
 	World->LineTraceSingleByChannel(Result, OriginLoc3D, TraceEnd, ECC_Camera, QueryParams);
-	if(IsPointOnLine(FVector2D(Result.Location), P->TargetEdge, P->DistanceThreshold))
+	//DrawDebugLine(World, OriginLoc3D, Result.Location, FColor::Orange, false, -1, 0, LineStrength);
+	if(!IsPointOnLine(FVector2D(Result.Location), P->TargetEdge, P->OnLineThreshold))
 		return -1.f;
+
 
 	// Right trace.
 	const float MiddleHitDistance = Result.Distance;
@@ -368,7 +369,8 @@ float UUtility::BroadLineTraceEdge(UBroadLineTraceEdgeParams* P) {
 	FVector OffsetEnd = TraceEnd + FVector(OrthoShotDir.X, OrthoShotDir.Y, 0) * P->Radius;
 	World->LineTraceSingleByChannel(Result, OffsetOrigin, OffsetEnd, ECC_Camera, QueryParams);
 	const bool IsLongerR = Result.Distance > MiddleHitDistance;
-	const bool HitTargetR = IsPointOnLine(FVector2D(Result.Location), P->TargetEdge, P->DistanceThreshold);
+	const bool HitTargetR = IsPointOnLine(FVector2D(Result.Location), P->TargetEdge, P->OnLineThreshold);
+	//DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, false, -1, 0, LineStrength);
 	if(!IsLongerR && !HitTargetR)
 		return -1.f;
 
@@ -377,7 +379,8 @@ float UUtility::BroadLineTraceEdge(UBroadLineTraceEdgeParams* P) {
 	OffsetEnd = TraceEnd - FVector(OrthoShotDir.X, OrthoShotDir.Y, 0) * P->Radius;
 	World->LineTraceSingleByChannel(Result, OffsetOrigin, OffsetEnd, ECC_Camera, QueryParams);
 	const bool IsLongerL = Result.Distance > MiddleHitDistance;
-	const bool HitTargetL = IsPointOnLine(FVector2D(Result.Location), P->TargetEdge, P->DistanceThreshold);
+	const bool HitTargetL = IsPointOnLine(FVector2D(Result.Location), P->TargetEdge, P->OnLineThreshold);
+	//DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, false, -1, 0, LineStrength);
 	if(!IsLongerL && !HitTargetL)
 		return -1.f;
 
@@ -389,7 +392,6 @@ float UUtility::BroadLineTraceTarget(UBroadLineTraceTargetParams* P) {
 	UWorld *World = P->IgnoreActor->GetWorld();
 	if(!World)
 		return -1.f;
-
 	// First trace.
 	FHitResult Result;
 	FCollisionQueryParams QueryParams;
@@ -397,7 +399,8 @@ float UUtility::BroadLineTraceTarget(UBroadLineTraceTargetParams* P) {
 	const FVector TraceEnd = FVector(P->OriginLoc.X + P->TraceDistance * P->ShotDir.X, P->OriginLoc.Y + P->TraceDistance * P->ShotDir.Y, P->TraceHeight);
 	const FVector OriginLoc3D = FVector(P->OriginLoc.X, P->OriginLoc.Y, P->TraceHeight);
 	World->LineTraceSingleByChannel(Result, OriginLoc3D, TraceEnd, ECC_Camera, QueryParams);
-	if(Result.Actor == P->Target)
+	//DrawDebugLine(World, OriginLoc3D, Result.Location, FColor::Orange, false, -1, 0, LineStrength);
+	if(Result.Actor != P->Target)
 		return -1.f;
 
 	// Right trace.
@@ -406,13 +409,16 @@ float UUtility::BroadLineTraceTarget(UBroadLineTraceTargetParams* P) {
 	FVector OffsetOrigin = OriginLoc3D + FVector(OrthoShotDir.X, OrthoShotDir.Y, 0) * P->Radius;
 	FVector OffsetEnd = TraceEnd + FVector(OrthoShotDir.X, OrthoShotDir.Y, 0) * P->Radius;
 	World->LineTraceSingleByChannel(Result, OffsetOrigin, OffsetEnd, ECC_Camera, QueryParams);
+	//DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, false, -1, 0, LineStrength);
 	if(!(Result.Distance > MiddleHitDistance) && !(Result.Actor == P->Target))
 		return -1.f;
+
 
 	// Left trace.
 	OffsetOrigin = OriginLoc3D - FVector(OrthoShotDir.X, OrthoShotDir.Y, 0) * P->Radius;
 	OffsetEnd = TraceEnd - FVector(OrthoShotDir.X, OrthoShotDir.Y, 0) * P->Radius;
 	World->LineTraceSingleByChannel(Result, OffsetOrigin, OffsetEnd, ECC_Camera, QueryParams);
+	//DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, false, -1, 0, LineStrength);
 	if(!(Result.Distance > MiddleHitDistance) && !(Result.Actor == P->Target))
 		return -1.f;
 
@@ -421,17 +427,17 @@ float UUtility::BroadLineTraceTarget(UBroadLineTraceTargetParams* P) {
 }
 
 bool UUtility::HasDoubleRicochetLOS2(const UObstacleEdge* ShooterEdge, const UObstacleEdge* TargetEdge, const AActor* Shooter, const FVector& ShooterLoc,
-	const AActor* Target, const FVector2D& ShootingDirection, const float TraceHeight, const float DistanceThreshold, FBulletPath &BulletPath) {
+	const AActor* Target, const FVector2D& ShootingDirection, const float TraceHeight, const float OnLineThreshold, FBulletPath &BulletPath) {
 	UWorld *World = Shooter->GetWorld();
 	if(!World) return false;
 	
 	// First raycast (ShooterEdge -> Shooter).
-	FVector2D ShotDir = ShootingDirection.GetSafeNormal();
+	const FVector2D ShotDir = ShootingDirection.GetSafeNormal();
 	// TODO: These calculations are already done in IsReflectionGonnaHit, it might be better to safe them somewhere for later use.
-	FVector2D ShooterEdgeIntersect = CalculateIntersect(ShooterEdge->Start,ShooterEdge->End - ShooterEdge->Start,FVector2D(ShooterLoc), ShotDir);
+	const FVector2D ShooterEdgeIntersect = CalculateIntersect(ShooterEdge->Start,ShooterEdge->End - ShooterEdge->Start,FVector2D(ShooterLoc), ShotDir);
 	const float BulletRadius = 15;
-	UBroadLineTraceTargetParams* TargetParams = NewObject<UBroadLineTraceTargetParams>()->Init(BulletRadius, ShotDir, Shooter,
-		ShooterEdge->Parent, ShooterEdgeIntersect, 10000, TraceHeight, DistanceThreshold);
+	UBroadLineTraceTargetParams* TargetParams = NewObject<UBroadLineTraceTargetParams>()->Init(BulletRadius, -ShotDir, Shooter,
+		ShooterEdge->Parent, ShooterEdgeIntersect, 10000, TraceHeight);
 	float HitDistance = BroadLineTraceTarget(TargetParams);
 	if(HitDistance < 0.f)
 		return false;
@@ -439,10 +445,10 @@ bool UUtility::HasDoubleRicochetLOS2(const UObstacleEdge* ShooterEdge, const UOb
 
 	// Second raycast (ShooterEdge -> TargetEdge).
 	const FVector2D ShooterEdgeNormal = FVector2D(ShooterEdge->End.Y - ShooterEdge->Start.Y, -(ShooterEdge->End.X - ShooterEdge->Start.X));
-	const FVector2D MirroredShotDir = MirrorVector(ShotDir, ShooterEdgeIntersect, ShooterEdgeNormal);
-	UObstacleEdge *TargetEdgeCopy = NewObject<UObstacleEdge>()->Init(TargetEdge); // Only needed because UProperties cant be const.
+	const FVector2D MirroredShotDir = MirrorVector(-ShotDir, ShooterEdgeIntersect, ShooterEdgeNormal);
+	UObstacleEdge *TargetEdgeCopy = NewObject<UObstacleEdge>()->Copy(TargetEdge); // Only needed because UProperties cant be const.
 	UBroadLineTraceEdgeParams* EdgeParams = NewObject<UBroadLineTraceEdgeParams>()->Init(BulletRadius, MirroredShotDir,
-		TargetEdgeCopy, Shooter, ShooterEdgeIntersect, 10000, TraceHeight, DistanceThreshold);
+		TargetEdgeCopy, ShooterEdge->Parent, ShooterEdgeIntersect, 10000, TraceHeight, OnLineThreshold);
 	HitDistance = BroadLineTraceEdge(EdgeParams);
 	if(HitDistance < 0.f)
 		return false;
