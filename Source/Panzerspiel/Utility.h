@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "WorldObstacle.h"
+
 #include "Utility.generated.h"
 
 UCLASS()
@@ -93,6 +94,8 @@ class PANZERSPIEL_API UUtility : public UObject
 	GENERATED_BODY()
 
 	static constexpr float LineStrength = 3.f;
+
+	static constexpr bool IsPersistent = true;
 	
 	public:
 	// Arrays must be sorted for this function to work.
@@ -107,11 +110,18 @@ class PANZERSPIEL_API UUtility : public UObject
 	// Returns true if the Edge could reflect the bullet to the target according to their rotation.
 	static bool CanBulletEverHitTarget(const UObstacleEdge* Edge, const FVector2D &BulletOrigin, const FVector2D &Target);
 
-	// Only returns those edges which create, when considered as mirrors, a line of sight from the Origin to the Target.
+	// Only adds those edges to the BulletPaths which, when considered as mirrors, create a line of sight from the Origin
+	// to the Target.
 	// Warning: This function makes use of up to three line traces and thus should only be used as the last option.
 	static void FilterSingleRicochetLOS(const UObstacleEdge* Edge, const AActor *Origin, const FVector& OriginLocation,
 		const AActor *Target, float RaycastHeight, float HitThreshold, TArray<struct FBulletPath> &BulletPaths);
 
+	// Only adds those edges to the BulletPaths which, when considered as mirrors, create a line of sight from the Origin
+	// to the Target.
+	// Warning: This function makes use of up to three line traces and thus should only be used as the last option.
+	static void FilterSingleRicochetLOS2(const UObstacleEdge* Edge, const AActor *Origin, const FVector& OriginLocation,
+    const AActor *Target, const float TraceHeight, const float OnLineThreshold, const float Radius, TArray<FBulletPath> &BulletPaths);
+	
 	// Return true if there is no way a bullet reflected from one edge could ever hit the other edge.
 	static bool AreFacingAway(const UObstacleEdge* Edge1, const UObstacleEdge* Edge2, const FVector2D &Edge1Normal);
 
@@ -122,12 +132,6 @@ class PANZERSPIEL_API UUtility : public UObject
 
 	// Calculates the intersection point between the two given lines.
 	static FVector2D CalculateIntersect(const FVector2D &Edge1Start, const FVector2D &Edge1Dir, const FVector2D &Edge2Start, const FVector2D &Edge2Dir);
-
-	// Only returns true if the edges, considered as mirrors, create a line of sight from the Origin to the Target.
-	// Warning: -This function makes use of up to three line traces and thus should only be used as the last option.
-	// 			-ShootingDirection must be normalized.
-	static bool HasDoubleRicochetLOS(const UObstacleEdge* ShooterEdge, const UObstacleEdge* TargetEdge, const AActor *Shooter, const FVector& ShooterLocation,
-		const AActor *Target, const FVector2D &ShootDirection, const float RaycastHeight, const float DistanceThreshold, FBulletPath &BulletPath);
 
 	// Draws debug lines for one frame to show where the BulletPaths go.
 	static void ShowBulletPaths(const TArray<FBulletPath>& BulletPaths, const AActor *Origin, const float LineThickness = 15);
@@ -150,7 +154,9 @@ class PANZERSPIEL_API UUtility : public UObject
 	static float BroadLineTraceEdge(UBroadLineTraceEdgeParams* P);
 	
 	static float BroadLineTraceTarget(UBroadLineTraceTargetParams* P);
-	
-	static bool HasDoubleRicochetLOS2(const UObstacleEdge* ShooterEdge, const UObstacleEdge* TargetEdge, const AActor *Shooter, const FVector& ShooterLoc,
-        const AActor *Target, const FVector2D &ShotDir, const float TraceHeight, const float OnLineThreshold, FBulletPath &BulletPath);
+
+	// Only returns true if the edges, considered as mirrors, create a line of sight from the Origin to the Target.
+	// Warning: -This function makes use of multiple line traces and thus should only be used as the last option.
+	static bool HasDoubleRicochetLOS(const UObstacleEdge* ShooterEdge, const UObstacleEdge* TargetEdge, const AActor *Shooter, const FVector& ShooterLoc,
+        const AActor *Target, const FVector2D &ShotDir, const float TraceHeight, const float OnLineThreshold, FBulletPath &BulletPath, const float BulletRadius);
 };

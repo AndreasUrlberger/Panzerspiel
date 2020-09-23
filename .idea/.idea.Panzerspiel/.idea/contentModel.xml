@@ -43501,6 +43501,8 @@
           <e p="CubeObstacle.h" t="Include" />
           <e p="Mine.cpp" t="Include" />
           <e p="Mine.h" t="Include" />
+          <e p="MyProjectileMovementComponent.cpp" t="Include" />
+          <e p="MyProjectileMovementComponent.h" t="Include" />
           <e p="Panzerspiel.Build.cs" t="Include" />
           <e p="Panzerspiel.cpp" t="Include" />
           <e p="Panzerspiel.h" t="Include" />

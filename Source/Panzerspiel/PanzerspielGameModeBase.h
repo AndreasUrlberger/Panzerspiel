@@ -59,16 +59,12 @@ private:
 	UPROPERTY(EditAnywhere, Category="Shooting Calculation")
 	float RaycastHeight = 30;
 
-	// For single ricochet.
-	UPROPERTY(EditAnywhere, Category="Shooting Calculation")
-	float HitThreshold = 25;
-
 	// For IsPointOnLine comparision.
 	UPROPERTY(EditAnywhere, Category="Shooting Calculation")
 	float OnLineThreshold = 1;
 
 	UPROPERTY(EditAnywhere, Category="Shooting Calculation")
-	float BulletRadius = 5;
+	float BulletRadius = 15;
 
 protected:
 	virtual void BeginPlay() override;

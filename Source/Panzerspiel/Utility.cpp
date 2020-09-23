@@ -193,6 +193,39 @@ void UUtility::FilterSingleRicochetLOS(const UObstacleEdge* Edge, const AActor *
 	BulletPaths.Add(Path);
 }
 
+void UUtility::FilterSingleRicochetLOS2(const UObstacleEdge* Edge, const AActor *Origin, const FVector& OriginLocation,
+	const AActor *Target, const float TraceHeight, const float OnLineThreshold, const float Radius, TArray<FBulletPath> &BulletPaths){
+	UWorld *World = Target->GetWorld();
+	if(!World)
+		return;
+	// Mirror target at the edge.
+	const FVector2D TargetLocation = FVector2D(Target->GetActorLocation());
+	const FVector2D MirroredTarget = MirrorPoint(TargetLocation, Edge->Start, Edge->End - Edge->Start);
+	const FVector2D ShotDir = MirroredTarget - FVector2D(OriginLocation);
+	
+	// Do first trace (Shooter -> Edge).
+	UObstacleEdge* EdgeCopy = NewObject<UObstacleEdge>()->Copy(Edge);
+	UBroadLineTraceEdgeParams* Params = NewObject<UBroadLineTraceEdgeParams>()->Init(Radius, ShotDir, EdgeCopy, Origin,
+		FVector2D(OriginLocation), 10000, TraceHeight, OnLineThreshold);
+	const float HitDistance1 = BroadLineTraceEdge(Params);
+	if(HitDistance1 < 0.f)
+		return;
+
+	// Do second trace (Target -> Edge)
+	const FVector2D EdgePoint = CalculateIntersect(FVector2D(OriginLocation), ShotDir, Edge->Start, Edge->End - Edge->Start);
+	const FVector2D MirroredShotDir = (EdgePoint - TargetLocation).GetSafeNormal();
+	Params->IgnoreActor = Target;
+	Params->OriginLoc = TargetLocation;
+	Params->ShotDir = MirroredShotDir;
+	const float HitDistance2 = BroadLineTraceEdge(Params);
+	if(HitDistance2 < 0.f)
+		return;
+
+	// There is a line of sight.
+	const FBulletPath Path = FBulletPath(FVector(ShotDir.X, ShotDir.Y, 0), HitDistance1 + HitDistance2);
+	BulletPaths.Add(Path);
+}
+
 bool UUtility::AreFacingAway(const UObstacleEdge* Edge1, const UObstacleEdge* Edge2, const FVector2D& Edge1Normal) {
 	const FVector2D Edge1Middle = Edge1->Start + (Edge1->End - Edge1->Start)/2;
 	const FVector2D Edge2Middle = Edge2->Start + (Edge2->End - Edge2->Start)/2;
@@ -225,71 +258,6 @@ FVector2D UUtility::CalculateIntersect(const FVector2D& Edge1Start, const FVecto
 	const float ThetaErg = (OriginNew.X + InsetNumbers) / -InsetTheta;
 
 	return Edge2Start + ThetaErg * Edge2Dir;
-}
-
-bool UUtility::HasDoubleRicochetLOS(const UObstacleEdge* ShooterEdge, const UObstacleEdge* TargetEdge, const AActor* Shooter, const FVector& ShooterLocation,
-	const AActor* Target, const FVector2D& ShootDirection, const float RaycastHeight, const float DistanceThreshold, FBulletPath &BulletPath) {
-	UWorld *World = Shooter->GetWorld();
-	if(!World) return false;
-	
-	// Setup first raycast (Shooter -> ShooterEdge).
-	FVector From = ShooterLocation;
-	// TODO: These calculations are already done in IsReflectionGonnaHit, it might be better to safe them somewhere for later use.
-	const FVector2D ShooterEdgeIntersect = CalculateIntersect(ShooterEdge->Start, ShooterEdge->End - ShooterEdge->Start, FVector2D(From), ShootDirection);
-	FHitResult HitResult;
-	FVector To = FVector(ShooterEdgeIntersect.X, ShooterEdgeIntersect.Y, RaycastHeight);
-	if(!HasLOSToTarget(From, To, Shooter, HitResult, RaycastHeight, DistanceThreshold))
-		return false;
-	// Do the other two traces.
-	// Do right trace.
-	const float BulletRadius = 15;
-	float HitDistance = HitResult.Distance;
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(Shooter);
-	const FVector2D OriginLoc2D = FVector2D(From);
-	const FVector2D OrthogonalNormal = FVector2D(ShootDirection.Y, -ShootDirection.X); // Already normalized.
-	const FVector2D RightStartLoc = OriginLoc2D + OrthogonalNormal * BulletRadius;
-	const FVector2D RightEndLoc = RightStartLoc + 32 * HitDistance * ShootDirection; // I chose 32 just to make sure its long enough.
-	World->LineTraceSingleByChannel(HitResult, FVector(RightStartLoc.X, RightStartLoc.Y, RaycastHeight), FVector(RightEndLoc.X, RightEndLoc.Y, RaycastHeight), ECC_Camera, Params);
-	// Check if the right HitLocations distance to the line is smaller than the threshold.
-	if(!IsPointOnLine(FVector2D(HitResult.Location), ShooterEdge, DistanceThreshold))
-		return false;
-	// Do left trace.
-	const FVector2D LeftStartLoc = OriginLoc2D - OrthogonalNormal * BulletRadius;
-	const FVector2D LeftEndLoc = LeftEndLoc + 32 * HitDistance * ShootDirection;
-	World->LineTraceSingleByChannel(HitResult, FVector(LeftStartLoc.X, LeftStartLoc.Y, RaycastHeight), FVector(LeftEndLoc.X, LeftEndLoc.Y, RaycastHeight), ECC_Camera, Params);
-	// Check if the right HitLocations distance to the line is smaller than the threshold.
-	if(!IsPointOnLine(FVector2D(HitResult.Location), ShooterEdge, DistanceThreshold))
-		return false;
-	const UObstacleEdge* HitBackup1 = NewObject<UObstacleEdge>()->Init(FVector2D(From), FVector2D(To));
-
-	// Make a copy since we're changing it below.
-	BulletPath.Target = FVector(To);
-	BulletPath.PathLength = HitResult.Distance;
-	// Setup second raycast (ShooterEdge -> TargetEdge).
-	From = FVector(ShooterEdgeIntersect.X, ShooterEdgeIntersect.Y, RaycastHeight);
-	const FVector2D ShooterEdgeNormal = FVector2D(ShooterEdge->End.Y - ShooterEdge->Start.Y, -(ShooterEdge->End.X - ShooterEdge->Start.X));
-	const FVector2D MirroredShootDirection = MirrorVector(ShootDirection, ShooterEdgeIntersect, ShooterEdgeNormal);
-	const FVector2D TargetEdgeIntersect = CalculateIntersect(TargetEdge->Start, TargetEdge->End - TargetEdge->Start, ShooterEdgeIntersect, MirroredShootDirection);
-	To = FVector(TargetEdgeIntersect.X, TargetEdgeIntersect.Y, RaycastHeight);
-	if(!HasLOSToTarget(From, To, ShooterEdge->Parent, HitResult, RaycastHeight, DistanceThreshold))
-		return false;
-	const UObstacleEdge* HitBackup2 = NewObject<UObstacleEdge>()->Init(FVector2D(From), FVector2D(To));
-	
-	BulletPath.PathLength += HitResult.Distance;
-	// Setup third raycast (Target -> TargetEdge).
-	From = Target->GetActorLocation();
-	From.Z = RaycastHeight;
-	// To stays the same since where shooting at the same TargetEdge.
-	if(!HasLOSToTarget(From, To, Target, HitResult, RaycastHeight, DistanceThreshold))
-		return false;
-
-	// Now need to check that theres actually enough space for the bullet.
-	DrawLine(FVector2D(From), FVector2D(HitResult.Location), FColor::Orange, Shooter);
-	DrawLine(HitBackup1->Start, HitBackup1->End, FColor::Orange, Shooter);
-	DrawLine(HitBackup2->Start, HitBackup2->End, FColor::Orange, Shooter);
-	BulletPath.PathLength += HitResult.Distance;
-	return true;
 }
 
 void UUtility::ShowBulletPaths(const TArray<FBulletPath>& BulletPaths, const AActor *Origin, const float LineThickness) {
@@ -357,10 +325,9 @@ float UUtility::BroadLineTraceEdge(UBroadLineTraceEdgeParams* P) {
 	const FVector TraceEnd = FVector(P->OriginLoc.X + P->TraceDistance * P->ShotDir.X, P->OriginLoc.Y + P->TraceDistance * P->ShotDir.Y, P->TraceHeight);
 	const FVector OriginLoc3D = FVector(P->OriginLoc.X, P->OriginLoc.Y, P->TraceHeight);
 	World->LineTraceSingleByChannel(Result, OriginLoc3D, TraceEnd, ECC_Camera, QueryParams);
-	//DrawDebugLine(World, OriginLoc3D, Result.Location, FColor::Orange, false, -1, 0, LineStrength);
+	DrawDebugLine(World, OriginLoc3D, Result.Location, FColor::Orange, IsPersistent, -1, 0, LineStrength);
 	if(!IsPointOnLine(FVector2D(Result.Location), P->TargetEdge, P->OnLineThreshold))
 		return -1.f;
-
 
 	// Right trace.
 	const float MiddleHitDistance = Result.Distance;
@@ -370,7 +337,7 @@ float UUtility::BroadLineTraceEdge(UBroadLineTraceEdgeParams* P) {
 	World->LineTraceSingleByChannel(Result, OffsetOrigin, OffsetEnd, ECC_Camera, QueryParams);
 	const bool IsLongerR = Result.Distance > MiddleHitDistance;
 	const bool HitTargetR = IsPointOnLine(FVector2D(Result.Location), P->TargetEdge, P->OnLineThreshold);
-	//DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, false, -1, 0, LineStrength);
+	DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, IsPersistent, -1, 0, LineStrength);
 	if(!IsLongerR && !HitTargetR)
 		return -1.f;
 
@@ -380,7 +347,7 @@ float UUtility::BroadLineTraceEdge(UBroadLineTraceEdgeParams* P) {
 	World->LineTraceSingleByChannel(Result, OffsetOrigin, OffsetEnd, ECC_Camera, QueryParams);
 	const bool IsLongerL = Result.Distance > MiddleHitDistance;
 	const bool HitTargetL = IsPointOnLine(FVector2D(Result.Location), P->TargetEdge, P->OnLineThreshold);
-	//DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, false, -1, 0, LineStrength);
+	DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, IsPersistent, -1, 0, LineStrength);
 	if(!IsLongerL && !HitTargetL)
 		return -1.f;
 
@@ -399,7 +366,7 @@ float UUtility::BroadLineTraceTarget(UBroadLineTraceTargetParams* P) {
 	const FVector TraceEnd = FVector(P->OriginLoc.X + P->TraceDistance * P->ShotDir.X, P->OriginLoc.Y + P->TraceDistance * P->ShotDir.Y, P->TraceHeight);
 	const FVector OriginLoc3D = FVector(P->OriginLoc.X, P->OriginLoc.Y, P->TraceHeight);
 	World->LineTraceSingleByChannel(Result, OriginLoc3D, TraceEnd, ECC_Camera, QueryParams);
-	//DrawDebugLine(World, OriginLoc3D, Result.Location, FColor::Orange, false, -1, 0, LineStrength);
+	DrawDebugLine(World, OriginLoc3D, Result.Location, FColor::Orange, IsPersistent, -1, 0, LineStrength);
 	if(Result.Actor != P->Target)
 		return -1.f;
 
@@ -409,7 +376,7 @@ float UUtility::BroadLineTraceTarget(UBroadLineTraceTargetParams* P) {
 	FVector OffsetOrigin = OriginLoc3D + FVector(OrthoShotDir.X, OrthoShotDir.Y, 0) * P->Radius;
 	FVector OffsetEnd = TraceEnd + FVector(OrthoShotDir.X, OrthoShotDir.Y, 0) * P->Radius;
 	World->LineTraceSingleByChannel(Result, OffsetOrigin, OffsetEnd, ECC_Camera, QueryParams);
-	//DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, false, -1, 0, LineStrength);
+	DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, IsPersistent, -1, 0, LineStrength);
 	if(!(Result.Distance > MiddleHitDistance) && !(Result.Actor == P->Target))
 		return -1.f;
 
@@ -418,7 +385,7 @@ float UUtility::BroadLineTraceTarget(UBroadLineTraceTargetParams* P) {
 	OffsetOrigin = OriginLoc3D - FVector(OrthoShotDir.X, OrthoShotDir.Y, 0) * P->Radius;
 	OffsetEnd = TraceEnd - FVector(OrthoShotDir.X, OrthoShotDir.Y, 0) * P->Radius;
 	World->LineTraceSingleByChannel(Result, OffsetOrigin, OffsetEnd, ECC_Camera, QueryParams);
-	//DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, false, -1, 0, LineStrength);
+	DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, IsPersistent, -1, 0, LineStrength);
 	if(!(Result.Distance > MiddleHitDistance) && !(Result.Actor == P->Target))
 		return -1.f;
 
@@ -426,8 +393,8 @@ float UUtility::BroadLineTraceTarget(UBroadLineTraceTargetParams* P) {
 	return MiddleHitDistance;
 }
 
-bool UUtility::HasDoubleRicochetLOS2(const UObstacleEdge* ShooterEdge, const UObstacleEdge* TargetEdge, const AActor* Shooter, const FVector& ShooterLoc,
-	const AActor* Target, const FVector2D& ShootingDirection, const float TraceHeight, const float OnLineThreshold, FBulletPath &BulletPath) {
+bool UUtility::HasDoubleRicochetLOS(const UObstacleEdge* ShooterEdge, const UObstacleEdge* TargetEdge, const AActor* Shooter, const FVector& ShooterLoc,
+	const AActor* Target, const FVector2D& ShootingDirection, const float TraceHeight, const float OnLineThreshold, FBulletPath &BulletPath, const float BulletRadius) {
 	UWorld *World = Shooter->GetWorld();
 	if(!World) return false;
 	
@@ -435,7 +402,6 @@ bool UUtility::HasDoubleRicochetLOS2(const UObstacleEdge* ShooterEdge, const UOb
 	const FVector2D ShotDir = ShootingDirection.GetSafeNormal();
 	// TODO: These calculations are already done in IsReflectionGonnaHit, it might be better to safe them somewhere for later use.
 	const FVector2D ShooterEdgeIntersect = CalculateIntersect(ShooterEdge->Start,ShooterEdge->End - ShooterEdge->Start,FVector2D(ShooterLoc), ShotDir);
-	const float BulletRadius = 15;
 	UBroadLineTraceTargetParams* TargetParams = NewObject<UBroadLineTraceTargetParams>()->Init(BulletRadius, -ShotDir, Shooter,
 		ShooterEdge->Parent, ShooterEdgeIntersect, 10000, TraceHeight);
 	float HitDistance = BroadLineTraceTarget(TargetParams);

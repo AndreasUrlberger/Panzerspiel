@@ -148,9 +148,6 @@ bool APanzerspielGameModeBase::FindDirectPath(FBulletPath& BulletPath, const AAc
 
 bool APanzerspielGameModeBase::FindSingleRicochetPath(TArray<FBulletPath> &BulletPaths, const AActor *Origin, const FVector& OriginLocation, const TArray<UObstacleEdge*> &OriginEdges,
 	const AActor *Target, const TArray<UObstacleEdge*> &TargetEdges) {
-	
-	const double Start = FPlatformTime::Seconds();
-
 	if(!(IsValid(Origin) && IsValid(Target)))
 		return false;
 	// TODO: Doing the gathering and intersecting of the edges both in the same loop could improve the performance, the downside is that we then cant use the potentially visible edges for comparison with other tanks.
@@ -167,12 +164,9 @@ bool APanzerspielGameModeBase::FindSingleRicochetPath(TArray<FBulletPath> &Bulle
 	IntersectedEdges.Empty();
 
 	for(const UObstacleEdge* Edge : FilteredEdges)
-		UUtility::FilterSingleRicochetLOS(Edge, Origin, OriginLocation, Target, RaycastHeight, HitThreshold, BulletPaths);
+		UUtility::FilterSingleRicochetLOS2(Edge, Origin, OriginLocation, Target, RaycastHeight, OnLineThreshold, BulletRadius, BulletPaths);
 
 	//if(bDebugDrawRaycastCalculation) ShowBulletPaths(BulletPaths);
-
-	const double End = FPlatformTime::Seconds();
-	if (bDebugLog) UE_LOG(LogTemp, Warning, TEXT("code executed in %f seconds, found %d edges."), End-Start, BulletPaths.Num());
 
 	if(BulletPaths.Num() <= 0)
 		return false;
@@ -221,7 +215,7 @@ bool APanzerspielGameModeBase::FindDoubleRicochetPath(const AActor *Origin, cons
 				continue;
 			// If we reach this point this is a possible edge combination.
 			FBulletPath BulletPath;
-			if(!UUtility::HasDoubleRicochetLOS2(ShooterEdge, TargetEdge, Origin, OriginLocation, Target, ShootDirection.GetSafeNormal(), RaycastHeight, OnLineThreshold, BulletPath))
+			if(!UUtility::HasDoubleRicochetLOS(ShooterEdge, TargetEdge, Origin, OriginLocation, Target, ShootDirection.GetSafeNormal(), RaycastHeight, OnLineThreshold, BulletPath, BulletRadius))
 				continue;
 			// If we reach this point this is most likely a valid edge combination.
 			++FoundCounter;
@@ -299,7 +293,6 @@ void APanzerspielGameModeBase::LevelStreamingEnded() {
 	InvalidateEdges();
 	PopulateObstacles();
 }
-
 
 void APanzerspielGameModeBase::BeginPlay() {
 	Super::BeginPlay();

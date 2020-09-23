@@ -11,7 +11,7 @@ class PANZERSPIEL_API ABullet : public AActor
 {
 	GENERATED_BODY()
 	
-	// Variables
+// Properties.
 	private:
 
 	UPROPERTY(VisibleDefaultsOnly)
@@ -19,31 +19,61 @@ class PANZERSPIEL_API ABullet : public AActor
 
 	UPROPERTY(VisibleDefaultsOnly)
 	class UStaticMeshComponent* BulletMesh;
+	
+	UPROPERTY(VisibleDefaultsOnly, Category="Movement")
+	USceneComponent* RicochetPoint;
 
-	UPROPERTY(VisibleDefaultsOnly)
-	class UProjectileMovementComponent* ProjectileComp;
-
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Sound")
 	class USoundBase* WallHitSound;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Sound")
 	class USoundBase* BulletDestroySound;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleInstanceOnly)
 	class ATankPawn* Source;
 
 	// Tells whether the source tank can be killed by its own bullet.
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	bool SourceVulnerable;
 
 	// The "OtherActor" of the first OverlapBeginEvent when Source was null.
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	AActor* FirstOverlapEventActor;
 
-	UPROPERTY
-	(EditAnywhere)
-	int HitsBeforeDeath;
-	// Methods
+	UPROPERTY(EditAnywhere, Category="Movement")
+	int32 HitsBeforeDeath = 2;
+
+	UPROPERTY()
+	bool bIsDead = false;
+
+	UPROPERTY(EditDefaultsOnly, Category="Movement")
+	USceneComponent* LeftCorner;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Movement")
+	USceneComponent* RightCorner;
+
+	UPROPERTY(EditAnywhere, Category="Movement")
+	float Speed = 1000;
+
+	UPROPERTY(EditAnywhere, Category="Movement")
+	float BulletLength = 20;
+
+	UPROPERTY(EditAnywhere, Category="Movement")
+	float BulletWidth = 15;
+
+	UPROPERTY()
+	bool bIsSliding = false;
+
+	// Stores the direction the bullet will take after sliding.
+	UPROPERTY()
+	FVector NextDirection = FVector::ZeroVector;
+
+	// Point till which the bullet is supposed to slide.
+	UPROPERTY()
+	FVector SlideEndPoint = FVector::ZeroVector;
+
+	
+// Functions.
 	public:
 	// Sets default values for this actor's properties
 	ABullet();
@@ -73,6 +103,9 @@ class PANZERSPIEL_API ABullet : public AActor
 
 	UFUNCTION()
     void EndOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void BulletMove(const float DeltaTime);
     
 	UFUNCTION()
     void Die();
