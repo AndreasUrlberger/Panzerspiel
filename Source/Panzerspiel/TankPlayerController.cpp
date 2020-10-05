@@ -38,6 +38,7 @@ void ATankPlayerController::BeginPlay() {
 
 void ATankPlayerController::OnPossess(APawn* InPawn) {
 	Super::OnPossess(InPawn);
+
 	// Make sure the possessed pawn uses the same input mode as specified in the controller.
 	TankPawn = Cast<ATankPawn>(InPawn);
 	if (IsValid(TankPawn))
@@ -62,6 +63,7 @@ void ATankPlayerController::SetCrosshairVisibility(bool IsVisible) {
 
 void ATankPlayerController::SetupInputComponent() {
 	Super::SetupInputComponent();
+
 	InputComponent->BindAxis("MoveCrosshairUp", this, &ATankPlayerController::CrosshairMoveUp);
 	InputComponent->BindAxis("MoveCrosshairRight", this, &ATankPlayerController::CrosshairMoveRight);
 

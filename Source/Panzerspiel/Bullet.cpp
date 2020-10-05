@@ -5,7 +5,6 @@
 
 
 #include "DrawDebugHelpers.h"
-#include "PropertyEditorModule.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -62,6 +61,7 @@ void ABullet::Kill(ATankPawn* Enemy) {
 
 void ABullet::HitEvent(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                                 FVector NormalImpulse, const FHitResult& Hit) {
+    UE_LOG(LogTemp, Warning, TEXT("HitEvent"));
     SourceVulnerable = true;
     if (HitsBeforeDeath > 0) {
         // Bullet hit wall.
@@ -75,6 +75,7 @@ void ABullet::HitEvent(UPrimitiveComponent* HitComponent, AActor* OtherActor, UP
 }
 
 void ABullet::BeginOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+    UE_LOG(LogTemp, Warning, TEXT("BeginOverlapEvent"));
     // Save the OtherActor from the first call since we need to handle it once Init got called.
     FirstOverlapEventActor = OtherActor;
     // We can only handle overlaps properly if we know the owner of the bullet.
@@ -97,7 +98,7 @@ void ABullet::EndOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* 
     FirstOverlapEventActor = nullptr;
 }
 
-
+// TODO: Bullet is currently kinda immune against collisions while sliding.
 void ABullet::BulletMove(const float DeltaTime) {
     if(bIsDead) return;
     UWorld* World = GetWorld();
@@ -105,20 +106,20 @@ void ABullet::BulletMove(const float DeltaTime) {
 
     float DistanceToTravel = DeltaTime * Speed;
     if(bIsSliding) {
+        FHitResult Result;
         // Continue slide.
         // Move along edge.
         float DistanceAlongEdge = (SlideEndPoint - GetActorLocation()).Size();
         if(DistanceAlongEdge > DistanceToTravel) {
             FVector NewLoc = FMath::VInterpConstantTo(GetActorLocation(), SlideEndPoint, DeltaTime, Speed);
-            SetActorLocation(NewLoc);
-            SetActorRotation(GetActorForwardVector().Rotation()); // Currently redundant.
-            bIsSliding = true; // redundant.
+            DistanceToTravel -= DeltaTime * Speed;
+            SetActorLocation(NewLoc, true, &Result);
+            UE_LOG(LogTemp, Warning, TEXT("Result: %s collide with something while still in"), IsValid(Result.GetActor()) ? TEXT("Does") : TEXT("Does not"));
             return;
         }else {
-            SetActorLocation(SlideEndPoint);
-            SetActorRotation(GetActorForwardVector().Rotation());
+            SetActorLocation(SlideEndPoint, true, &Result);
+            UE_LOG(LogTemp, Warning, TEXT("Result: %s collide with something at exit"), IsValid(Result.GetActor()) ? TEXT("Does") : TEXT("Does not"));
             DistanceToTravel -= DistanceAlongEdge;
-            bIsSliding = true; // redundant.
         }
 
         // Move along mirrored direction.
@@ -150,44 +151,33 @@ void ABullet::BulletMove(const float DeltaTime) {
         // Project actor location onto edge to get the edge entry point.
         const FVector2D PointFromOrigin = FVector2D(GetActorLocation()) - SupposedHitPoint2D;
         const FVector2D LineEntryPoint = FVector2D(EdgeDirection) * (PointFromOrigin | FVector2D(EdgeDirection)) + SupposedHitPoint2D;
-        const FVector RealEntryPoint = FVector(LineEntryPoint.X + EdgeNormal.X * BulletWidth, LineEntryPoint.Y + EdgeNormal.Y * BulletWidth, ActorHeight);
+        const FVector RealEntryPoint = FVector(LineEntryPoint.X + EdgeNormal.X * (BulletWidth + DistanceTolerance), LineEntryPoint.Y + EdgeNormal.Y * (BulletWidth + DistanceTolerance), ActorHeight);
         const FVector2D LineExitPoint = SupposedHitPoint2D + (SupposedHitPoint2D - LineEntryPoint);
-        SlideEndPoint = FVector(LineExitPoint.X + EdgeNormal.X * BulletWidth, LineExitPoint.Y + EdgeNormal.Y * BulletWidth, ActorHeight);
+        SlideEndPoint = FVector(LineExitPoint.X + EdgeNormal.X * (BulletWidth + DistanceTolerance), LineExitPoint.Y + EdgeNormal.Y * (BulletWidth + DistanceTolerance), ActorHeight);
         FVector2D MirroredDirection = UUtility::MirrorVector(FVector2D(-GetActorForwardVector()), SupposedHitPoint2D, FVector2D(EdgeNormal));
-        DrawDebugLine(World, FVector(SupposedHitPoint2D.X, SupposedHitPoint2D.Y, 0), FVector(SupposedHitPoint2D.X, SupposedHitPoint2D.Y, 0) + 100 * FVector(MirroredDirection.X, MirroredDirection.Y, 0), FColor::Blue, true, -1, 0, 3);
+        //DrawDebugLine(World, FVector(SupposedHitPoint2D.X, SupposedHitPoint2D.Y, 0), FVector(SupposedHitPoint2D.X, SupposedHitPoint2D.Y, 0) + 100 * FVector(MirroredDirection.X, MirroredDirection.Y, 0), FColor::Blue, true, -1, 0, 3);
         NextDirection = FVector(MirroredDirection.X, MirroredDirection.Y, 0).GetUnsafeNormal();
+        bIsSliding = true;
 
         // Now that we have the entry, exit and direction we now have to move it along those points.
-        // Move along direction till entry point. (Useless for pretty much any case thus I might remove it.)
-        // TODO: Remove this part.
+        // Move along direction till entry point.
         float DistanceToEntry = (RealEntryPoint - GetActorLocation()).Size();
-        if(DistanceToEntry > DistanceToTravel) {
-            // We are done after this step.
-            FVector NewLoc = FMath::VInterpConstantTo(GetActorLocation(), RealEntryPoint, DeltaTime, Speed);
-            SetActorLocation(NewLoc);
-            SetActorRotation(EdgeDirection.Rotation());
-            bIsSliding = true;
-            return;
-        }else {
-            SetActorLocation(RealEntryPoint);
-            SetActorRotation(EdgeDirection.Rotation());
-            DistanceToTravel -= DistanceToEntry;
-            bIsSliding = true;
-        }
+        SetActorLocation(RealEntryPoint);
+        SetActorRotation(EdgeDirection.Rotation());
+        DistanceToTravel -= DistanceToEntry;
 
         // Move along edge.
         float DistanceAlongEdge = (SlideEndPoint - RealEntryPoint).Size();
         if(DistanceAlongEdge > DistanceToTravel) {
             FVector NewLoc = FMath::VInterpConstantTo(GetActorLocation(), SlideEndPoint, DeltaTime, Speed);
-            SetActorLocation(NewLoc);
-            SetActorRotation(EdgeDirection.Rotation()); // Currently redundant.
-            bIsSliding = true; // redundant.
+            SetActorLocation(NewLoc, true, &Result);
+            UE_LOG(LogTemp, Warning, TEXT("Result: %s collide with something"), IsValid(Result.GetActor()) ? TEXT("Does") : TEXT("Does not"));
             return;
         }else {
-            SetActorLocation(SlideEndPoint);
+            SetActorLocation(SlideEndPoint, true, &Result);
             SetActorRotation(EdgeDirection.Rotation());
+            UE_LOG(LogTemp, Warning, TEXT("Result: %s collide with something"), IsValid(Result.GetActor()) ? TEXT("Does") : TEXT("Does not"));
             DistanceToTravel -= DistanceAlongEdge;
-            bIsSliding = true; // redundant.
         }
 
         // Move along mirrored direction.
@@ -195,6 +185,10 @@ void ABullet::BulletMove(const float DeltaTime) {
         FVector EndPos = GetActorLocation() + DistanceToTravel * NextDirection;
         SetActorLocation(EndPos);
         bIsSliding = false;
+    }else if(Cast<ABullet>(Result.GetActor())){
+        UE_LOG(LogTemp, Warning, TEXT("Hit another bullet."));
+    }else {
+        UE_LOG(LogTemp, Warning, TEXT("Hit something else."))
     }
 }
 

@@ -325,7 +325,7 @@ float UUtility::BroadLineTraceEdge(UBroadLineTraceEdgeParams* P) {
 	const FVector TraceEnd = FVector(P->OriginLoc.X + P->TraceDistance * P->ShotDir.X, P->OriginLoc.Y + P->TraceDistance * P->ShotDir.Y, P->TraceHeight);
 	const FVector OriginLoc3D = FVector(P->OriginLoc.X, P->OriginLoc.Y, P->TraceHeight);
 	World->LineTraceSingleByChannel(Result, OriginLoc3D, TraceEnd, ECC_Camera, QueryParams);
-	DrawDebugLine(World, OriginLoc3D, Result.Location, FColor::Orange, IsPersistent, -1, 0, LineStrength);
+	//DrawDebugLine(World, OriginLoc3D, Result.Location, FColor::Orange, IsPersistent, -1, 0, LineStrength);
 	if(!IsPointOnLine(FVector2D(Result.Location), P->TargetEdge, P->OnLineThreshold))
 		return -1.f;
 
@@ -337,7 +337,7 @@ float UUtility::BroadLineTraceEdge(UBroadLineTraceEdgeParams* P) {
 	World->LineTraceSingleByChannel(Result, OffsetOrigin, OffsetEnd, ECC_Camera, QueryParams);
 	const bool IsLongerR = Result.Distance > MiddleHitDistance;
 	const bool HitTargetR = IsPointOnLine(FVector2D(Result.Location), P->TargetEdge, P->OnLineThreshold);
-	DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, IsPersistent, -1, 0, LineStrength);
+	//DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, IsPersistent, -1, 0, LineStrength);
 	if(!IsLongerR && !HitTargetR)
 		return -1.f;
 
@@ -347,7 +347,7 @@ float UUtility::BroadLineTraceEdge(UBroadLineTraceEdgeParams* P) {
 	World->LineTraceSingleByChannel(Result, OffsetOrigin, OffsetEnd, ECC_Camera, QueryParams);
 	const bool IsLongerL = Result.Distance > MiddleHitDistance;
 	const bool HitTargetL = IsPointOnLine(FVector2D(Result.Location), P->TargetEdge, P->OnLineThreshold);
-	DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, IsPersistent, -1, 0, LineStrength);
+	//DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, IsPersistent, -1, 0, LineStrength);
 	if(!IsLongerL && !HitTargetL)
 		return -1.f;
 
@@ -366,7 +366,7 @@ float UUtility::BroadLineTraceTarget(UBroadLineTraceTargetParams* P) {
 	const FVector TraceEnd = FVector(P->OriginLoc.X + P->TraceDistance * P->ShotDir.X, P->OriginLoc.Y + P->TraceDistance * P->ShotDir.Y, P->TraceHeight);
 	const FVector OriginLoc3D = FVector(P->OriginLoc.X, P->OriginLoc.Y, P->TraceHeight);
 	World->LineTraceSingleByChannel(Result, OriginLoc3D, TraceEnd, ECC_Camera, QueryParams);
-	DrawDebugLine(World, OriginLoc3D, Result.Location, FColor::Orange, IsPersistent, -1, 0, LineStrength);
+	//DrawDebugLine(World, OriginLoc3D, Result.Location, FColor::Orange, IsPersistent, -1, 0, LineStrength);
 	if(Result.Actor != P->Target)
 		return -1.f;
 
@@ -376,7 +376,7 @@ float UUtility::BroadLineTraceTarget(UBroadLineTraceTargetParams* P) {
 	FVector OffsetOrigin = OriginLoc3D + FVector(OrthoShotDir.X, OrthoShotDir.Y, 0) * P->Radius;
 	FVector OffsetEnd = TraceEnd + FVector(OrthoShotDir.X, OrthoShotDir.Y, 0) * P->Radius;
 	World->LineTraceSingleByChannel(Result, OffsetOrigin, OffsetEnd, ECC_Camera, QueryParams);
-	DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, IsPersistent, -1, 0, LineStrength);
+	//DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, IsPersistent, -1, 0, LineStrength);
 	if(!(Result.Distance > MiddleHitDistance) && !(Result.Actor == P->Target))
 		return -1.f;
 
@@ -385,7 +385,7 @@ float UUtility::BroadLineTraceTarget(UBroadLineTraceTargetParams* P) {
 	OffsetOrigin = OriginLoc3D - FVector(OrthoShotDir.X, OrthoShotDir.Y, 0) * P->Radius;
 	OffsetEnd = TraceEnd - FVector(OrthoShotDir.X, OrthoShotDir.Y, 0) * P->Radius;
 	World->LineTraceSingleByChannel(Result, OffsetOrigin, OffsetEnd, ECC_Camera, QueryParams);
-	DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, IsPersistent, -1, 0, LineStrength);
+	//DrawDebugLine(World, OffsetOrigin, Result.Location, FColor::Blue, IsPersistent, -1, 0, LineStrength);
 	if(!(Result.Distance > MiddleHitDistance) && !(Result.Actor == P->Target))
 		return -1.f;
 

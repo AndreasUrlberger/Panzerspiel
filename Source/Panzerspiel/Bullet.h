@@ -61,6 +61,9 @@ class PANZERSPIEL_API ABullet : public AActor
 	UPROPERTY(EditAnywhere, Category="Movement")
 	float BulletWidth = 15;
 
+	UPROPERTY(EditAnywhere, Category="Movement")
+	float DistanceTolerance = 1;
+
 	UPROPERTY()
 	bool bIsSliding = false;
 
