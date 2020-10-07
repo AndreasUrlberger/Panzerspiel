@@ -1988,6 +1988,7 @@
                 <e p="framework_traits.h" t="Include" />
                 <e p="guards.h" t="Include" />
                 <e p="hashing.h" t="Include" />
+                <e p="thread_util.h" t="Include" />
               </e>
               <e p="wire" t="Include">
                 <e p="ByteBufferAsyncProcessor.h" t="Include" />
@@ -2138,6 +2139,7 @@
                     <e p="clsocket.lib" t="Include" />
                     <e p="rd_core_cpp.lib" t="Include" />
                     <e p="rd_framework_cpp.lib" t="Include" />
+                    <e p="rd_framework_cpp_util.lib" t="Include" />
                     <e p="spdlog.lib" t="Include" />
                   </e>
                 </e>
@@ -2152,6 +2154,7 @@
                     <e p="clsocket.lib" t="Include" />
                     <e p="rd_core_cpp.lib" t="Include" />
                     <e p="rd_framework_cpp.lib" t="Include" />
+                    <e p="rd_framework_cpp_util.lib" t="Include" />
                     <e p="spdlog.lib" t="Include" />
                   </e>
                 </e>
