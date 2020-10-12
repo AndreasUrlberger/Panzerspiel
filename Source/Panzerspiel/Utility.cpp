@@ -1,5 +1,8 @@
 // All rights reserved @Apfelstrudel Games.
 
+#ifndef COLLISION_BULLET_TRACE
+#define COLLISION_BULLET_TRACE ECC_GameTraceChannel3
+#endif
 
 #include "Utility.h"
 #include "BulletPath.h"
@@ -160,7 +163,7 @@ void UUtility::FilterSingleRicochetLOS(const UObstacleEdge* Edge, const AActor *
 	// TODO: TankPawn should not be hardcoded right here as well as below.
 	Params.AddIgnoredActor(Origin);
 	World->LineTraceSingleByChannel(HitResult, FVector(OriginLocation.X, OriginLocation.Y, RaycastHeight),
-		FVector(MirroredTarget.X, MirroredTarget.Y, RaycastHeight), ECollisionChannel::ECC_Camera, Params);
+		FVector(MirroredTarget.X, MirroredTarget.Y, RaycastHeight), COLLISION_BULLET_TRACE, Params);
 	const FVector2D EdgeDirection = Edge->End - Edge->Start;
 	FVector2D HitLocation = FVector2D(HitResult.Location.X, HitResult.Location.Y);
 	float CrossProduct = FVector2D::CrossProduct(EdgeDirection, (HitLocation - Edge->Start));
@@ -178,7 +181,7 @@ void UUtility::FilterSingleRicochetLOS(const UObstacleEdge* Edge, const AActor *
 	FVector RaycastOrigin = FVector(TargetLocation.X, TargetLocation.Y, RaycastHeight);
 	FVector RaycastTarget = HitResult.Location + HitResult.Location - RaycastOrigin;
 	World->LineTraceSingleByChannel(HitResult, FVector(TargetLocation.X, TargetLocation.Y, RaycastHeight),
-        RaycastTarget, ECollisionChannel::ECC_Camera, Params);
+        RaycastTarget, COLLISION_BULLET_TRACE, Params);
 	HitLocation = FVector2D(HitResult.Location.X, HitResult.Location.Y);
 	CrossProduct = FVector2D::CrossProduct(EdgeDirection, (HitLocation - Edge->Start));
 	if(FMath::Abs(CrossProduct) > HitThreshold) {
@@ -300,7 +303,7 @@ bool UUtility::HasLOSToTarget(FVector& From, const FVector& Target, const AActor
 	Params.AddIgnoredActor(IgnoreActor);
 	// TODO: I guess another collision channel could be less expensive.
 	// We do the trace further than we might need to make sure we'll definitely hit the edge.
-	World->LineTraceSingleByChannel(HitResult, From, From + 2 * (To - From), ECC_Camera, Params);
+	World->LineTraceSingleByChannel(HitResult, From, From + 2 * (To - From), COLLISION_BULLET_TRACE, Params);
 	// Value the first raycast, we return false if the ray hit to far away from the supposed hit but we give it a small
 	// threshold since raycasts are not that precise and we're using floats.
 	return FVector::DistSquaredXY(To, HitResult.Location) <= DistanceThreshold;

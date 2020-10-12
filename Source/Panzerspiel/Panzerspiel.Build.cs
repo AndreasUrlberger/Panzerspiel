@@ -6,6 +6,8 @@ public class Panzerspiel : ModuleRules
 {
 	public Panzerspiel(ReadOnlyTargetRules Target) : base(Target)
 	{
+		PublicDefinitions.Add("COLLISION_BULLET_TRACE=ECC_GameTraceChannel3");
+		
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "Niagara", "CoreUObject", "Engine", "InputCore", "NavigationSystem", "UINavigation" });

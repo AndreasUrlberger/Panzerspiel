@@ -1,5 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#ifndef COLLISION_BULLET_TRACE
+#define COLLISION_BULLET_TRACE ECC_GameTraceChannel3
+#endif
 
 #include "PanzerspielGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
@@ -110,7 +113,7 @@ bool APanzerspielGameModeBase::FindDirectPath(FBulletPath& BulletPath, const AAc
 	FHitResult HitResult;
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(Origin);
-	World->LineTraceSingleByChannel(HitResult, OriginLocation, Target->GetActorLocation(), ECC_Camera, Params);
+	World->LineTraceSingleByChannel(HitResult, OriginLocation, Target->GetActorLocation(), COLLISION_BULLET_TRACE, Params);
 	// Middle trace did not reach the target edge.
 	if(HitResult.Actor != Target)
 		return false;
@@ -121,7 +124,7 @@ bool APanzerspielGameModeBase::FindDirectPath(FBulletPath& BulletPath, const AAc
 	const FVector2D OrthogonalNormal = FVector2D(ShootingDirection.Y, -ShootingDirection.X); // Already normalized.
 	const FVector2D RightStartLoc = OriginLoc2D + OrthogonalNormal * BulletRadius;
 	const FVector2D RightEndLoc = RightStartLoc + 32 * HitDistance * ShootingDirection; // I chose 32 just to make sure its long enough.
-	World->LineTraceSingleByChannel(HitResult, FVector(RightStartLoc.X, RightStartLoc.Y, RaycastHeight), FVector(RightEndLoc.X, RightEndLoc.Y, RaycastHeight), ECC_Camera, Params);
+	World->LineTraceSingleByChannel(HitResult, FVector(RightStartLoc.X, RightStartLoc.Y, RaycastHeight), FVector(RightEndLoc.X, RightEndLoc.Y, RaycastHeight), COLLISION_BULLET_TRACE, Params);
 	
 	const bool RightIsLonger = HitResult.Distance > HitDistance;
 	const bool RightHitTarget = HitResult.Actor == Target;
@@ -132,7 +135,7 @@ bool APanzerspielGameModeBase::FindDirectPath(FBulletPath& BulletPath, const AAc
 	// Do left trace.
 	const FVector2D LeftStartLoc = OriginLoc2D - OrthogonalNormal * BulletRadius;
 	const FVector2D LeftEndLoc = LeftEndLoc + 32 * HitDistance * ShootingDirection;
-	World->LineTraceSingleByChannel(HitResult, FVector(LeftStartLoc.X, LeftStartLoc.Y, RaycastHeight), FVector(LeftEndLoc.X, LeftEndLoc.Y, RaycastHeight), ECC_Camera, Params);
+	World->LineTraceSingleByChannel(HitResult, FVector(LeftStartLoc.X, LeftStartLoc.Y, RaycastHeight), FVector(LeftEndLoc.X, LeftEndLoc.Y, RaycastHeight), COLLISION_BULLET_TRACE, Params);
 
 	const bool LeftIsLonger = HitResult.Distance > HitDistance;
 	const bool LeftHitTarget = HitResult.Actor == Target;
