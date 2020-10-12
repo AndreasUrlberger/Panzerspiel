@@ -148,6 +148,7 @@ bool UUtility::CanBulletEverHitTarget(const UObstacleEdge* Edge, const FVector2D
 	return (StartTargetDirection ^ MirroredStartDirection) * (EndTargetDirection ^ MirroredEndDirection) < 0;
 }
 
+// TODO: rewrite this to properly check for a singleRicochetLos (currently this function is not used anywhere).
 void UUtility::FilterSingleRicochetLOS(const UObstacleEdge* Edge, const AActor *Origin, const FVector& OriginLocation,
 	const AActor *Target, float RaycastHeight, float HitThreshold, TArray<FBulletPath> &BulletPaths){
 

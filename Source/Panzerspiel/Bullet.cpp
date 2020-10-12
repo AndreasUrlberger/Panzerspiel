@@ -132,7 +132,7 @@ void ABullet::CalculateMove(const float DistanceToMove, const AActor* IgnoreActo
 			UE_LOG(LogTemp, Warning, TEXT("Bullet hit a WorldObstacle."));
 			// Ricochet.
 			--HitsBeforeDeath;
-			if (HitsBeforeDeath <= 0)
+			if (HitsBeforeDeath < 0)
 				Die();
 			else {
 				if (WallHitSound)
@@ -148,16 +148,21 @@ void ABullet::CalculateMove(const float DistanceToMove, const AActor* IgnoreActo
 				UE_LOG(LogTemp, Warning, TEXT("rotation after ricochet: %s"), *GetActorRotation().ToString());
 				CalculateMove(DistanceToMove - Result.Distance, Result.GetActor());
 			}
-		} else if (ATankPawn* TankPawn = Cast<ATankPawn>(HitActor)) {
+		} else if (ATankPawn* HitTank = Cast<ATankPawn>(HitActor)) {
 			// Hit a tank -> trigger tank collision.
 			UE_LOG(LogTemp, Warning, TEXT("Bullet calculated that it will hit a tank."));
+			if (HitTank != Source || SourceVulnerable) {
+				HitTank->Kill(Source);
+				Die();
+			}
+			
 		} else if (ABullet* Bullet = Cast<ABullet>(HitActor)) {
 			UE_LOG(LogTemp, Warning, TEXT("Bullet hits another bullet"));
 			if (IsValid(Bullet))
-				Bullet->Die();
+				Bullet->Die(); // Otherwise the other bullet might not know of the collision.
 			Die();
 		} else {
-			UE_LOG(LogTemp, Error, TEXT("Bullet hit something unknown."));
+			UE_LOG(LogTemp, Error, TEXT("Bullet hit something unknown. If this happens in the finished game in this level is a object that sould not be there."));
 			Die(); // Just make sure it dies.
 		}
 	} else {
