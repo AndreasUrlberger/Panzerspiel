@@ -51,9 +51,6 @@ TArray<UObstacleEdge*> UUtility::IntersectArrays(const TArray<UObstacleEdge*> &F
 	int32 i = 0;
 	int32 j = 0;
 	while (i < LengthFirst && j < LengthSecond) {
-		if(First[i]->Equals(*Second[j]))
-
-		
 		if (First[i] < Second[j])
 			i++;
 		else if (Second[j] < First[i])

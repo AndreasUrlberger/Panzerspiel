@@ -10,6 +10,11 @@ UCLASS()
 class PANZERSPIEL_API UObstacleEdge : public UObject{
 
 	GENERATED_BODY()
+	
+private:
+	UPROPERTY(VisibleInstanceOnly, Category="Debug")
+	int32 ID;
+	
 public:
 	UObstacleEdge();
 	
@@ -29,7 +34,7 @@ public:
 	UPROPERTY()
 	const AActor *Parent;
 
-	bool Equals(const UObstacleEdge& OtherEdge) const;
+	bool Equals(const UObstacleEdge& Other) const;
 
 	bool operator<(const UObstacleEdge& Other) const;
 		
@@ -67,10 +72,8 @@ protected:
 	USceneComponent *RootSceneComp;
 
 public:
+	
 	UFUNCTION()
-	virtual TArray<UObstacleEdge*> GetPossibleEdges(FVector2D BulletOrigin);
-
-	UFUNCTION()
-	virtual TArray<UObstacleEdge*> GetPossibleEdges2(const FVector2D &BulletOrigin) const;
+	virtual TArray<UObstacleEdge*> GetPossibleEdges(const FVector2D &BulletOrigin) const;
 
 };

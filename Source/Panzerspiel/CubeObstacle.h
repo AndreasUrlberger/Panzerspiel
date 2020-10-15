@@ -14,9 +14,6 @@ class PANZERSPIEL_API ACubeObstacle : public AWorldObstacle
 {
 	GENERATED_BODY()
 
-	public:
-	ACubeObstacle();
-
 private:
 	UPROPERTY(EditAnywhere, Category="Corners")
 	USceneComponent *TopLeftC;
@@ -30,11 +27,8 @@ private:
 	UPROPERTY(EditAnywhere, Category="Corners")
 	USceneComponent *BottomLeftC;
 
-	UPROPERTY(VisibleAnywhere, Category="Corners")
-	TArray<FVector2D> CornersLocations;
-
-	UPROPERTY(VisibleAnywhere, Category="Corners")
-	TArray<FVector2D> EdgeLocations;
+	UPROPERTY(VisibleInstanceOnly, Category="Debug")
+	TArray<UObstacleEdge*> Edges;
 
 	UPROPERTY(EditAnywhere, Category="Debug")
 	bool bDebugLog = false;
@@ -43,7 +37,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual TArray<UObstacleEdge*> GetPossibleEdges(FVector2D BulletOrigin) override;
-	
-	virtual TArray<UObstacleEdge*> GetPossibleEdges2(const FVector2D &BulletOrigin) const override;
+	ACubeObstacle();
+
+	virtual TArray<UObstacleEdge*> GetPossibleEdges(const FVector2D &BulletOrigin) const override;
 };

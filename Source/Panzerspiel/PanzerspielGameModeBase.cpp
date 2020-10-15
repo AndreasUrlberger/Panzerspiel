@@ -66,7 +66,7 @@ void APanzerspielGameModeBase::GetAllPlayerEdges() {
 		TArray<UObstacleEdge*> Edges;
 		const FVector2D TankLocation = FVector2D(TankPawn->GetActorLocation());
 		for(const AWorldObstacle *Obstacle : Obstacles)
-			Edges.Append(Obstacle->GetPossibleEdges2(TankLocation));
+			Edges.Append(Obstacle->GetPossibleEdges(TankLocation));
 		PlayersEdges.Add(TankPawn, Edges);
 		// Probably increases performance.
 		Edges.Sort();
@@ -88,7 +88,7 @@ TArray<UObstacleEdge*>& APanzerspielGameModeBase::GetPlayersEdges(const AActor* 
 		TArray<UObstacleEdge*> Edges;
 		const FVector2D TankLocation = FVector2D(TankPawn->GetActorLocation());
 		for(const AWorldObstacle *Obstacle : Obstacles)
-			Edges.Append(Obstacle->GetPossibleEdges2(TankLocation));
+			Edges.Append(Obstacle->GetPossibleEdges(TankLocation));
 		// Probably increases performance.
 		Edges.Sort();
 		PlayersEdges.Add(TankPawn, Edges);
