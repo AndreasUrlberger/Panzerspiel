@@ -89,9 +89,9 @@ TArray<UObstacleEdge*>& APanzerspielGameModeBase::GetPlayersEdges(const AActor* 
 		const FVector2D TankLocation = FVector2D(TankPawn->GetActorLocation());
 		for(const AWorldObstacle *Obstacle : Obstacles)
 			Edges.Append(Obstacle->GetPossibleEdges2(TankLocation));
-		PlayersEdges.Add(TankPawn, Edges);
 		// Probably increases performance.
 		Edges.Sort();
+		PlayersEdges.Add(TankPawn, Edges);
 	}
 
 	return PlayersEdges.Find(TankPawn)->Edges;
@@ -151,23 +151,30 @@ bool APanzerspielGameModeBase::FindDirectPath(FBulletPath& BulletPath, const AAc
 
 bool APanzerspielGameModeBase::FindSingleRicochetPath(TArray<FBulletPath> &BulletPaths, const AActor *Origin, const FVector& OriginLocation, const TArray<UObstacleEdge*> &OriginEdges,
 	const AActor *Target, const TArray<UObstacleEdge*> &TargetEdges) {
+	UE_LOG(LogTemp, Warning, TEXT("Called FindSingleRicochetPath"));
 	if(!(IsValid(Origin) && IsValid(Target)))
 		return false;
+
+	UE_LOG(LogTemp, Warning, TEXT("OriginEdges: %s"), *UUtility::PrintEdges(OriginEdges));
+	UE_LOG(LogTemp, Warning, TEXT("TargetEdges: %s"), *UUtility::PrintEdges(TargetEdges));
+	
 	// TODO: Doing the gathering and intersecting of the edges both in the same loop could improve the performance, the downside is that we then cant use the potentially visible edges for comparison with other tanks.
 	// Only keep edges that are visible from both locations.
 	TArray<UObstacleEdge*> IntersectedEdges = UUtility::IntersectArrays(OriginEdges, TargetEdges);
+
+	UE_LOG(LogTemp, Warning, TEXT("Intersected Edges: %s"), *UUtility::PrintEdges(IntersectedEdges));
 
 	// Only keep edges that can reflect the bullet to the target according to their rotation.
 	const FVector2D TargetLocation = FVector2D(Target->GetActorLocation());
 	TArray<UObstacleEdge*> FilteredEdges;
 	for(UObstacleEdge* Edge : IntersectedEdges)
-		if(UUtility::CanBulletEverHitTarget(Edge, FVector2D(OriginLocation), TargetLocation))
+		if(UUtility::CanBulletEverHitTarget(Edge, FVector2D(OriginLocation), TargetLocation, GetWorld()))
 			FilteredEdges.Add(Edge);
 	// Make sure its empty.
 	IntersectedEdges.Empty();
 
 	for(const UObstacleEdge* Edge : FilteredEdges)
-		UUtility::FilterSingleRicochetLOS2(Edge, Origin, OriginLocation, Target, RaycastHeight, OnLineThreshold, BulletRadius, BulletPaths);
+		UUtility::FilterSingleRicochetLOS(Edge, Origin, OriginLocation, Target, RaycastHeight, BulletPaths);
 
 	//if(bDebugDrawRaycastCalculation) ShowBulletPaths(BulletPaths);
 

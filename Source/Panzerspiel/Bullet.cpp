@@ -102,7 +102,6 @@ void ABullet::EndOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* 
 	FirstOverlapEventActor = nullptr;
 }
 
-// TODO: Bullet is currently kinda immune against collisions while sliding.
 void ABullet::BulletMove(const float DeltaTime) {
 	if (bIsDead) return;
 

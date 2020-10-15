@@ -108,13 +108,13 @@ class PANZERSPIEL_API UUtility : public UObject
     static FVector2D MirrorPoint(const FVector2D ToMirror, const FVector2D MirrorOrigin, const FVector2D MirrorDirection);
 
 	// Returns true if the Edge could reflect the bullet to the target according to their rotation.
-	static bool CanBulletEverHitTarget(const UObstacleEdge* Edge, const FVector2D &BulletOrigin, const FVector2D &Target);
+	static bool CanBulletEverHitTarget(const UObstacleEdge* Edge, const FVector2D &BulletOrigin, const FVector2D &Target, UWorld* World = nullptr);
 
 	// Only adds those edges to the BulletPaths which, when considered as mirrors, create a line of sight from the Origin
 	// to the Target.
 	// Warning: This function makes use of up to three line traces and thus should only be used as the last option.
 	static void FilterSingleRicochetLOS(const UObstacleEdge* Edge, const AActor *Origin, const FVector& OriginLocation,
-		const AActor *Target, float RaycastHeight, float HitThreshold, TArray<struct FBulletPath> &BulletPaths);
+		const AActor *Target, float RaycastHeight, TArray<struct FBulletPath> &BulletPaths);
 
 	// Only adds those edges to the BulletPaths which, when considered as mirrors, create a line of sight from the Origin
 	// to the Target.
@@ -149,7 +149,7 @@ class PANZERSPIEL_API UUtility : public UObject
 	static bool HasLOSToTarget(FVector& From, const FVector& Target, const AActor* IgnoreActor, FHitResult& HitResult,
     float RaycastHeight, float DistanceThreshold);
 
-	static bool IsPointOnLine(const FVector2D &Point, const UObstacleEdge* Edge, const float Threshold);
+	static bool IsPointOnLine(const FVector2D &Point, const UObstacleEdge* Edge, const float Threshold = 1.f);
 
 	static float BroadLineTraceEdge(UBroadLineTraceEdgeParams* P);
 	
@@ -159,4 +159,6 @@ class PANZERSPIEL_API UUtility : public UObject
 	// Warning: -This function makes use of multiple line traces and thus should only be used as the last option.
 	static bool HasDoubleRicochetLOS(const UObstacleEdge* ShooterEdge, const UObstacleEdge* TargetEdge, const AActor *Shooter, const FVector& ShooterLoc,
         const AActor *Target, const FVector2D &ShotDir, const float TraceHeight, const float OnLineThreshold, FBulletPath &BulletPath, const float BulletRadius);
+
+	static FString PrintEdges(TArray<UObstacleEdge*> Edges);
 };

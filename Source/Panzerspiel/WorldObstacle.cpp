@@ -80,13 +80,7 @@ bool UObstacleEdge::operator>(const UObstacleEdge& Other) const {
 *	Currently now working as intended, use with care.
 */
 bool UObstacleEdge::operator>=(const UObstacleEdge& Other) const {
-	if(this->Start >= Other.Start) {
-		return true;
-	}else if(this->Start < Other.Start){
-		return false;
-	}else {
-		return this->End >= Other.End;
-	}
+	return !this->operator<(Other);
 }
 
 bool UObstacleEdge::operator==(const UObstacleEdge& Other) const

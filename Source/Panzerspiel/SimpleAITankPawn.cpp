@@ -89,7 +89,6 @@ void ASimpleAITankPawn::FollowPath(float DeltaTime) {
         }
     } else {
         // Calculate in which direction to move to avoid collisions.
-        // TODO: Might want to save Sensor data over multiple frames and add them to smoothen the response a bit.
         // TODO: Each Sensor should have its own AvoidDistance and maybe some weight.
         const FVector AvoidVector = GetAvoidVector();
 

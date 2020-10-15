@@ -7,6 +7,7 @@
 #include "Utility.h"
 #include "BulletPath.h"
 #include "DrawDebugHelpers.h"
+#include "PropertyEditorModule.h"
 #include "Kismet/GameplayStatics.h"
 
 UBroadLineTraceEdgeParams::UBroadLineTraceEdgeParams() {
@@ -50,6 +51,9 @@ TArray<UObstacleEdge*> UUtility::IntersectArrays(const TArray<UObstacleEdge*> &F
 	int32 i = 0;
 	int32 j = 0;
 	while (i < LengthFirst && j < LengthSecond) {
+		if(First[i]->Equals(*Second[j]))
+
+		
 		if (First[i] < Second[j])
 			i++;
 		else if (Second[j] < First[i])
@@ -105,7 +109,8 @@ FVector2D UUtility::MirrorPoint(const FVector2D ToMirror, const FVector2D Mirror
 	return MirroredPoint;
 }
 
-bool UUtility::CanBulletEverHitTarget(const UObstacleEdge* Edge, const FVector2D &BulletOrigin, const FVector2D &Target) {
+bool UUtility::CanBulletEverHitTarget(const UObstacleEdge* Edge, const FVector2D &BulletOrigin, const FVector2D &Target, UWorld* World) {
+	UE_LOG(LogTemp, Warning, TEXT("Called CanBulletEverHitTarget, World is %s"), World ? TEXT("not null") : TEXT("null"));
 	const FVector2D EdgeMiddle = Edge->Start + (Edge->End - Edge->Start) / 2;
 	const FVector2D EdgeDirection = Edge->End - Edge->Start;
 	const FVector2D EdgeNormal = FVector2D(EdgeDirection.Y, -EdgeDirection.X);
@@ -119,81 +124,73 @@ bool UUtility::CanBulletEverHitTarget(const UObstacleEdge* Edge, const FVector2D
 	const FVector2D StartTargetDirection = Target - Edge->Start;
 	const FVector2D EndTargetDirection = Target - Edge->End;
 	
-	/*if(bDebugDrawEdgeCalculation) {
+	if(World) {
 		// StartDirection and MirroredStartDirection in blue.
-		DrawDebugLine(GetWorld(), FVector(Edge.Start.X, Edge.Start.Y, DisplayHeight),
-			FVector(Edge.Start.X + StartDirection.X, Edge.Start.Y + StartDirection.Y, DisplayHeight),
+		int32 DisplayHeight = 205;
+		float LineThickness = 3;
+		DrawDebugLine(World, FVector(Edge->Start.X, Edge->Start.Y, DisplayHeight),
+			FVector(Edge->Start.X + StartDirection.X, Edge->Start.Y + StartDirection.Y, DisplayHeight),
 			FColor::Blue, false, -1, 0, LineThickness);
-		DrawDebugLine(GetWorld(), FVector(Edge.Start.X, Edge.Start.Y, DisplayHeight),
-            FVector(Edge.Start.X + MirroredStartDirection.X, Edge.Start.Y + MirroredStartDirection.Y,
+		DrawDebugLine(World, FVector(Edge->Start.X, Edge->Start.Y, DisplayHeight),
+            FVector(Edge->Start.X + MirroredStartDirection.X, Edge->Start.Y + MirroredStartDirection.Y,
             	DisplayHeight), FColor::Blue, false, -1, 0, LineThickness);
 
 		// EndDirection and MirroredEndDirection in purple.
-		DrawDebugLine(GetWorld(), FVector(Edge.End.X, Edge.End.Y, DisplayHeight),
-            FVector(Edge.End.X + EndDirection.X, Edge.End.Y + EndDirection.Y, DisplayHeight),
+		DrawDebugLine(World, FVector(Edge->End.X, Edge->End.Y, DisplayHeight),
+            FVector(Edge->End.X + EndDirection.X, Edge->End.Y + EndDirection.Y, DisplayHeight),
             FColor::Purple, false, -1, 0, LineThickness);
-		DrawDebugLine(GetWorld(), FVector(Edge.End.X, Edge.End.Y, DisplayHeight),
-            FVector(Edge.End.X + MirroredEndDirection.X, Edge.End.Y + MirroredEndDirection.Y,
+		DrawDebugLine(World, FVector(Edge->End.X, Edge->End.Y, DisplayHeight),
+            FVector(Edge->End.X + MirroredEndDirection.X, Edge->End.Y + MirroredEndDirection.Y,
                 DisplayHeight), FColor::Purple, false, -1, 0, LineThickness);
 
 		// StartTargetDirection and EndTargetDirection in Green.
-		DrawDebugLine(GetWorld(), FVector(Edge.Start.X, Edge.Start.Y, DisplayHeight), FVector(Target.X,
+		DrawDebugLine(World, FVector(Edge->Start.X, Edge->Start.Y, DisplayHeight), FVector(Target.X,
 			Target.Y, DisplayHeight), FColor::Green, false, -1, 0, LineThickness);// TargetDirection in Green.
-		DrawDebugLine(GetWorld(), FVector(Edge.End.X, Edge.End.Y, DisplayHeight), FVector(Target.X,
+		DrawDebugLine(World, FVector(Edge->End.X, Edge->End.Y, DisplayHeight), FVector(Target.X,
 			Target.Y, DisplayHeight), FColor::Green, false, -1, 0, LineThickness);
-	}*/
+	}
 	
 	// If the sign from the cross products of both the left with the middle and the right and the middle have a different
 	// sign then the target could possibly get hit.
 	return (StartTargetDirection ^ MirroredStartDirection) * (EndTargetDirection ^ MirroredEndDirection) < 0;
 }
 
-// TODO: rewrite this to properly check for a singleRicochetLos (currently this function is not used anywhere).
 void UUtility::FilterSingleRicochetLOS(const UObstacleEdge* Edge, const AActor *Origin, const FVector& OriginLocation,
-	const AActor *Target, float RaycastHeight, float HitThreshold, TArray<FBulletPath> &BulletPaths){
+	const AActor *Target, float RaycastHeight, TArray<FBulletPath> &BulletPaths){
+	UE_LOG(LogTemp, Warning, TEXT("Called FilterSingleRicochetLOS"));
 
 	UWorld *World = Target->GetWorld();
 	if(!World)
 		return;
 	// Mirror target at the edge.
 	const FVector2D TargetLocation = FVector2D(Target->GetActorLocation());
-	FVector2D MirroredTarget = MirrorPoint(TargetLocation, Edge->Start, Edge->End - Edge->Start);
+	const FVector2D MirroredTarget = MirrorPoint(TargetLocation, Edge->Start, Edge->End - Edge->Start);
 	// Do raycast from the origin and check if it hit the edge.
 	FHitResult HitResult;
 	FCollisionQueryParams Params;
-	// TODO: TankPawn should not be hardcoded right here as well as below.
 	Params.AddIgnoredActor(Origin);
 	World->LineTraceSingleByChannel(HitResult, FVector(OriginLocation.X, OriginLocation.Y, RaycastHeight),
 		FVector(MirroredTarget.X, MirroredTarget.Y, RaycastHeight), COLLISION_BULLET_TRACE, Params);
-	const FVector2D EdgeDirection = Edge->End - Edge->Start;
-	FVector2D HitLocation = FVector2D(HitResult.Location.X, HitResult.Location.Y);
-	float CrossProduct = FVector2D::CrossProduct(EdgeDirection, (HitLocation - Edge->Start));
-	if(FMath::Abs(CrossProduct) > HitThreshold) {
-		// We hit something else than the edge.
-		return;
-	}
-	// Store the full PathLength.
+	DrawDebugLine(World, FVector(OriginLocation.X, OriginLocation.Y, RaycastHeight), FVector(MirroredTarget.X, MirroredTarget.Y, RaycastHeight), FColor::Orange);
+	if(!IsPointOnLine(FVector2D(HitResult.ImpactPoint), Edge))
+		return; // We trace's impact point is not on the edge, thus we do not have a line of sight to the edge.
 	float PathLength = HitResult.Distance;
 
 	// Do raycast from the target and check if it hit the edge.
 	Params.ClearIgnoredActors();
 	Params.AddIgnoredActor(Target);
 	// We do the raycast to the last hit location and multiply it by two just to make sure it does not stop directly in front of it.
-	FVector RaycastOrigin = FVector(TargetLocation.X, TargetLocation.Y, RaycastHeight);
-	FVector RaycastTarget = HitResult.Location + HitResult.Location - RaycastOrigin;
+	const FVector RaycastOrigin = FVector(TargetLocation.X, TargetLocation.Y, RaycastHeight);
+	const FVector RaycastTarget = HitResult.Location + HitResult.Location - RaycastOrigin;
 	World->LineTraceSingleByChannel(HitResult, FVector(TargetLocation.X, TargetLocation.Y, RaycastHeight),
-        RaycastTarget, COLLISION_BULLET_TRACE, Params);
-	HitLocation = FVector2D(HitResult.Location.X, HitResult.Location.Y);
-	CrossProduct = FVector2D::CrossProduct(EdgeDirection, (HitLocation - Edge->Start));
-	if(FMath::Abs(CrossProduct) > HitThreshold) {
-		// We hit something other than the edge.
-		return; 
-	}
+	                                RaycastTarget, COLLISION_BULLET_TRACE, Params);
+	DrawDebugLine(World, FVector(TargetLocation.X, TargetLocation.Y, RaycastHeight), RaycastTarget, FColor::Orange);
+	if(!IsPointOnLine(FVector2D(HitResult.ImpactPoint), Edge))
+		return; // We trace's impact point is not on the edge, thus we do not have a line of sight to the edge.
 
 	// We hit both edges.
 	PathLength += HitResult.Distance;
-	// TODO: If weird bug appear this might be the reason.
-	FBulletPath Path = FBulletPath(FVector(MirroredTarget.X, MirroredTarget.Y, 0) , PathLength);
+	const FBulletPath Path = FBulletPath(FVector(MirroredTarget.X, MirroredTarget.Y, 0) , PathLength);
 	BulletPaths.Add(Path);
 }
 
@@ -441,4 +438,15 @@ bool UUtility::HasDoubleRicochetLOS(const UObstacleEdge* ShooterEdge, const UObs
 	DrawLine(HitBackup1.Start, HitBackup1.End, FColor::Orange, Shooter);
 	DrawLine(HitBackup2.Start, HitBackup2.End, FColor::Orange, Shooter);*/
 	return true;
+}
+
+FString UUtility::PrintEdges(TArray<UObstacleEdge*> Edges) {
+	FString String = TEXT("{\n");
+	for(int32 Index = 0; Index < Edges.Num(); ++Index) {
+		String += TEXT("\t");
+		String += *Edges[Index]->ToString();
+		String += TEXT("\n");
+	}
+	String += TEXT("}");
+	return String;
 }

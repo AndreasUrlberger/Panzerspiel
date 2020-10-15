@@ -37,7 +37,7 @@ void ACubeObstacle::BeginPlay() {
 	EdgeLocations.Add(BottomLeft + (TopLeft - BottomLeft)/2);
 }
 
-TArray<UObstacleEdge*> ACubeObstacle::GetPossibleEdges(FVector2D BulletOrigin) {
+TArray<UObstacleEdge*> ACubeObstacle::GetPossibleEdges(FVector2D BulletOrigin)	 {
 	// Copy CornersLocations since we're about to modify them.
 	TArray<FVector2D> Corners;
 	Corners.Append(CornersLocations);
