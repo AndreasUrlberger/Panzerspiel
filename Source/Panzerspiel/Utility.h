@@ -116,10 +116,8 @@ class PANZERSPIEL_API UUtility : public UObject
 	static void FilterSingleRicochetLOS(const UObstacleEdge* Edge, const AActor *Origin, const FVector& OriginLocation,
 		const AActor *Target, float RaycastHeight, TArray<struct FBulletPath> &BulletPaths);
 
-	// Only adds those edges to the BulletPaths which, when considered as mirrors, create a line of sight from the Origin
-	// to the Target.
-	// Warning: This function makes use of up to three line traces and thus should only be used as the last option.
-	static void FilterSingleRicochetLOS2(const UObstacleEdge* Edge, const AActor *Origin, const FVector& OriginLocation,
+	// Same function as FilterSingleRicochetLOS but uses a width based trace which is performance heavier.
+	static void FilterSingleRicochetLOSBroad(const UObstacleEdge* Edge, const AActor *Origin, const FVector& OriginLocation,
     const AActor *Target, const float TraceHeight, const float OnLineThreshold, const float Radius, TArray<FBulletPath> &BulletPaths);
 	
 	// Return true if there is no way a bullet reflected from one edge could ever hit the other edge.
@@ -158,7 +156,7 @@ class PANZERSPIEL_API UUtility : public UObject
 	// Only returns true if the edges, considered as mirrors, create a line of sight from the Origin to the Target.
 	// Warning: -This function makes use of multiple line traces and thus should only be used as the last option.
 	static bool HasDoubleRicochetLOS(const UObstacleEdge* ShooterEdge, const UObstacleEdge* TargetEdge, const AActor *Shooter, const FVector& ShooterLoc,
-        const AActor *Target, const FVector2D &ShotDir, const float TraceHeight, const float OnLineThreshold, FBulletPath &BulletPath, const float BulletRadius);
+        const AActor *Target, const FVector2D &ShotDir, const float TraceHeight, FBulletPath &BulletPath);
 
 	static FString PrintEdges(TArray<UObstacleEdge*> Edges);
 };

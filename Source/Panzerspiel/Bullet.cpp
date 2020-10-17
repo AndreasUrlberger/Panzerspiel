@@ -138,13 +138,10 @@ void ABullet::CalculateMove(const float DistanceToMove, const AActor* IgnoreActo
 					UGameplayStatics::PlaySoundAtLocation(World, WallHitSound, Result.ImpactPoint);
 				// Begin recursion.
 				FVector2D NewDirection2D = UUtility::MirrorVector(FVector2D(GetActorForwardVector()),
-				                                                  FVector2D(Result.ImpactPoint),
-				                                                  FVector2D(Result.ImpactNormal.Y,
-				                                                            -Result.ImpactNormal.X));
+					FVector2D(Result.ImpactPoint), FVector2D(Result.ImpactNormal.Y,
+				          -Result.ImpactNormal.X));
 				SetActorLocation(GetActorLocation() + GetActorForwardVector() * Result.Distance);
-				UE_LOG(LogTemp, Warning, TEXT("rotation before ricochet: %s"), *GetActorRotation().ToString());
 				SetActorRotation(FVector(NewDirection2D.X, NewDirection2D.Y, 0).Rotation());
-				UE_LOG(LogTemp, Warning, TEXT("rotation after ricochet: %s"), *GetActorRotation().ToString());
 				CalculateMove(DistanceToMove - Result.Distance, Result.GetActor());
 			}
 		} else if (ATankPawn* HitTank = Cast<ATankPawn>(HitActor)) {
@@ -154,14 +151,17 @@ void ABullet::CalculateMove(const float DistanceToMove, const AActor* IgnoreActo
 				HitTank->Kill(Source);
 				Die();
 			}
-			
+
 		} else if (ABullet* Bullet = Cast<ABullet>(HitActor)) {
 			UE_LOG(LogTemp, Warning, TEXT("Bullet hits another bullet"));
 			if (IsValid(Bullet))
 				Bullet->Die(); // Otherwise the other bullet might not know of the collision.
 			Die();
 		} else {
-			UE_LOG(LogTemp, Error, TEXT("Bullet hit something unknown. If this happens in the finished game in this level is a object that sould not be there."));
+			UE_LOG(LogTemp, Error,
+			       TEXT(
+				       "Bullet hit something unknown. If this happens in the finished game in this level is a object that sould not be there."
+			       ));
 			Die(); // Just make sure it dies.
 		}
 	} else {

@@ -151,18 +151,12 @@ bool APanzerspielGameModeBase::FindDirectPath(FBulletPath& BulletPath, const AAc
 
 bool APanzerspielGameModeBase::FindSingleRicochetPath(TArray<FBulletPath> &BulletPaths, const AActor *Origin, const FVector& OriginLocation, const TArray<UObstacleEdge*> &OriginEdges,
 	const AActor *Target, const TArray<UObstacleEdge*> &TargetEdges) {
-	UE_LOG(LogTemp, Warning, TEXT("Called FindSingleRicochetPath"));
 	if(!(IsValid(Origin) && IsValid(Target)))
 		return false;
-
-	UE_LOG(LogTemp, Warning, TEXT("OriginEdges: %s"), *UUtility::PrintEdges(OriginEdges));
-	UE_LOG(LogTemp, Warning, TEXT("TargetEdges: %s"), *UUtility::PrintEdges(TargetEdges));
 	
 	// TODO: Doing the gathering and intersecting of the edges both in the same loop could improve the performance, the downside is that we then cant use the potentially visible edges for comparison with other tanks.
 	// Only keep edges that are visible from both locations.
 	TArray<UObstacleEdge*> IntersectedEdges = UUtility::IntersectArrays(OriginEdges, TargetEdges);
-
-	UE_LOG(LogTemp, Warning, TEXT("Intersected Edges: %s"), *UUtility::PrintEdges(IntersectedEdges));
 
 	// Only keep edges that can reflect the bullet to the target according to their rotation.
 	const FVector2D TargetLocation = FVector2D(Target->GetActorLocation());
@@ -187,6 +181,7 @@ bool APanzerspielGameModeBase::FindSingleRicochetPath(TArray<FBulletPath> &Bulle
 bool APanzerspielGameModeBase::FindDoubleRicochetPath(const AActor *Origin, const FVector& OriginLocation, const TArray<UObstacleEdge*> &OriginEdges,
 	const AActor *Target, const TArray<UObstacleEdge*> &TargetEdges, TArray<FBulletPath> &BulletPaths) {
 	// Debug
+	UE_LOG(LogTemp, Warning, TEXT("Called FindDoubleRicochetPath"));
 	const double Start = FPlatformTime::Seconds();
 	int32 FoundCounter = 0;
 	
@@ -203,8 +198,8 @@ bool APanzerspielGameModeBase::FindDoubleRicochetPath(const AActor *Origin, cons
 		for(const UObstacleEdge* ShooterEdge : OriginEdges) {
 			const FVector2D TwiceMirroredTarget = UUtility::MirrorPoint(MirroredTarget, ShooterEdge->Start, ShooterEdge->End - ShooterEdge->Start);
 			const FVector2D ShootDirection = TwiceMirroredTarget - ShooterLocation;
-			// Interestingly this test is not obsolete by to the following test. This is the case since it does not
-			// detect when the shooting direction points in the exact opposite.
+			// Interestingly this test is not obsolete by to the following test. This is the case because it does not
+			// detect when the shooting direction points in the exact opposite direction.
 			const FVector2D ShooterEdgeMiddle = ShooterEdge->Start + (ShooterEdge->End - ShooterEdge->Start)/2;
 			if((ShootDirection | (ShooterEdgeMiddle - ShooterLocation)) < 0)
 				continue;
@@ -225,15 +220,11 @@ bool APanzerspielGameModeBase::FindDoubleRicochetPath(const AActor *Origin, cons
 				continue;
 			// If we reach this point this is a possible edge combination.
 			FBulletPath BulletPath;
-			if(!UUtility::HasDoubleRicochetLOS(ShooterEdge, TargetEdge, Origin, OriginLocation, Target, ShootDirection.GetSafeNormal(), RaycastHeight, OnLineThreshold, BulletPath, BulletRadius))
+			if(!UUtility::HasDoubleRicochetLOS(ShooterEdge, TargetEdge, Origin, OriginLocation, Target, ShootDirection.GetSafeNormal(), RaycastHeight, BulletPath))
 				continue;
 			// If we reach this point this is most likely a valid edge combination.
 			++FoundCounter;
 			BulletPaths.Add(BulletPath);
-			/*if(FoundCounter >= FirstEdgeToShow && FoundCounter <= LastEdgeToShow) {
-				if(bDebugDrawCombinations) DrawEdge(TargetEdge, FColor::Red);
-				if(bDebugDrawCombinations) DrawEdge(ShooterEdge, FColor::Green);
-			}*/
 		}
 	}
 
