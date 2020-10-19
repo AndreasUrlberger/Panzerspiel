@@ -34,11 +34,7 @@ class PANZERSPIEL_API ABullet : public AActor
 
 	// Tells whether the source tank can be killed by its own bullet.
 	UPROPERTY()
-	bool SourceVulnerable;
-
-	// The "OtherActor" of the first OverlapBeginEvent when Source was null.
-	UPROPERTY()
-	AActor* FirstOverlapEventActor;
+	bool SourceVulnerable = false;
 
 	UPROPERTY(EditAnywhere, Category="Movement")
 	int32 HitsBeforeDeath = 2;
@@ -72,19 +68,17 @@ class PANZERSPIEL_API ABullet : public AActor
 	UFUNCTION(BlueprintCallable)
     void FinalDie();
 
-	private:
-	UFUNCTION()
-    void HitEvent(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-                  FVector NormalImpulse, const FHitResult& Hit);
-	UFUNCTION()
-    void BeginOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-                      int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-    void EndOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
+private:
+	
 	UFUNCTION()
 	void BulletMove(const float DeltaTime);
+
+	UFUNCTION()
+	// Returns true only if the hit tank actually dies and false if it is supposed to be ignored.
+	bool TankHitEvent(ATankPawn* OtherTank);
+
+	UFUNCTION()
+	void BulletHitEvent(ABullet* OtherBullet);
 
 	UFUNCTION()
 	// Uses the Actors ForwardVector as bulletDirection and also updates it when ricocheting.

@@ -3,7 +3,6 @@
 
 #include "TankPawn.h"
 
-#include "Components/InputComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Bullet.h"
@@ -16,6 +15,8 @@
 
 // -------------------- Lifecycle -------------------- //
 
+// TODO: Bullets spawn to low.
+// TODO: Need to add a bullet collision box to the tank.
 ATankPawn::ATankPawn() {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -145,13 +146,13 @@ void ATankPawn::AlignTower(const FVector Target) {
 }
 
 bool ATankPawn::Shoot() {
-	if(ActiveShots >= MaxShots)
+	if (ActiveShots >= MaxShots)
 		return false;
 
-	UWorld *World = GetWorld();
-	if(World == nullptr)
+	UWorld* World = GetWorld();
+	if (World == nullptr)
 		return false;
-	
+
 	// Spawn bullet.
 	FActorSpawnParameters Params;
 	Params.Owner = this;

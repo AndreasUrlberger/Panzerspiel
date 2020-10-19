@@ -13,7 +13,6 @@
 #include "TankPawn.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Utility.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Math/UnitConversion.h"
 
 // Sets default values
@@ -33,73 +32,20 @@ ABullet::ABullet() {
 // Called when the game starts or when spawned
 void ABullet::BeginPlay() {
 	Super::BeginPlay();
-	CollisionComp->OnComponentHit.AddDynamic(this, &ABullet::HitEvent);
-	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ABullet::BeginOverlapEvent);
-	CollisionComp->OnComponentEndOverlap.AddDynamic(this, &ABullet::EndOverlapEvent);
 }
 
 // Called every frame
 void ABullet::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
-	// We check for overlaps every frame as long as we currently are overlapping something.
-	if (FirstOverlapEventActor)
-		BeginOverlapEvent(nullptr, FirstOverlapEventActor, nullptr, 0, false, FHitResult());
-
 	BulletMove(DeltaTime);
 }
 
 void ABullet::Init(ATankPawn* Spawner) {
 	Source = Spawner;
-	SourceVulnerable = false;
-	// Collisions had to be disabled up to this point.
-	SetActorEnableCollision(true);
-	// Need to call OverlapEvent since it might wrongly interpreted the first overlap event because Source was null.
-	BeginOverlapEvent(nullptr, FirstOverlapEventActor, nullptr, 0, false, FHitResult());
 }
 
 void ABullet::Kill(ATankPawn* Enemy) {
 	Die();
-}
-
-void ABullet::HitEvent(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-                       FVector NormalImpulse, const FHitResult& Hit) {
-	UE_LOG(LogTemp, Warning, TEXT("HitEvent"));
-	SourceVulnerable = true;
-	if (HitsBeforeDeath > 0) {
-		// Bullet hit wall.
-		--HitsBeforeDeath;
-		if (WallHitSound)
-			UGameplayStatics::PlaySoundAtLocation(this, WallHitSound, GetActorLocation());
-	} else {
-		Die();
-	}
-
-}
-
-void ABullet::BeginOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                                UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-                                const FHitResult& SweepResult) {
-	UE_LOG(LogTemp, Warning, TEXT("BeginOverlapEvent"));
-	// Save the OtherActor from the first call since we need to handle it once Init got called.
-	FirstOverlapEventActor = OtherActor;
-	// We can only handle overlaps properly if we know the owner of the bullet.
-	if (!Source)
-		return;
-
-
-	if (Cast<ABullet>(OtherActor)) {
-		Die();
-	} else if (ATankPawn* HitTank = Cast<ATankPawn>(OtherActor)) {
-		if (HitTank != Source || SourceVulnerable) {
-			HitTank->Kill(Source);
-			Die();
-		}
-	} // else if(OtherActor == Obstacle -> We dont care since BulletMove already covers that.
-}
-
-void ABullet::EndOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) {
-	FirstOverlapEventActor = nullptr;
 }
 
 void ABullet::BulletMove(const float DeltaTime) {
@@ -108,6 +54,25 @@ void ABullet::BulletMove(const float DeltaTime) {
 	// Do LineTrace.
 	const float DistanceToTravel = DeltaTime * Speed;
 	CalculateMove(DistanceToTravel, this);
+}
+
+bool ABullet::TankHitEvent(ATankPawn* OtherTank) {
+	// We can only handle overlaps properly if we know the owner of the bullet.
+	if (!Source)
+		return false; // Ignore this tank.
+
+	if(OtherTank == Source && !SourceVulnerable) // Ignore this tank.
+		return false;
+	
+	OtherTank->Kill(Source);
+	Die();
+	return true; // Killed this tank.
+}
+
+void ABullet::BulletHitEvent(ABullet* OtherBullet) {
+	if (IsValid(OtherBullet))
+		OtherBullet->Die(); // Otherwise the other bullet might not know of the collision.
+	Die();
 }
 
 void ABullet::CalculateMove(const float DistanceToMove, const AActor* IgnoreActor) {
@@ -126,9 +91,8 @@ void ABullet::CalculateMove(const float DistanceToMove, const AActor* IgnoreActo
 	// Evaluate LineTrace.
 	if (AActor* HitActor = Result.GetActor()) {
 		// Collided with something.
-		UE_LOG(LogTemp, Warning, TEXT("Collided with something while planning the move."));
 		if (Cast<AWorldObstacle>(HitActor)) {
-			UE_LOG(LogTemp, Warning, TEXT("Bullet hit a WorldObstacle."));
+			SourceVulnerable = true; // The shooter can only get killed by the own bullet once it hit something else.
 			// Ricochet.
 			--HitsBeforeDeath;
 			if (HitsBeforeDeath < 0)
@@ -146,17 +110,15 @@ void ABullet::CalculateMove(const float DistanceToMove, const AActor* IgnoreActo
 			}
 		} else if (ATankPawn* HitTank = Cast<ATankPawn>(HitActor)) {
 			// Hit a tank -> trigger tank collision.
-			UE_LOG(LogTemp, Warning, TEXT("Bullet calculated that it will hit a tank."));
-			if (HitTank != Source || SourceVulnerable) {
-				HitTank->Kill(Source);
-				Die();
+			if(!TankHitEvent(HitTank)) {
+				// Continue bullet movement but ignore the hit tank.
+				SetActorLocation(GetActorLocation() + GetActorForwardVector() * Result.Distance);
+				CalculateMove(DistanceToMove - Result.Distance, HitTank);
 			}
 
 		} else if (ABullet* Bullet = Cast<ABullet>(HitActor)) {
-			UE_LOG(LogTemp, Warning, TEXT("Bullet hits another bullet"));
-			if (IsValid(Bullet))
-				Bullet->Die(); // Otherwise the other bullet might not know of the collision.
-			Die();
+			// Bullet hits another bullet.
+			BulletHitEvent(Bullet);
 		} else {
 			UE_LOG(LogTemp, Error,
 			       TEXT(
