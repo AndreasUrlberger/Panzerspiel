@@ -12,21 +12,26 @@
 #include "Engine/EngineTypes.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Math/UnrealMathUtility.h"
+#include "Components/BoxComponent.h"
 
 // -------------------- Lifecycle -------------------- //
 
-// TODO: Bullets spawn to low.
-// TODO: Need to add a bullet collision box to the tank.
+// TODO: Should probably put the bullets origin in the front so that this is its "collision point".
 ATankPawn::ATankPawn() {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	TankCollision = CreateDefaultSubobject<UBoxComponent>("TankCollision");
+	SetRootComponent(TankCollision);
+	BulletCollision = CreateDefaultSubobject<UBoxComponent>("BulletCollision");
+	BulletCollision->SetupAttachment(TankCollision);
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
-	BaseMesh->SetupAttachment(RootComponent);
-	SetRootComponent(BaseMesh);
+	BaseMesh->SetupAttachment(TankCollision);
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>("TurretMesh");
 	TurretMesh->SetupAttachment(BaseMesh);
 	MovementComp = CreateDefaultSubobject<UFloatingPawnMovement>("MovementComponent");
+	Muzzle = CreateDefaultSubobject<USceneComponent>("Muzzle");
+	Muzzle->SetupAttachment(TurretMesh);
 }
 
 // Called when the game starts or when spawned
@@ -158,7 +163,8 @@ bool ATankPawn::Shoot() {
 	Params.Owner = this;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
 	const FRotator Rotation = TurretMesh->GetComponentRotation();
-	const FVector Location = GetBulletSpawnPoint();
+	const FVector Location = Muzzle->GetComponentLocation();
+	UE_LOG(LogTemp, Warning, TEXT("MuzzleLocation = %s"), *Location.ToString());
 	ABullet* Bullet = World->SpawnActor<ABullet>(ToSpawnBullet, Location, Rotation, Params);
 
 
@@ -203,11 +209,6 @@ void ATankPawn::PlaceMine() {
 		}
 	}
 
-}
-
-FVector ATankPawn::GetBulletSpawnPoint() const {
-	return TurretMesh->GetComponentLocation() + FVector(0, 0, BarrelHeight) + TurretMesh->GetComponentRotation().
-		Vector() * BarrelLength;
 }
 
 void ATankPawn::TriggerBreakpoint() {

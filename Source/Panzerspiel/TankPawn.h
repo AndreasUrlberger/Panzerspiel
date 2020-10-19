@@ -19,8 +19,17 @@ protected:
     UPROPERTY(VisibleAnywhere)
     class UStaticMeshComponent* TurretMesh;
 
+    UPROPERTY(VisibleAnywhere)
+    class UBoxComponent* TankCollision;
+    
+    UPROPERTY(VisibleAnywhere)
+    class UBoxComponent* BulletCollision;
+
     UPROPERTY(EditDefaultsOnly)
     class UFloatingPawnMovement *MovementComp;
+
+    UPROPERTY(VisibleDefaultsOnly)
+    USceneComponent* Muzzle;
     
     UPROPERTY(EditAnywhere, Category="Movement")
     float MovementSpeed = 450;
@@ -160,9 +169,6 @@ protected:
 
     UFUNCTION()
     void ControllerMove(float DeltaTime);
-
-    UFUNCTION()
-    FVector GetBulletSpawnPoint() const;
 
     void TriggerBreakpoint();
 };

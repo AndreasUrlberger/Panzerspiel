@@ -80,7 +80,8 @@ void ABullet::CalculateMove(const float DistanceToMove, const AActor* IgnoreActo
 	if (!World) return;
 
 	FHitResult Result;
-	const FVector StartLoc = FVector(GetActorLocation().X, GetActorLocation().Y, TraceHeight);
+	//const FVector StartLoc = FVector(GetActorLocation().X, GetActorLocation().Y, TraceHeight);
+	const FVector StartLoc = GetActorLocation();
 	const FVector EndLoc = StartLoc + GetActorForwardVector() * DistanceToMove;
 	ECollisionChannel Channel = COLLISION_BULLET_TRACE;
 	FCollisionQueryParams Params;
