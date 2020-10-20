@@ -43512,8 +43512,8 @@
           <e p="TankPlayerController.cpp" t="Include" />
           <e p="TankPlayerController.h" t="Include" />
           <e p="Tanks" t="Include">
-            <e p="DemoPlaceholder.cpp" t="Include" />
-            <e p="DemoPlaceholder.h" t="Include" />
+            <e p="RotaryAITank.cpp" t="Include" />
+            <e p="RotaryAITank.h" t="Include" />
             <e p="SecondDemo.cpp" t="Include" />
             <e p="SecondDemo.h" t="Include" />
           </e>
