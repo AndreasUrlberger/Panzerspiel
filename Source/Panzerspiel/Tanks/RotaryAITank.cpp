@@ -3,10 +3,13 @@
 
 #include "RotaryAITank.h"
 
+
+#include "DrawDebugHelpers.h"
 #include "Containers/Array.h"
 #include "../BTTask_SimpleTankMoveTo.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "../PanzerspielGameModeBase.h"
+#include "Panzerspiel/Utility.h"
 
 void ARotaryAITank::MoveRight(float AxisValue) {
     // Do nothing.
@@ -36,17 +39,12 @@ bool ARotaryAITank::ShootIfPossible(float DeltaTime) {
     const FRotator UpdatedRotation = TurretMesh->GetComponentRotation().Add(0, DeltaTime * TowerRotationSpeed, 0);
     TurretMesh->SetWorldRotation(UpdatedRotation);
 
-    // Do single line trace.
-    FHitResult Result;
-    FCollisionQueryParams Params;
-    Params.AddIgnoredActor(this);
-    const FVector StartLoc = Muzzle->GetComponentLocation();
-    const FVector EndLoc = StartLoc + Muzzle->GetForwardVector() * TraceDistance;
-    World->LineTraceSingleByChannel(Result, StartLoc, EndLoc, COLLISION_BULLET_TRACE, Params);
-
-    if(Cast<ATankPawn>(Result.GetActor())) {
+    FVector Target;
+    bool hasLOS = CheckDirectLOS(Target);
+    if(!hasLOS) hasLOS = CheckSingleRicochetLOS(Target);
+    if(hasLOS) {
         // Found valid path.
-        AlignTower(EndLoc);
+        AlignTower(Target);
         if(!Shoot())
             return false;
         // Successfully fired bullet.
@@ -56,6 +54,62 @@ bool ARotaryAITank::ShootIfPossible(float DeltaTime) {
     }else {
         return false;
     }
+}
+
+bool ARotaryAITank::CheckDirectLOS(FVector& OutTarget) {
+    UWorld* World = GetWorld();
+    if (!World)
+        return false;
+    // Do single line trace.
+    FHitResult Result;
+    FCollisionQueryParams Params;
+    Params.AddIgnoredActor(this);
+    const FVector StartLoc = Muzzle->GetComponentLocation();
+    const FVector EndLoc = StartLoc + Muzzle->GetForwardVector() * TraceDistance;
+    World->LineTraceSingleByChannel(Result, StartLoc, EndLoc, COLLISION_BULLET_TRACE, Params);
+    OutTarget = EndLoc;
+    return Cast<ATankPawn>(Result.GetActor()) != nullptr;
+}
+
+bool ARotaryAITank::CheckSingleRicochetLOS(FVector& OutTarget) {
+    UWorld* World = GetWorld();
+    if (!World)
+        return false;
+    
+    // Do single line trace.
+    FHitResult Result;
+    FCollisionQueryParams Params;
+    Params.AddIgnoredActor(this);
+    FVector StartLoc = Muzzle->GetComponentLocation();
+    FVector EndLoc = StartLoc + Muzzle->GetForwardVector() * TraceDistance;
+    World->LineTraceSingleByChannel(Result, StartLoc, EndLoc, COLLISION_BULLET_TRACE, Params);
+    OutTarget = EndLoc;
+
+    // Second Trace.
+    StartLoc = Result.ImpactPoint;
+    const FVector2D ReflectNormal = UUtility::MirrorVector(FVector2D(Muzzle->GetForwardVector()), FVector2D(StartLoc), FVector2D(Result.ImpactNormal));
+    EndLoc = StartLoc - FVector(ReflectNormal.X, ReflectNormal.Y, 0) * TraceDistance;
+    Params.ClearIgnoredActors();
+    Params.AddIgnoredActor(Result.GetActor());
+    World->LineTraceSingleByChannel(Result, StartLoc, EndLoc, COLLISION_BULLET_TRACE, Params);
+    DrawDebugLine(World, StartLoc, Result.ImpactPoint, FColor::Green, false, 1, 0, 5);
+
+    return Cast<ATankPawn>(Result.GetActor()) && Result.GetActor() != this;
+}
+
+bool ARotaryAITank::CheckDoubleRicochetLOS(FVector& OutTarget) {
+    UWorld* World = GetWorld();
+    if (!World)
+        return false;
+    // Do single line trace.
+    FHitResult Result;
+    FCollisionQueryParams Params;
+    Params.AddIgnoredActor(this);
+    const FVector StartLoc = Muzzle->GetComponentLocation();
+    const FVector EndLoc = StartLoc + Muzzle->GetForwardVector() * TraceDistance;
+    World->LineTraceSingleByChannel(Result, StartLoc, EndLoc, COLLISION_BULLET_TRACE, Params);
+    OutTarget = EndLoc;
+    return Cast<ATankPawn>(Result.GetActor()) != nullptr;
 }
 
 void ARotaryAITank::SetFireMode(bool DoesFire) {

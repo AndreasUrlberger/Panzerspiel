@@ -23,7 +23,7 @@ private:
 	UPROPERTY(EditAnywhere, Category="Combat")
 	float MinShootDelay = 0.3;
 
-	UPROPERTY(VisibleAnywhere, Category="Combat")
+	UPROPERTY(EditAnywhere, Category="Combat")
 	bool FireMode = false;
 
 	UPROPERTY(VisibleAnywhere, Category="Combat")
@@ -41,6 +41,15 @@ private:
 	
 	UFUNCTION()
 	bool ShootIfPossible(float DeltaTime);
+
+	UFUNCTION()
+	bool CheckDirectLOS(FVector& OutTarget);
+
+	UFUNCTION()
+	bool CheckSingleRicochetLOS(FVector& OutTarget);
+
+	UFUNCTION()
+	bool CheckDoubleRicochetLOS(FVector& OutTarget);
 
 public:
 	ARotaryAITank();
