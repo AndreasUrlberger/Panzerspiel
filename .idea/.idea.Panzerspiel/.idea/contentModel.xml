@@ -43490,10 +43490,6 @@
       <e p="README.md" t="Include" />
       <e p="Source" t="Include">
         <e p="Panzerspiel" t="Include">
-          <e p="AITankPawn.cpp" t="Include" />
-          <e p="AITankPawn.h" t="Include" />
-          <e p="BTT_TankMoveTo.cpp" t="Include" />
-          <e p="BTT_TankMoveTo.h" t="Include" />
           <e p="BTTask_SimpleTankMoveTo.cpp" t="Include" />
           <e p="BTTask_SimpleTankMoveTo.h" t="Include" />
           <e p="Bullet.cpp" t="Include" />
@@ -43511,12 +43507,16 @@
           <e p="PanzerspielGameModeBase.h" t="Include" />
           <e p="SimpleAITankPawn.cpp" t="Include" />
           <e p="SimpleAITankPawn.h" t="Include" />
-          <e p="SplineTestVisualizer.cpp" t="Include" />
-          <e p="SplineTestVisualizer.h" t="Include" />
           <e p="TankPawn.cpp" t="Include" />
           <e p="TankPawn.h" t="Include" />
           <e p="TankPlayerController.cpp" t="Include" />
           <e p="TankPlayerController.h" t="Include" />
+          <e p="Tanks" t="Include">
+            <e p="DemoPlaceholder.cpp" t="Include" />
+            <e p="DemoPlaceholder.h" t="Include" />
+            <e p="SecondDemo.cpp" t="Include" />
+            <e p="SecondDemo.h" t="Include" />
+          </e>
           <e p="Utility.cpp" t="Include" />
           <e p="Utility.h" t="Include" />
           <e p="WorldObstacle.cpp" t="Include" />

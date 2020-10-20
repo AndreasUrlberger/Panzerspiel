@@ -164,7 +164,6 @@ bool ATankPawn::Shoot() {
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
 	const FRotator Rotation = TurretMesh->GetComponentRotation();
 	const FVector Location = Muzzle->GetComponentLocation();
-	UE_LOG(LogTemp, Warning, TEXT("MuzzleLocation = %s"), *Location.ToString());
 	ABullet* Bullet = World->SpawnActor<ABullet>(ToSpawnBullet, Location, Rotation, Params);
 
 

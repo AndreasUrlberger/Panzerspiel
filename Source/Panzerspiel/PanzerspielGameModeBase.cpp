@@ -181,7 +181,6 @@ bool APanzerspielGameModeBase::FindSingleRicochetPath(TArray<FBulletPath> &Bulle
 bool APanzerspielGameModeBase::FindDoubleRicochetPath(const AActor *Origin, const FVector& OriginLocation, const TArray<UObstacleEdge*> &OriginEdges,
 	const AActor *Target, const TArray<UObstacleEdge*> &TargetEdges, TArray<FBulletPath> &BulletPaths) {
 	// Debug
-	UE_LOG(LogTemp, Warning, TEXT("Called FindDoubleRicochetPath"));
 	const double Start = FPlatformTime::Seconds();
 	int32 FoundCounter = 0;
 	
