@@ -43,13 +43,13 @@ private:
 	bool ShootIfPossible(float DeltaTime);
 
 	UFUNCTION()
-	bool CheckDirectLOS(FVector& OutTarget);
+	bool CheckDirectLOS(FVector& OutTarget) const;
 
 	UFUNCTION()
-	bool CheckSingleRicochetLOS(FVector& OutTarget);
+	bool CheckSingleRicochetLOS(FVector& OutTarget) const;
 
 	UFUNCTION()
-	bool CheckDoubleRicochetLOS(FVector& OutTarget);
+	bool CheckDoubleRicochetLOS(FVector& OutTarget) const;
 
 public:
 	ARotaryAITank();
