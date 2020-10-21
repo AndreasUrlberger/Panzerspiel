@@ -21,22 +21,22 @@ void ARotaryAITank::Tick(float DeltaTime) {
     Super::Tick(DeltaTime);
     // Always update the TimeTillNextShot before calling ShootIfPossible.
     TimeTillNextShot -= DeltaTime;
-    ShootIfPossible(DeltaTime);
+    CurrentRotTime += DeltaTime * TowerRotationSpeed;
+    RotAndShoot();
 }
 
-bool ARotaryAITank::ShootIfPossible(float DeltaTime) {
-    // TODO: Make the turret slowly move back to aiming at the target after firing to avoid a second jump.
+bool ARotaryAITank::RotAndShoot() {
+    
+    // Update the turret rotation.
+    const float QueriedRotValue = GetRotValue();
+    const float RotValue = QueriedRotValue - LastRotValue;
+    LastRotValue = QueriedRotValue;
+    const FRotator UpdatedRotation = TurretMesh->GetComponentRotation().Add(0, RotValue, 0);
+    TurretMesh->SetWorldRotation(UpdatedRotation);
+    
     // Only shoot if we're in fire mode and we're ready to shoot.
     if (!(FireMode && TimeTillNextShot <= 0))
         return false;
-    
-    UWorld* World = GetWorld();
-    if (!World)
-        return false;
-
-    // Update the turret rotation.
-    const FRotator UpdatedRotation = TurretMesh->GetComponentRotation().Add(0, DeltaTime * TowerRotationSpeed, 0);
-    TurretMesh->SetWorldRotation(UpdatedRotation);
 
     FVector Target;
     bool hasLOS = CheckDirectLOS(Target);
@@ -128,6 +128,14 @@ bool ARotaryAITank::CheckDoubleRicochetLOS(FVector& OutTarget) const{
     DrawDebugLine(World, StartLoc, Result.ImpactPoint, FColor::Cyan, false, 1, 0, 5);
 
     return Cast<ATankPawn>(Result.GetActor()) && Result.GetActor() != this;
+}
+
+float ARotaryAITank::GetRotValue(){
+    while(CurrentRotTime >= 2)
+        CurrentRotTime -= 2;
+    // 2|x - 1| - 1.
+    // Goes from (0|1) to (1|-1) to (2|1).
+    return (2 * FMath::Abs(CurrentRotTime - 1) - 1) * AngleLimit;
 }
 
 void ARotaryAITank::SetFireMode(bool DoesFire) {

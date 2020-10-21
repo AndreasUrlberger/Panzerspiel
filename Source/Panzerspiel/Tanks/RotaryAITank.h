@@ -35,12 +35,21 @@ private:
 	UPROPERTY(EditAnywhere, Category="Combat")
 	float TraceDistance = 5000;
 
+	UPROPERTY(EditAnywhere, Category="Combat", meta=(UIMin = 0.0, UIMax = 180))
+	float AngleLimit = 30;
+
+	UPROPERTY()
+	float LastRotValue = 0;
+
+	UPROPERTY()
+	float CurrentRotTime = 0;
+
 	// Functions
 private:
 	virtual void MoveRight(float AxisValue) override;
 	
 	UFUNCTION()
-	bool ShootIfPossible(float DeltaTime);
+	bool RotAndShoot();
 
 	UFUNCTION()
 	bool CheckDirectLOS(FVector& OutTarget) const;
@@ -50,6 +59,10 @@ private:
 
 	UFUNCTION()
 	bool CheckDoubleRicochetLOS(FVector& OutTarget) const;
+
+	UFUNCTION()
+	// Returns the current tower rotation.
+	float GetRotValue();
 
 public:
 	ARotaryAITank();
