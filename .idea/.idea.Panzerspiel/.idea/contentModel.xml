@@ -43500,6 +43500,10 @@
           <e p="CubeObstacle.h" t="Include" />
           <e p="Mine.cpp" t="Include" />
           <e p="Mine.h" t="Include" />
+          <e p="Obstacles" t="Include">
+            <e p="DestructCube.cpp" t="Include" />
+            <e p="DestructCube.h" t="Include" />
+          </e>
           <e p="Panzerspiel.Build.cs" t="Include" />
           <e p="Panzerspiel.cpp" t="Include" />
           <e p="Panzerspiel.h" t="Include" />
