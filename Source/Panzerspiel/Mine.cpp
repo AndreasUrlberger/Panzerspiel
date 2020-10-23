@@ -104,14 +104,13 @@ void AMine::BeginKillOverlapEvent(UPrimitiveComponent* OverlappedComponent, AAct
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
     if (ATankPawn* OtherTank = Cast<ATankPawn>(OtherActor))
         OtherTank->Kill(TankPawn);
-    else if (ABullet* Bullet = Cast<ABullet>(OtherActor)) {
-        UE_LOG(LogTemp, Warning, TEXT("Bullet Begin Kill Overlap Event."));
+    else if (ABullet* Bullet = Cast<ABullet>(OtherActor)) 
         Bullet->Kill(TankPawn);
-    }
     else if (AMine* Mine = Cast<AMine>(OtherActor)) 
         Mine->Explode();
-    else if (ADestructCube *Cube = Cast<ADestructCube>(OtherActor))
+    else if (ADestructCube *Cube = Cast<ADestructCube>(OtherActor)) {
         Cube->Destruct();
+    }
 }
 
 void AMine::Explode() {

@@ -123,7 +123,7 @@ void ABullet::CalculateMove(const float DistanceToMove, const AActor* IgnoreActo
 			BulletHitEvent(Bullet);
 		}else if(Cast<AMine>(HitActor)){
 			// Continue as if there was nothing to trigger the mine's hit event.
-			SetActorLocation(EndLoc, true);
+			SetActorLocation(EndLoc);
 		} else {
 			UE_LOG(LogTemp, Error,
 			       TEXT(
