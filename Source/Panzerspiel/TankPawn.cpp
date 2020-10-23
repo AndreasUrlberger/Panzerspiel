@@ -194,7 +194,8 @@ void ATankPawn::PlaceMine() {
 
 		// Some kind of random rotation seems to be a good idea.
 		const FRotator Rotation = TurretMesh->GetComponentRotation();
-		const FVector Location = GetActorLocation();
+		FVector Location = GetActorLocation();
+		Location.Z = 0;
 
 		AMine* Mine = World->SpawnActor<AMine>(ToSpawnMine, Location, Rotation, Params);
 

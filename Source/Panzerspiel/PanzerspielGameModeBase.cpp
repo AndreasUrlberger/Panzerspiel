@@ -295,9 +295,7 @@ void APanzerspielGameModeBase::LevelStreamingEnded() {
 
 void APanzerspielGameModeBase::BeginPlay() {
 	Super::BeginPlay();
-	
-	// TODO: Theres a third crosshair in the game when we have two players.
-	/*if(PlayerControllers.Num() < MaxPlayers) {
+		/*if(PlayerControllers.Num() < MaxPlayers) {
 		// Create New Player.
 		APlayerController *Controller = UGameplayStatics::CreatePlayer(this);
 		PlayerControllers.Init(Controller, 0);

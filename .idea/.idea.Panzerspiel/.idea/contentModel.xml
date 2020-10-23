@@ -43518,8 +43518,6 @@
           <e p="Tanks" t="Include">
             <e p="RotaryAITank.cpp" t="Include" />
             <e p="RotaryAITank.h" t="Include" />
-            <e p="SecondDemo.cpp" t="Include" />
-            <e p="SecondDemo.h" t="Include" />
           </e>
           <e p="Utility.cpp" t="Include" />
           <e p="Utility.h" t="Include" />

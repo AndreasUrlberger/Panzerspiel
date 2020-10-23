@@ -93,17 +93,21 @@ void AMine::BeginTankOverlapEvent(UPrimitiveComponent* OverlappedComponent, AAct
         Explode();
 }
 
-void AMine::BulletHitEvent(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) {
+void AMine::BulletHitEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+    int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
     if (!ExplosionRunning && Cast<ABullet>(OtherActor))
         Explode();
 }
+
 
 void AMine::BeginKillOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
     if (ATankPawn* OtherTank = Cast<ATankPawn>(OtherActor))
         OtherTank->Kill(TankPawn);
-    else if (ABullet* Bullet = Cast<ABullet>(OtherActor))
+    else if (ABullet* Bullet = Cast<ABullet>(OtherActor)) {
+        UE_LOG(LogTemp, Warning, TEXT("Bullet Begin Kill Overlap Event."));
         Bullet->Kill(TankPawn);
+    }
     else if (AMine* Mine = Cast<AMine>(OtherActor)) 
         Mine->Explode();
     else if (ADestructCube *Cube = Cast<ADestructCube>(OtherActor))
@@ -111,7 +115,7 @@ void AMine::BeginKillOverlapEvent(UPrimitiveComponent* OverlappedComponent, AAct
 }
 
 void AMine::Explode() {
-    // TODO: Bullet Ignores all except for BulletTrace Channel -> Might only generate overlap or nothing.
+    // TODO: It seems like bullets can travel through each other when they're orthogonal, probably due to the pivot point being in the back.
     // Explode might get called multiple times by other actors.
     if(Triggered)
         return;
@@ -130,7 +134,7 @@ void AMine::Explode() {
     KillSphere->OnComponentBeginOverlap.AddDynamic(this, &AMine::BeginKillOverlapEvent);
     KillSphere->SetRelativeLocation(FVector(0, 0, 0), true);
     TankTriggerSphere->OnComponentBeginOverlap.RemoveAll(this);
-    BulletTriggerSphere->OnComponentHit.RemoveAll(this);
+    BulletTriggerSphere->OnComponentBeginOverlap.RemoveAll(this);
 }
 
 void AMine::Die() {
@@ -146,7 +150,7 @@ void AMine::Activate() {
         UGameplayStatics::PlaySoundAtLocation(this, ActivationSound, GetActorLocation());
 
     TankTriggerSphere->OnComponentBeginOverlap.AddDynamic(this, &AMine::BeginTankOverlapEvent);
-    BulletTriggerSphere->OnComponentHit.AddDynamic(this, &AMine::BulletHitEvent);
+    BulletTriggerSphere->OnComponentBeginOverlap.AddDynamic(this, &AMine::BulletHitEvent);
 
     // Its important to set the radius after the AddDynamic because otherwise we would not get the initial overlap.
     TankTriggerSphere->SetSphereRadius(TankTriggerRadius);

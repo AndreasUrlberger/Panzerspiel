@@ -12,68 +12,68 @@ class PANZERSPIEL_API AMine : public AActor
 	GENERATED_BODY()
 	
 private:
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category="Mesh")
 	class UStaticMeshComponent* MineMesh;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category="Mesh")
 	class UStaticMeshComponent* ExplosionMesh;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category="Collision")
 	class USphereComponent* TankTriggerSphere;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category="Collision")
 	class USphereComponent* BulletTriggerSphere;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category="Collision")
 	class USphereComponent* KillSphere;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Mine")
 	float ExplosionRadius = 100;
 
 	// ExplosionTime in seconds.
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Mine")
 	float ExplosionTime = 0.25;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Mine")
 	float TimeAtMax = 0.1;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	float CurrentTimeAtMax;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	bool ExplosionAtMax;
 	
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	bool MineActive;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Mine")
 	float BulletTriggerRadius = 25;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Mine")
 	float TankTriggerRadius = 50;
 
 	// Activation time in seconds.
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Mine")
 	float ActivationTime = 1;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	bool ExplosionRunning;
 
 	// Is set true once Explode got called an wont be set to false at any time after that. With this bool we can make
 	// sure that Explode will never be called two times.
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	bool Triggered;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	float RunningTime = 0;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	class ATankPawn* TankPawn;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Sound")
 	class USoundBase* ActivationSound;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Sound")
 	class USoundBase* ExplosionSound;
 
 	UPROPERTY()
@@ -84,7 +84,8 @@ private:
                       int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-    void BulletHitEvent(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	void BulletHitEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
 	void BeginKillOverlapEvent(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
