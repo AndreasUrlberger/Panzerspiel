@@ -9,7 +9,6 @@
 #include "TankPawn.h"
 #include "Utility.h"
 #include "BulletPath.h"
-#include "DrawDebugHelpers.h"
 
 
 APanzerspielGameModeBase::APanzerspielGameModeBase() {

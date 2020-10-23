@@ -6,6 +6,7 @@
 
 #include "Bullet.h"
 
+#include "Mine.h"
 #include "DrawDebugHelpers.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -120,6 +121,9 @@ void ABullet::CalculateMove(const float DistanceToMove, const AActor* IgnoreActo
 		} else if (ABullet* Bullet = Cast<ABullet>(HitActor)) {
 			// Bullet hits another bullet.
 			BulletHitEvent(Bullet);
+		}else if(Cast<AMine>(HitActor)){
+			// Continue as if there was nothing to trigger the mine's hit event.
+			SetActorLocation(EndLoc);
 		} else {
 			UE_LOG(LogTemp, Error,
 			       TEXT(
