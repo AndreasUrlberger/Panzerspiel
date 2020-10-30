@@ -7,7 +7,6 @@
 #include "Utility.h"
 #include "BulletPath.h"
 #include "DrawDebugHelpers.h"
-#include "PropertyEditorModule.h"
 #include "Kismet/GameplayStatics.h"
 
 UBroadLineTraceEdgeParams::UBroadLineTraceEdgeParams() {
