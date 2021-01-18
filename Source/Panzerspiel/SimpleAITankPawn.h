@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "TankPawn.h"
+#include "Movement/UAITankMovement.h"
+
 #include "SimpleAITankPawn.generated.h"
 
 /**
@@ -42,6 +44,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category="AI")
 	UArrowComponent* SensorRight;
+
+	UPROPERTY()
+	class UAITankMovement* AITankMovement;
 
 	UPROPERTY()
 	bool FollowingPathPoints;

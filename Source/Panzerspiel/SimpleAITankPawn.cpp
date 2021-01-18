@@ -69,6 +69,8 @@ void ASimpleAITankPawn::Tick(float DeltaTime) {
     DoNavigationTrace();   
     if(FollowingPathPoints)
         FollowPath(DeltaTime);
+    else
+        //FakeVelocity = FMath::VInterpConstantTo()
     // Lock on aim.
     if(IsValid(LockOnActor))
         AlignTower(LockOnActor->GetActorLocation());
@@ -79,13 +81,16 @@ void ASimpleAITankPawn::Tick(float DeltaTime) {
 
 void ASimpleAITankPawn::FollowPath(float DeltaTime) {
     const float Distance = FVector::Dist(PathPoints[CurrentPathPoint], GetActorLocation());
+    if(DebugLog) UE_LOG(LogTemp, Warning, TEXT("Called FollowPath"));
     if (Distance < ReachRadius) {
-        //if (DebugLog) UE_LOG(LogTemp, Warning, TEXT("Reached Point"));
+        if (DebugLog) UE_LOG(LogTemp, Warning, TEXT("Reached Point"));
         ++CurrentPathPoint;
         if (CurrentPathPoint >= PathPoints.Num()) {
             // Reached end of path.
             FollowingPathPoints = false;
             CallingTask->Finish();
+            // Stop the tank's movement.
+            //MovementComp->
         }
     } else {
         // Calculate in which direction to move to avoid collisions.
